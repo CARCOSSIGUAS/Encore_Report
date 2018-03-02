@@ -1,0 +1,13 @@
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.deps.json
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.dll
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.pdb
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\bin\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.xml
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\bin\Debug\netstandard2.0\System.Data.SqlClient.dll
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\bin\Debug\netstandard2.0\System.Data.SqlClient.xml
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\obj\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.csproj.CoreCompileInputs.cache
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\obj\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.AssemblyInfoInputs.cache
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\obj\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.AssemblyInfo.cs
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\obj\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.dll
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\obj\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.xml
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\obj\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.pdb
+D:\Proyectos\IEL-Services\app\IELS\4-Thirdy\Microsoft.EntityFrameworkCore.UnitOfWork\obj\Debug\netstandard2.0\Microsoft.EntityFrameworkCore.UnitOfWork.csprojResolveAssemblyReference.cache

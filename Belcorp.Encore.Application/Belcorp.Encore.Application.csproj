@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Belcorp.Encore.Data\Belcorp.Encore.Data.csproj" />
+    <ProjectReference Include="..\Belcorp.Encore.Entities\Belcorp.Encore.Entities.csproj" />
+    <ProjectReference Include="..\Belcorp.Encore.Repositories\Belcorp.Encore.Repositories.csproj" />
+    <ProjectReference Include="..\Microsoft.EntityFrameworkCore.UnitOfWork\Microsoft.EntityFrameworkCore.UnitOfWork.csproj" />
+  </ItemGroup>
+
+</Project>
