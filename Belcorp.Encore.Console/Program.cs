@@ -9,13 +9,14 @@ using Microsoft.EntityFrameworkCore;
 using Belcorp.Encore.Data.Contexts;
 using Microsoft.Extensions.Configuration;
 using Belcorp.Encore.Console.InstanceProviders;
+using System.Linq;
 using System.IO;
 
 namespace Belcorp.Encore.Console
 {
     class Program
     {
-        private static IConfigurationRoot Configuration;
+        private static IConfigurationRoot configuration;
 
         static void Main(string[] args)
         {
@@ -23,14 +24,20 @@ namespace Belcorp.Encore.Console
             ConfigureServices(services);
             var provider = services.BuildServiceProvider();
 
-            IAccountInformationService _accountInformationService = provider.GetService<IAccountInformationService>();
-            var list = _accountInformationService.GetListAccountInformationByPeriodId(201210);
-
             var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json");
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            configuration = builder.Build();
 
-            Configuration = builder.Build();
+
+            System.Console.WriteLine($"Iniciando lectura...");
+            IAccountInformationService accountInformationService = provider.GetService<IAccountInformationService>();
+            var list = accountInformationService.GetListAccountInformationByPeriodId(201512).ToList();
+            System.Console.WriteLine($"Total de registros: {list.Count}");
+            System.Console.WriteLine($"Fin lectura...");
+            System.Console.WriteLine();
+
+
             System.Console.ReadKey();
         }
 
@@ -38,7 +45,7 @@ namespace Belcorp.Encore.Console
         {
 
             services
-                .AddDbContext<EncoreCommissions_Context>(opt => opt.UseSqlServer("Data Source=10.12.6.187;Initial Catalog=BelcorpBRACommissions;User ID=usrencorebrasilqas;Password=Belcorp2016%"))
+                .AddDbContext<EncoreCommissions_Context>(opt => opt.UseSqlServer(configuration.GetConnectionString("Encore_Commissions")))
                 .AddUnitOfWork<EncoreCommissions_Context>();
 
             services.RegisterServices();

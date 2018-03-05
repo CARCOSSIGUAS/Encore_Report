@@ -11,7 +11,7 @@ namespace Belcorp.Encore.Data.Contexts
         public IMongoDatabase Database;
         public EncoreMongo_Context()
         {
-            var client = new MongoClient("mongodb://localhost");
+            var client = new MongoClient("mongodb://localhost:27017");
             Database = client.GetDatabase("Encore");
         }
 

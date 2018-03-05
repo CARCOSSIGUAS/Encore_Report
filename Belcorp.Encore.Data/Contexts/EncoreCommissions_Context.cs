@@ -13,6 +13,10 @@ namespace Belcorp.Encore.Data.Contexts
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+        }
+
         public DbSet<AccountsInformation> AccountInformation { get; set; }
 
     }

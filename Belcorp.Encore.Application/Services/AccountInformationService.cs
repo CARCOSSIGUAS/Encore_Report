@@ -1,27 +1,30 @@
-﻿using Belcorp.Encore.Entities;
+﻿using Belcorp.Encore.Data.Contexts;
+using Belcorp.Encore.Entities;
 using Belcorp.Encore.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
-
+using System.Linq;
 
 namespace Belcorp.Encore.Application
 {
     public class AccountInformationService : IAccountInformationService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly EncoreMongo_Context encoreMongo_Context;
         private readonly IAccountInformationRepository _accountInformationRepository;
         
         public AccountInformationService(IUnitOfWork unitOfWork, IAccountInformationRepository accountInformationRepository)
         {
             _accountInformationRepository = accountInformationRepository;
             _unitOfWork = unitOfWork;
+            encoreMongo_Context = new EncoreMongo_Context();
         }
 
-        public IPagedList<AccountsInformation> GetListAccountInformationByPeriodId(int periodId)
+        public IEnumerable<AccountsInformation> GetListAccountInformationByPeriodId(int periodId)
         {
-             return _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 1, 100, false);
+            return _accountInformationRepository.GetListAccountInformationByPeriodId(periodId);
         }
 
         public void CalcularAccountInformation(int periodId, int accountId)
@@ -32,6 +35,12 @@ namespace Belcorp.Encore.Application
                 _accountInformationRepository.Delete(rai);
                 _unitOfWork.SaveChanges();
             }
+        }
+
+        public void SaveCollection(int periodId)
+        {
+            var result = GetListAccountInformationByPeriodId(periodId).ToList();
+            encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
         }
     }
 }

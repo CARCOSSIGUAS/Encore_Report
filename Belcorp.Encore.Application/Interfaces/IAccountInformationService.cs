@@ -8,7 +8,8 @@ namespace Belcorp.Encore.Application
 {
     public interface IAccountInformationService
     {
-        IPagedList<AccountsInformation> GetListAccountInformationByPeriodId(int periodId);
+        IEnumerable<AccountsInformation> GetListAccountInformationByPeriodId(int periodId);
         void CalcularAccountInformation(int periodId, int accountId);
+        void SaveCollection(int periodId);
     }
 }
