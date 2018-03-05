@@ -22,5 +22,11 @@ namespace Belcorp.Encore.Repositories
             var result = _dbCommissions_Context.AccountInformation.AsNoTracking().Where(ai => ai.PeriodID == periodId);
             return result;
         }
+
+        public IEnumerable<AccountsInformation> GetListAccountInformationByAccountId(int accountId)
+        {
+            var result = _dbCommissions_Context.AccountInformation.AsNoTracking().Where(ai => ai.AccountID == accountId);
+            return result;
+        }
     }
 }

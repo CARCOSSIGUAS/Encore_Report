@@ -37,10 +37,15 @@ namespace Belcorp.Encore.Application
             }
         }
 
-        public void SaveCollection(int periodId)
+        public void Migrate_AccountInformationByAccountId(int accountId)
         {
-            var result = GetListAccountInformationByPeriodId(periodId).ToList();
+            var result = GetListAccountInformationByAccountId(accountId);
             encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
+        }
+
+        public IEnumerable<AccountsInformation> GetListAccountInformationByAccountId(int accountId)
+        {
+            return _accountInformationRepository.GetListAccountInformationByAccountId(accountId);
         }
     }
 }
