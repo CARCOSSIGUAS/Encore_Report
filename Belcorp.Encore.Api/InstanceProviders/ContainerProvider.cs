@@ -17,7 +17,6 @@
         {
             services.AddTransient<IAccountInformationRepository, AccountInformationRepository>();
             services.AddTransient<IAccountInformationService, AccountInformationService>();
-
         }
     }
 }

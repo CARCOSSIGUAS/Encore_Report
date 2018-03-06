@@ -12,5 +12,7 @@ namespace Belcorp.Encore.Application
         IEnumerable<AccountsInformation> GetListAccountInformationByAccountId(int accountId);
         void CalcularAccountInformation(int periodId, int accountId);
         void Migrate_AccountInformationByAccountId(int accountId);
+        void Migrate_AccountInformationByPeriod(int periodId);
     }
+
 }
