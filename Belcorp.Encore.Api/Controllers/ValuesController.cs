@@ -30,7 +30,14 @@ namespace Belcorp.Encore.Api.Controllers
         public string Get(int id)
         {
             BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
-            return "value";
+            BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
+            BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
+            BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
+            BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
+
+            RecurringJob.AddOrUpdate(() => accountInformationService.Migrate_AccountInformationByAccountId(id), Cron.Daily(11, 11), TimeZoneInfo.Local);
+
+            return "Wait";
         }
 
         // POST api/values
