@@ -29,19 +29,21 @@ namespace Belcorp.Encore.Api.Controllers
         [HttpGet("{id}")]
         public string Get(int id)
         {
-            accountInformationService.Migrate_AccountInformationByPeriod(id);
-            
-            //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id));
-            //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
-            //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
-            //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
-
-            //var jobParent = BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
-            //BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByAccountId(id));
-
-            //RecurringJob.AddOrUpdate(() => accountInformationService.Migrate_AccountInformationByAccountId(id), Cron.Daily(11, 15), TimeZoneInfo.Local);
-            return "Wait";
+              BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id));
+              return "Wait";
         }
+
+
+
+        //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
+        //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
+        //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
+
+        //var jobParent = BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
+        //BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByAccountId(id));
+
+        //RecurringJob.AddOrUpdate(() => accountInformationService.Migrate_AccountInformationByAccountId(id), Cron.Daily(11, 15), TimeZoneInfo.Local);
+
 
         // POST api/values
         [HttpPost]

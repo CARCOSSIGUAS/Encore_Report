@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Threading;
+using MongoDB.Bson;
 
 namespace Belcorp.Encore.Application
 {
@@ -28,6 +29,11 @@ namespace Belcorp.Encore.Application
             return _accountInformationRepository.GetListAccountInformationByPeriodId(periodId);
         }
 
+        public IEnumerable<AccountsInformation> GetListAccountInformationByAccountId(int accountId)
+        {
+            return _accountInformationRepository.GetListAccountInformationByAccountId(accountId);
+        }
+
         public void CalcularAccountInformation(int periodId, int accountId)
         {
             using (_unitOfWork)
@@ -40,26 +46,20 @@ namespace Belcorp.Encore.Application
 
         public void Migrate_AccountInformationByAccountId(int accountId)
         {
-            Thread.Sleep(10000);
             var result = GetListAccountInformationByAccountId(accountId);
             encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
         }
 
         public void Migrate_AccountInformationByPeriod(int periodId)
         {
-            var Total = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 50000, true);
-            int ii = Total.PageSize;
+            var total = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
+            int ii = total.TotalPages;
 
             for (int i = 0; i < ii; i++)
             {
-                var result = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 50000, true).Items;
+                var result = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
                 encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
             }
-        }
-
-        public IEnumerable<AccountsInformation> GetListAccountInformationByAccountId(int accountId)
-        {
-            return _accountInformationRepository.GetListAccountInformationByAccountId(accountId);
         }
 
         public void ProcessMlmOnline(int orderId, int orderStatusId)
