@@ -16,6 +16,7 @@
         static void ConfigureContainer(IServiceCollection services)
         {
             services.AddTransient<IAccountInformationRepository, AccountInformationRepository>();
+            services.AddTransient<IAccountsRepository, AccountsRepository>();
             services.AddTransient<IAccountInformationService, AccountInformationService>();
         }
     }

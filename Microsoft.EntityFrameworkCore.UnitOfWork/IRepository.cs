@@ -207,12 +207,6 @@ namespace Microsoft.EntityFrameworkCore
         IQueryable<TEntity> GetAll();
 
         /// <summary>
-        /// Gets entities based on a predicate.
-        /// </summary>
-        /// <returns>The <see cref="IQueryable{TEntity}"/>.</returns>
-        IQueryable<TEntity> GetList(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null);
-
-        /// <summary>
         /// Gets the count based on a predicate.
         /// </summary>
         /// <param name="predicate"></param>

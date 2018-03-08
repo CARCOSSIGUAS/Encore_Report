@@ -1,4 +1,5 @@
 ﻿using Belcorp.Encore.Entities;
+using Belcorp.Encore.Entities.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,7 +18,9 @@ namespace Belcorp.Encore.Data.Contexts
         {
         }
 
-        public DbSet<AccountsInformation> AccountInformation { get; set; }
+        public DbSet<AccountsInformation> AccountsInformation { get; set; }
+        public DbSet<Accounts> Accounts { get; set; }
+        public DbSet<Titles> Titles { get; set; }
 
     }
 }

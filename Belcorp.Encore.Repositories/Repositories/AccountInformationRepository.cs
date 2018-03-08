@@ -19,14 +19,13 @@ namespace Belcorp.Encore.Repositories
 
         public IEnumerable<AccountsInformation> GetListAccountInformationByPeriodId(int periodId)
         {
-            var result = _dbCommissions_Context.AccountInformation.AsNoTracking().Where(ai => ai.PeriodID == periodId);
+            var result = _dbCommissions_Context.AccountsInformation.AsNoTracking().Where(ai => ai.PeriodID == periodId);
             return result;
         }
 
-        public IEnumerable<AccountsInformation> GetListAccountInformationByAccountId(int accountId)
+        public IEnumerable<AccountsInformation> GetListAccountInformationByPeriodIdAndAccountId(int periodId, int accountId)
         {
-            var result = _dbCommissions_Context.AccountInformation.AsNoTracking().Where(ai => ai.AccountID == accountId);
-            return result;
+            return null;
         }
     }
 }

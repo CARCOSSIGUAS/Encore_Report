@@ -57,23 +57,6 @@ namespace Microsoft.EntityFrameworkCore
             return _dbSet;
         }
 
-        public IQueryable<TEntity> GetList(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null)
-        {
-            IQueryable<TEntity> query = _dbSet;
-            if (include != null)
-            {
-                query = include(query);
-            }
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            
-            return query;
-        }
-
         /// <summary>
         /// Gets the <see cref="IPagedList{TEntity}"/> based on a predicate, orderby delegate and page information. This method default no-tracking query.
         /// </summary>

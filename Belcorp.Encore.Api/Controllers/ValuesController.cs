@@ -29,20 +29,38 @@ namespace Belcorp.Encore.Api.Controllers
         [HttpGet("{id}")]
         public string Get(int id)
         {
-              BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id));
-              return "Wait";
+            id = 2015;
+            id = id * 100;
+
+            //Job background en Paralelo.
+            //for (int i = 1; i <= 12; i++)
+            //{
+            //    BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id + i));
+            //}
+
+            //Job background en Continuacion uno despues de otro.
+            //string jobParent = "";
+            //for (int i = 1; i <= 12; i++)
+            //{
+            //    if (i == 1)
+            //    {
+            //      jobParent = BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id + i));
+            //    }
+            //    else
+            //      jobParent = BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByPeriod(id + i));
+            //}
+
+            //var jobParent = BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id));
+            //BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByPeriod(id));
+
+            //RecurringJob.AddOrUpdate(() => accountInformationService.Migrate_AccountInformationByPeriod(id), Cron.Daily(00, 00), TimeZoneInfo.Local);
+            accountInformationService.Migrate_AccountInformationByAccountId(201712, 560934);
+
+            return "Wait";
         }
 
 
-
-        //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
-        //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
-        //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
-
-        //var jobParent = BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByAccountId(id));
-        //BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByAccountId(id));
-
-        //RecurringJob.AddOrUpdate(() => accountInformationService.Migrate_AccountInformationByAccountId(id), Cron.Daily(11, 15), TimeZoneInfo.Local);
+        
 
 
         // POST api/values

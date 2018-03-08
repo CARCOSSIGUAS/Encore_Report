@@ -8,6 +8,8 @@ using System.Text;
 using System.Linq;
 using System.Threading;
 using MongoDB.Bson;
+using MongoDB.Driver;
+using Belcorp.Encore.Entities.Entities;
 
 namespace Belcorp.Encore.Application
 {
@@ -16,10 +18,12 @@ namespace Belcorp.Encore.Application
         private readonly IUnitOfWork _unitOfWork;
         private readonly EncoreMongo_Context encoreMongo_Context;
         private readonly IAccountInformationRepository _accountInformationRepository;
-        
-        public AccountInformationService(IUnitOfWork unitOfWork, IAccountInformationRepository accountInformationRepository)
+        private readonly IAccountsRepository _accountsRepository;
+
+        public AccountInformationService(IUnitOfWork unitOfWork, IAccountInformationRepository accountInformationRepository, IAccountsRepository accountsRepository)
         {
             _accountInformationRepository = accountInformationRepository;
+            _accountsRepository = accountsRepository;
             _unitOfWork = unitOfWork;
             encoreMongo_Context = new EncoreMongo_Context();
         }
@@ -29,39 +33,52 @@ namespace Belcorp.Encore.Application
             return _accountInformationRepository.GetListAccountInformationByPeriodId(periodId);
         }
 
-        public IEnumerable<AccountsInformation> GetListAccountInformationByAccountId(int accountId)
+        public IEnumerable<AccountsInformation> GetListAccountInformationByPeriodIdAndAccountId(int periodId, int accountId)
         {
-            return _accountInformationRepository.GetListAccountInformationByAccountId(accountId);
-        }
-
-        public void CalcularAccountInformation(int periodId, int accountId)
-        {
-            using (_unitOfWork)
-            {
-                var rai = _accountInformationRepository.GetList(r => r.PeriodID == periodId && r.AccountID == accountId);
-                _accountInformationRepository.Delete(rai);
-                _unitOfWork.SaveChanges();
-            }
-        }
-
-        public void Migrate_AccountInformationByAccountId(int accountId)
-        {
-            var result = GetListAccountInformationByAccountId(accountId);
-            encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
+            return _accountInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(periodId, accountId);
         }
 
         public void Migrate_AccountInformationByPeriod(int periodId)
         {
-            var total = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
+            var total = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 20000, true);
             int ii = total.TotalPages;
+            
+            FilterDefinition<Report_Downline> filter = $"{{ PeriodID:  { periodId } }}";
+            encoreMongo_Context.AccountsInformationProvider.DeleteMany(filter);
 
+            var accounts = _accountsRepository.GetAll().ToList();
             for (int i = 0; i < ii; i++)
             {
-                var result = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
-                encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
+                var accountsInformation = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 20000, true).Items;
+                var data =
+                accountsInformation.Join(accounts, r => r.AccountID, a => a.AccountID, (r, a) => new { r, a }).Select(result => new Report_Downline
+                {
+                    AccountsInformationID = result.r.AccountsInformationID,
+                    PeriodID = result.r.PeriodID,
+                    AccountID = result.r.AccountID,
+                    AccountNumber = result.r.AccountNumber,
+                    AccountName = result.r.AccountName,
+                    SponsorID = result.r.SponsorID,
+                    SponsorName = result.r.SponsorName,
+                    Address = result.r.Address,
+                    PostalCode = result.r.PostalCode,
+                    City = result.r.City,
+                    STATE = result.r.STATE,
+                    accounts = result.a
+                });
+
+                encoreMongo_Context.AccountsInformationProvider.InsertMany(data);
             }
         }
 
+        public void Migrate_AccountInformationByAccountId(int periodId, int accountId)
+        {  
+            var accountInformation = _accountInformationRepository.GetFirstOrDefault(x => x.AccountID == accountId, null, null, true);
+            //var allTitles = 
+
+            _accountInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(periodId, accountId);
+        }
+        
         public void ProcessMlmOnline(int orderId, int orderStatusId)
         {
             using (_unitOfWork)
