@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Belcorp.Encore.Application;
+using Belcorp.Encore.Application.Services;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,9 +14,12 @@ namespace Belcorp.Encore.Api.Controllers
     public class ValuesController : Controller
     {
         private readonly IAccountInformationService accountInformationService;
-        public ValuesController(IAccountInformationService _accountInformationService)   
+        private readonly IAccountsService accountsServices;
+
+        public ValuesController(IAccountInformationService _accountInformationService, IAccountsService _accountsServices)   
         {
             accountInformationService = _accountInformationService;
+            accountsServices = _accountsServices;
         }
 
         // GET api/values
@@ -29,9 +33,12 @@ namespace Belcorp.Encore.Api.Controllers
         [HttpGet("{id}")]
         public string Get(int id)
         {
-            id = 2015;
-            id = id * 100;
+            BackgroundJob.Enqueue(() => accountsServices.Migrate_Accounts());
+            BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(201701));
+            return "Wait";
 
+
+            #region Pruebas_Background
             //Job background en Paralelo.
             //for (int i = 1; i <= 12; i++)
             //{
@@ -54,14 +61,8 @@ namespace Belcorp.Encore.Api.Controllers
             //BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByPeriod(id));
 
             //RecurringJob.AddOrUpdate(() => accountInformationService.Migrate_AccountInformationByPeriod(id), Cron.Daily(00, 00), TimeZoneInfo.Local);
-            accountInformationService.Migrate_AccountInformationByAccountId(201712, 560934);
-
-            return "Wait";
+            #endregion
         }
-
-
-        
-
 
         // POST api/values
         [HttpPost]

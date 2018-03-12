@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Belcorp.Encore.Entities;
+using Belcorp.Encore.Entities.Entities;
 using Belcorp.Encore.Data.Contexts;
 using System.Linq;
 
@@ -23,9 +24,32 @@ namespace Belcorp.Encore.Repositories
             return result;
         }
 
-        public IEnumerable<AccountsInformation> GetListAccountInformationByPeriodIdAndAccountId(int periodId, int accountId)
+        public IEnumerable<Report_Downline> GetListAccountInformationByPeriodIdAndAccountId(int periodId, int accountId)
         {
-            return null;
+            var accounts = _dbCommissions_Context.AccountsInformation.Where(ai => ai.PeriodID == periodId && ai.AccountID == accountId).FirstOrDefault();
+            var accounts_downline = _dbCommissions_Context.AccountsInformation.Where(ai => ai.PeriodID == periodId && ai.LeftBower >= accounts.LeftBower && ai.RightBower <= accounts.RightBower);
+
+            var result = from ai in accounts_downline
+                         join a in _dbCommissions_Context.Accounts on ai.AccountID equals a.AccountID
+                         where a.FirstName != "TempName"
+                         select (new Report_Downline
+                             {
+                                 AccountsInformationID = ai.AccountsInformationID,
+                                 PeriodID = ai.PeriodID,
+                                 AccountID = ai.AccountID,
+                                 AccountNumber = ai.AccountNumber,
+                                 AccountName = ai.AccountName,
+                                 SponsorID = ai.SponsorID,
+                                 SponsorName = ai.SponsorName,
+                                 Address = ai.Address,
+                                 PostalCode = ai.PostalCode,
+                                 City = ai.City,
+                                 STATE = ai.STATE,
+                                 accounts = a
+                             }
+                        );
+
+            return result.ToList();
         }
     }
 }

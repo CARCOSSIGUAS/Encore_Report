@@ -18,6 +18,7 @@ namespace Belcorp.Encore.Data.Contexts
 
         #region Collections
         public IMongoCollection<Report_Downline> AccountsInformationProvider => Database.GetCollection<Report_Downline>("Report_Downline");
+        public IMongoCollection<Accounts> AccountsProvider => Database.GetCollection<Accounts>("Accounts");
         #endregion
     }
 }

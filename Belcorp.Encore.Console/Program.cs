@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Belcorp.Encore.Console.InstanceProviders;
 using System.Linq;
 using System.IO;
+using Belcorp.Encore.Application.Services;
 
 namespace Belcorp.Encore.Console
 {
