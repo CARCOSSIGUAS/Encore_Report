@@ -17,7 +17,7 @@ namespace Belcorp.Encore.Entities.Entities
         public bool RealTime { get; set; }
         public string TermName { get; set; }
         public DateTime DateModified { get; set; }
-        public bool ReportVisibility { get; set; }
+        public bool? ReportVisibility { get; set; }
         public string ClientCode { get; set; }
         public string ClientName { get; set; }
     }
