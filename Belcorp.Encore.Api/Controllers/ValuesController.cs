@@ -16,15 +16,17 @@ namespace Belcorp.Encore.Api.Controllers
     {
         private readonly IAccountInformationService accountInformationService;
         private readonly IAccountsService accountsServices;
-		private readonly ISponsorTreeService sponsorTreeService;
+        private readonly ISponsorTreeService sponsorTreeService;
+        private readonly IProcessOnlineMlmService processOnlineMlmService;
 
-        public ValuesController(IAccountInformationService _accountInformationService, IAccountsService _accountsServices , ISponsorTreeService _sponsorTreeService)   
+        public ValuesController(IAccountInformationService _accountInformationService, IAccountsService _accountsServices, ISponsorTreeService _sponsorTreeService, IProcessOnlineMlmService _processOnlineMlmService)
         {
             accountInformationService = _accountInformationService;
             accountsServices = _accountsServices;
-			sponsorTreeService = _sponsorTreeService;
+            sponsorTreeService = _sponsorTreeService;
+            processOnlineMlmService = _processOnlineMlmService;
 
-		}
+        }
 
         // GET api/values
         [HttpGet]
@@ -38,39 +40,38 @@ namespace Belcorp.Encore.Api.Controllers
         public string Get(int id)
         {
 
-            accountsServices.GetSortPathByAccount(id);
+            processOnlineMlmService.ProcessMLM(id);
+            //BackgroundJob.Enqueue(() => accountsServices.Migrate_Accounts());
+            //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(201701));
+            //return "Wait";
 
-			return "Ok";
-			//BackgroundJob.Enqueue(() => accountsServices.Migrate_Accounts());
-			//BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(201701));
-			//return "Wait";
+            return "Ok";
 
+            #region Pruebas_Background
+            //Job background en Paralelo.
+            //for (int i = 1; i <= 12; i++)
+            //{
+            //    BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id + i));
+            //}
 
-			#region Pruebas_Background
-			//Job background en Paralelo.
-			//for (int i = 1; i <= 12; i++)
-			//{
-			//    BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id + i));
-			//}
+            //Job background en Continuacion uno despues de otro.
+            //string jobParent = "";
+            //for (int i = 1; i <= 12; i++)
+            //{
+            //    if (i == 1)
+            //    {
+            //      jobParent = BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id + i));
+            //    }
+            //    else
+            //      jobParent = BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByPeriod(id + i));
+            //}
 
-			//Job background en Continuacion uno despues de otro.
-			//string jobParent = "";
-			//for (int i = 1; i <= 12; i++)
-			//{
-			//    if (i == 1)
-			//    {
-			//      jobParent = BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id + i));
-			//    }
-			//    else
-			//      jobParent = BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByPeriod(id + i));
-			//}
+            //var jobParent = BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id));
+            //BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByPeriod(id));
 
-			//var jobParent = BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(id));
-			//BackgroundJob.ContinueWith(jobParent, () => accountInformationService.Migrate_AccountInformationByPeriod(id));
-
-			//RecurringJob.AddOrUpdate(() => accountInformationService.Migrate_AccountInformationByPeriod(id), Cron.Daily(00, 00), TimeZoneInfo.Local);
-			#endregion
-		}
+            //RecurringJob.AddOrUpdate(() => accountInformationService.Migrate_AccountInformationByPeriod(id), Cron.Daily(00, 00), TimeZoneInfo.Local);
+            #endregion
+        }
 
         // POST api/values
         [HttpPost]

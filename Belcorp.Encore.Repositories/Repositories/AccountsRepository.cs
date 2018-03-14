@@ -17,11 +17,6 @@ namespace Belcorp.Encore.Repositories
             _dbCommissions_Context = dbCommissions_Context;
         }
 
-        public List<Accounts> GetSortPathByAccount(int accountId)
-        {
-            var accounts = this.FromSql($"SELECT * FROM fnGetAccountsInGroup_Aux ({accountId})").ToList();
 
-			return accounts;
-        }
     }
 }

@@ -16,11 +16,11 @@ namespace Belcorp.Encore.Application
 {
     public class AccountInformationService : IAccountInformationService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork<EncoreCommissions_Context> _unitOfWork;
         private readonly EncoreMongo_Context encoreMongo_Context;
         private readonly IAccountInformationRepository _accountInformationRepository;
 
-        public AccountInformationService(IUnitOfWork unitOfWork, IAccountInformationRepository accountInformationRepository)
+        public AccountInformationService(IUnitOfWork<EncoreCommissions_Context> unitOfWork, IAccountInformationRepository accountInformationRepository)
         {
             _accountInformationRepository = accountInformationRepository;
             _unitOfWork = unitOfWork;

@@ -21,15 +21,15 @@
             services.AddTransient<IAccountInformationRepository, AccountInformationRepository>();
             services.AddTransient<IAccountInformationService, AccountInformationService>();
 
+            services.AddTransient<ISponsorTreeService, SponsorTreeService>();
+            services.AddTransient<ISponsorTreeRepository, SponsorTreeRepository>();
 
-			services.AddTransient<ISponsorTreeService, SponsorTreeService>();
-			services.AddTransient<ISponsorTreeRepository, SponsorTreeRepository>();
-
-
-			services.AddTransient<IAccountsRepository, AccountsRepository>();
+            services.AddTransient<IAccountsRepository, AccountsRepository>();
             services.AddTransient<IAccountsService, AccountsService>();
 
             services.AddTransient<ITitlesRepository, TitlesRepository>();
+
+            services.AddTransient<IProcessOnlineMlmService, ProcessOnlineMlmService>();
         }
     }
 }

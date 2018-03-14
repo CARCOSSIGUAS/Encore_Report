@@ -40,7 +40,9 @@ namespace Belcorp.Encore.Api
 
             services
             .AddDbContext<EncoreCommissions_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Commissions")))
-            .AddUnitOfWork<EncoreCommissions_Context>();
+            .AddDbContext<EncoreCore_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Core")))
+            .AddUnitOfWork<EncoreCommissions_Context, EncoreCore_Context>();
+
 
             services.RegisterServices();
 
