@@ -42,6 +42,9 @@ namespace Belcorp.Encore.Application.Services
 
         }
 
+		
+
+
         public CalculationTypes GetCalculationTypesByCode(string code)
         {
             IRepository<CalculationTypes> calculationTypesRepository = _unitOfWork_Comm.GetRepository<CalculationTypes>();

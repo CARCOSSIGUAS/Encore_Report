@@ -23,6 +23,7 @@ namespace Belcorp.Encore.Data.Contexts
         public DbSet<Titles> Titles { get; set; }
 		public DbSet<SponsorTree> SponsorTree { get; set; }
         public DbSet<CalculationTypes> CalculationTypes { get; set; }
+		public DbSet<AccountKPIs> AccountKPIs { get; set; }
 
-    }
+	}
 }
