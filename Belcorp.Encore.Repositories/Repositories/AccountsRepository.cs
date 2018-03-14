@@ -17,10 +17,11 @@ namespace Belcorp.Encore.Repositories
             _dbCommissions_Context = dbCommissions_Context;
         }
 
-        public byte[] GetSortPathByAccount(int accountId)
+        public List<Accounts> GetSortPathByAccount(int accountId)
         {
-            var accounts = this.FromSql($"SELECT * FROM fnGetAccountsInGroup_Aux (786627)").ToList();
-            return null;
+            var accounts = this.FromSql($"SELECT * FROM fnGetAccountsInGroup_Aux ({accountId})").ToList();
+
+			return accounts;
         }
     }
 }
