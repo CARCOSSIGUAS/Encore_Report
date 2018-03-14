@@ -8,7 +8,7 @@ namespace Belcorp.Encore.Repositories.Interfaces
 {
 	public interface ISponsorTreeRepository : IRepository<SponsorTree>
 	{
-		void DevuelveValor(int accountId);
-	}
+
+    }
 
 }

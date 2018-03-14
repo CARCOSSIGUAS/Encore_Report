@@ -38,7 +38,7 @@ namespace Belcorp.Encore.Api.Controllers
         public string Get(int id)
         {
 
-			sponsorTreeService.DevuelveValor(id);
+            accountsServices.GetSortPathByAccount(id);
 
 			return "Ok";
 			//BackgroundJob.Enqueue(() => accountsServices.Migrate_Accounts());

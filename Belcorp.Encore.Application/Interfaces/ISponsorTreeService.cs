@@ -6,7 +6,5 @@ namespace Belcorp.Encore.Application.Interfaces
 {
     public interface ISponsorTreeService
     {
-		void DevuelveValor(int accountId);
-
-	}
+    }
 }

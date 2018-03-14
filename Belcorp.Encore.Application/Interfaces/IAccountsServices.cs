@@ -7,5 +7,6 @@ namespace Belcorp.Encore.Application.Services
     public interface IAccountsService
     {
         void Migrate_Accounts();
+        byte[] GetSortPathByAccount(int accountId);
     }
 }

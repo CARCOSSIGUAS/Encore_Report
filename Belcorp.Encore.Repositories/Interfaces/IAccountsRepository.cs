@@ -8,5 +8,6 @@ namespace Belcorp.Encore.Repositories
 {
     public interface IAccountsRepository : IRepository<Accounts>
     {
+        byte[] GetSortPathByAccount(int accountId);
     }
 }

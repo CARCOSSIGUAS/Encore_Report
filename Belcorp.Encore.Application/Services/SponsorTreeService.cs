@@ -8,24 +8,17 @@ using System.Text;
 
 namespace Belcorp.Encore.Application.Services
 {
-	public class SponsorTreeService : ISponsorTreeService
-	{
-		private readonly IUnitOfWork _unitOfWork;
-		private readonly EncoreMongo_Context encoreMongo_Context;
-		private readonly ISponsorTreeRepository _sponsorTreeRepository;
+    public class SponsorTreeService : ISponsorTreeService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly EncoreMongo_Context encoreMongo_Context;
+        private readonly ISponsorTreeRepository _sponsorTreeRepository;
 
-		public SponsorTreeService(IUnitOfWork unitOfWork, ISponsorTreeRepository sponsorTreeRepository)
-		{
-			_unitOfWork = unitOfWork;
-			encoreMongo_Context = new EncoreMongo_Context();
-			_sponsorTreeRepository = sponsorTreeRepository;
-		}
-
-		public void DevuelveValor(int accountId)
-		{
-			//
-			_sponsorTreeRepository.DevuelveValor(accountId);
-
-		}
-	}
+        public SponsorTreeService(IUnitOfWork unitOfWork, ISponsorTreeRepository sponsorTreeRepository)
+        {
+            _unitOfWork = unitOfWork;
+            encoreMongo_Context = new EncoreMongo_Context();
+            _sponsorTreeRepository = sponsorTreeRepository;
+        }
+    }
 }

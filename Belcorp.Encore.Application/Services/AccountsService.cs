@@ -14,12 +14,14 @@ namespace Belcorp.Encore.Application.Services
     public class AccountsService : IAccountsService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAccountsRepository _accountsRepository; 
         private readonly EncoreMongo_Context encoreMongo_Context;
 
         public AccountsService(IUnitOfWork unitOfWork, IAccountsRepository accountsRepository)
         {
             _unitOfWork = unitOfWork;
             encoreMongo_Context = new EncoreMongo_Context();
+            _accountsRepository = accountsRepository;
         }
 
         public void Migrate_Accounts()
@@ -35,5 +37,10 @@ namespace Belcorp.Encore.Application.Services
                 encoreMongo_Context.AccountsProvider.InsertMany(data);
             }
         }
+
+        public byte[] GetSortPathByAccount(int accountId) {
+           return _accountsRepository.GetSortPathByAccount(accountId);
+        }
+
     }
 }
