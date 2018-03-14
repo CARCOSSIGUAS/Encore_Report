@@ -1,10 +1,12 @@
 ﻿namespace Belcorp.Encore.Api.InstanceProviders
 {
     using Belcorp.Encore.Application;
-    using Belcorp.Encore.Application.Services;
+	using Belcorp.Encore.Application.Interfaces;
+	using Belcorp.Encore.Application.Services;
     using Belcorp.Encore.Repositories;
-
-    using Microsoft.Extensions.DependencyInjection;
+	using Belcorp.Encore.Repositories.Interfaces;
+	using Belcorp.Encore.Repositories.Repositories;
+	using Microsoft.Extensions.DependencyInjection;
     public static class ContainerProvider
     {
         public static IServiceCollection RegisterServices(
@@ -19,8 +21,12 @@
             services.AddTransient<IAccountInformationRepository, AccountInformationRepository>();
             services.AddTransient<IAccountInformationService, AccountInformationService>();
 
-            
-            services.AddTransient<IAccountsRepository, AccountsRepository>();
+
+			services.AddTransient<ISponsorTreeService, SponsorTreeService>();
+			services.AddTransient<ISponsorTreeRepository, SponsorTreeRepository>();
+
+
+			services.AddTransient<IAccountsRepository, AccountsRepository>();
             services.AddTransient<IAccountsService, AccountsService>();
 
             services.AddTransient<ITitlesRepository, TitlesRepository>();
