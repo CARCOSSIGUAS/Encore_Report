@@ -7,5 +7,7 @@ namespace Belcorp.Encore.Application.Interfaces
     public interface IProcessOnlineMlmService
     {
         void ProcessMLM(int orderId);
+
+
     }
 }
