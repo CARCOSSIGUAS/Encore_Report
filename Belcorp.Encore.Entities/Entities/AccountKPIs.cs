@@ -10,8 +10,10 @@ namespace Belcorp.Encore.Entities.Entities
     {
 		[Key, Column(Order = 0)]
 		public int AccountID { get; set; }
+
 		[Key, Column(Order = 1)]
 		public int PeriodID { get; set; }
+
 		[Key, Column(Order = 2)]
 		public int CalculationTypeID { get; set; }
 

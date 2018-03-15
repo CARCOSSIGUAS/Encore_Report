@@ -30,6 +30,7 @@
             services.AddTransient<ITitlesRepository, TitlesRepository>();
 
             services.AddTransient<IProcessOnlineMlmService, ProcessOnlineMlmService>();
+            services.AddTransient<IProcessOnlineRepository, ProcessOnlineRepository>();
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Reflection.Emit;
 
 namespace Belcorp.Encore.Data.Contexts
 {
@@ -16,6 +17,8 @@ namespace Belcorp.Encore.Data.Contexts
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<AccountKPIs>()
+              .HasKey(c => new { c.AccountID, c.PeriodID, c.CalculationTypeID });
         }
 
         public DbSet<AccountsInformation> AccountsInformation { get; set; }
