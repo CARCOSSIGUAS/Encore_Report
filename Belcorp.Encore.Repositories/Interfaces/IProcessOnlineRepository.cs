@@ -8,6 +8,7 @@ namespace Belcorp.Encore.Repositories.Interfaces
 {
     public interface IProcessOnlineRepository
     {
-        List<AccountKPIs> GetListAccounts_InitializesKPIsInGroup(List<int> accounts, List<int> calculationsTypes, int periodId);
+        List<AccountKPIs> GetListAccounts_Initialize(List<int> accounts, List<CalculationTypes> calculationsTypes, int periodId);
+
     }
 }

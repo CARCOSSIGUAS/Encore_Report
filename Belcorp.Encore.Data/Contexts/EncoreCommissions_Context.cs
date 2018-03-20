@@ -18,7 +18,11 @@ namespace Belcorp.Encore.Data.Contexts
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<AccountKPIs>()
-              .HasKey(c => new { c.AccountID, c.PeriodID, c.CalculationTypeID });
+                .HasKey(c => new { c.AccountID, c.PeriodID, c.CalculationTypeID });
+
+            builder.Entity<OrderCalculationsOnline>()
+                .HasKey(c => new { c.AccountID, c.OrderID, c.OrderCalculationTypeID });
+
         }
 
         public DbSet<AccountsInformation> AccountsInformation { get; set; }
@@ -27,6 +31,10 @@ namespace Belcorp.Encore.Data.Contexts
 		public DbSet<SponsorTree> SponsorTree { get; set; }
         public DbSet<CalculationTypes> CalculationTypes { get; set; }
 		public DbSet<AccountKPIs> AccountKPIs { get; set; }
+        public DbSet<OrderCalculationsOnline> OrderCalculationsOnline { get; set; }
 
-	}
+        public DbSet<OrderCalculationTypes> OrderCalculationTypes { get; set; }
+
+
+    }
 }

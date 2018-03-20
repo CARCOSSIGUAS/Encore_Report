@@ -28,6 +28,7 @@
             services.AddTransient<IAccountsService, AccountsService>();
 
             services.AddTransient<ITitlesRepository, TitlesRepository>();
+            services.AddTransient<IAccountKPIsRepository, AccountKPIsRepository>();
 
             services.AddTransient<IProcessOnlineMlmService, ProcessOnlineMlmService>();
             services.AddTransient<IProcessOnlineRepository, ProcessOnlineRepository>();

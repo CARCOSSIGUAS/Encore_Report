@@ -39,10 +39,7 @@ namespace Belcorp.Encore.Api.Controllers
         [HttpGet("{id}")]
         public string Get(int id)
         {
-
-
-
-            processOnlineMlmService.ProcessMLM(46103, 46103, 201704);
+            processOnlineMlmService.ProcessMLM(201704, 46103, 46103);
             //BackgroundJob.Enqueue(() => accountsServices.Migrate_Accounts());
             //BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(201701));
             //return "Wait";
