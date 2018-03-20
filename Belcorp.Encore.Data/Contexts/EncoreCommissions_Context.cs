@@ -23,6 +23,8 @@ namespace Belcorp.Encore.Data.Contexts
             builder.Entity<OrderCalculationsOnline>()
                 .HasKey(c => new { c.AccountID, c.OrderID, c.OrderCalculationTypeID });
 
+            builder.Entity<RuleTypes>()
+             .HasOne(p => p.RequirementRules);
         }
 
         public DbSet<AccountsInformation> AccountsInformation { get; set; }
@@ -34,6 +36,9 @@ namespace Belcorp.Encore.Data.Contexts
         public DbSet<OrderCalculationsOnline> OrderCalculationsOnline { get; set; }
 
         public DbSet<OrderCalculationTypes> OrderCalculationTypes { get; set; }
+
+        public DbSet<RuleTypes> RuleTypes { get; set; }
+        public DbSet<RequirementRules> RequirementRules { get; set; }
 
 
     }

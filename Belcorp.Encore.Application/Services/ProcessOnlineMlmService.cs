@@ -90,6 +90,7 @@ namespace Belcorp.Encore.Application.Services
                                     });
         }
 
+
         #endregion
 
         #region Calculos Personales
@@ -145,6 +146,22 @@ namespace Belcorp.Encore.Application.Services
             _accountsInformationRepository.Update(result_account);
         }
 
+        public void KPIsInPersonal_ForReports(List<SponsorTree> accounts, decimal QV, decimal CV)
+        {
+            var lista = accounts.Select(x => x.AccountID);
+            var accountInformations = _accountsInformationRepository.GetPagedList(x => lista.Contains(x.AccountID), null, null, 0, accounts.Count, true);
+
+            foreach (var accountInformation in accountInformations.Items)
+            {
+                accountInformation.PQV += QV;
+                accountInformation.PCV += CV;
+                _accountsInformationRepository.Update(accountInformation);
+            }
+
+           
+
+        }
+
         #endregion
 
         #region Calculos Divison
@@ -177,6 +194,7 @@ namespace Belcorp.Encore.Application.Services
 
             int calculationType_DCV = calculationTypesIds.Where(c => c.Code == "DCV").FirstOrDefault().CalculationTypeID;
             int calculationType_DQVT = calculationTypesIds.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
+            int calculationType_DQV = calculationTypesIds.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
 
             KPIs_UpdateValue(accountsIds, calculationType_DCV, value: 0);
             KPIs_UpdateValue(accountsIds, calculationType_DQVT, value: 0);
@@ -185,12 +203,40 @@ namespace Belcorp.Encore.Application.Services
         public void KPIsInDivision_Porcentaje(List<SponsorTree> accounts)
         {
             List<string> codigos = new List<string> { "PQV", "DQVT" };
+            int currentAccountID, porcent, titleForDQV;
+            int? currentAccountPAT;
+            decimal dqvFinal;
+
             var calculationTypesIds = GetCalculationTypesByCode(codigos);
 
             int calculationType_PQV = calculationTypesIds.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
             int calculationType_DQVT = calculationTypesIds.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
+            int calculationType_DQV = calculationTypesIds.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
 
-            var account_PQV = _accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == accountId && a.PeriodID == periodId && a.CalculationTypeID == calculationType_PQV, null, null, true);
+
+            IRepository<RuleTypes> ruleTypesRepository = _unitOfWork_Comm.GetRepository<RuleTypes>();
+            
+            var ruleType = ruleTypesRepository.GetFirstOrDefault(oc => oc.Name == "VolumenDivision" && oc.Active == true, null, null, false);
+
+            if (ruleType != null)
+            {
+                titleForDQV = int.Parse(ruleType.RequirementRules.Value1);
+                porcent = int.Parse(ruleType.RequirementRules.Value2);
+
+                foreach (var account in accounts)
+                {
+                    currentAccountID = account.AccountID;
+                    currentAccountPAT = account.CurrentPAT;
+
+                    if (currentAccountPAT >= titleForDQV)
+                    {
+                        dqvFinal = _processOnlineRepository.GetDQV_Online(currentAccountID, calculationType_DQVT, calculationTypesIds, porcent);
+                        KPIs_UpdateValue(new List<int> { currentAccountID }, calculationType_DQV, value: dqvFinal);
+                    }
+                    else
+                        KPIs_UpdateValue(new List<int> { currentAccountID }, calculationType_DQV, value: 0);
+                }
+            }
 
         }
 

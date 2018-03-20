@@ -9,6 +9,7 @@ namespace Belcorp.Encore.Repositories.Interfaces
     public interface IProcessOnlineRepository
     {
         List<AccountKPIs> GetListAccounts_Initialize(List<int> accounts, List<CalculationTypes> calculationsTypes, int periodId);
+        decimal GetDQV_Online(int accountId, int periodId, List<CalculationTypes> calculationTypes, decimal porcent);
 
     }
 }

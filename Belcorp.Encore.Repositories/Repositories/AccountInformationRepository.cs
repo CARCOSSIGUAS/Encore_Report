@@ -51,5 +51,33 @@ namespace Belcorp.Encore.Repositories
 
             return result.ToList();
         }
+
+        //public IEnumerable<AccountsInformation> GetAccountsInformationKPIs(int periodId, int accountId)
+        //{
+        //    var accounts = _dbCommissions_Context.AccountsInformation.Where(ai => ai.PeriodID == periodId && ai.AccountID == accountId).FirstOrDefault();
+        //    var accounts_downline = _dbCommissions_Context.AccountsInformation.Where(ai => ai.PeriodID == periodId && ai.LeftBower >= accounts.LeftBower && ai.RightBower <= accounts.RightBower);
+
+        //    var result = from ai in _dbCommissions_Context.AccountsInformation
+        //                 join a in _dbCommissions_Context.AccountKPIs on ai.AccountID equals a.AccountID
+        //                 where a.FirstName != "TempName"
+        //                 select (new Report_Downline
+        //                 {
+        //                     AccountsInformationID = ai.AccountsInformationID,
+        //                     PeriodID = ai.PeriodID,
+        //                     AccountID = ai.AccountID,
+        //                     AccountNumber = ai.AccountNumber,
+        //                     AccountName = ai.AccountName,
+        //                     SponsorID = ai.SponsorID,
+        //                     SponsorName = ai.SponsorName,
+        //                     Address = ai.Address,
+        //                     PostalCode = ai.PostalCode,
+        //                     City = ai.City,
+        //                     STATE = ai.STATE,
+        //                     accounts = a
+        //                 }
+        //                );
+
+        //    return result.ToList();
+        //}
     }
 }
