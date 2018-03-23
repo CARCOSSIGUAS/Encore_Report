@@ -6,16 +6,19 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Belcorp.Encore.Entities.Constants;
 
 namespace Belcorp.Encore.Repositories.Repositories
 {
     public class ProcessOnlineRepository : IProcessOnlineRepository
     {
-        protected readonly EncoreCommissions_Context _dbCommissions_Context;
+        protected readonly EncoreCommissions_Context dbCommissions_Context;
+        protected readonly EncoreCore_Context dbCore_Context;
 
-        public ProcessOnlineRepository(EncoreCommissions_Context dbCommissions_Context)
+        public ProcessOnlineRepository(EncoreCommissions_Context _dbCommissions_Context, EncoreCore_Context _dbCore_Context)
         {
-            _dbCommissions_Context = dbCommissions_Context;
+            dbCommissions_Context = _dbCommissions_Context;
+            dbCore_Context = _dbCore_Context;
         }
 
         public List<AccountKPIs> GetListAccounts_Initialize(List<int> accounts, List<CalculationTypes> calculationsTypes, int periodId)
@@ -23,9 +26,9 @@ namespace Belcorp.Encore.Repositories.Repositories
             var calculaTypesIds = calculationsTypes.Select(c => c.CalculationTypeID);
 
             var result = (
-                            from a in _dbCommissions_Context.Accounts join
-                                 ct in _dbCommissions_Context.CalculationTypes on 1 equals 1 join
-                                 ak in _dbCommissions_Context.AccountKPIs on
+                            from a in dbCommissions_Context.Accounts join
+                                 ct in dbCommissions_Context.CalculationTypes on 1 equals 1 join
+                                 ak in dbCommissions_Context.AccountKPIs on
                                     new { A = a.AccountID, B = periodId, C = ct.CalculationTypeID } equals new { A = ak.AccountID, B = ak.PeriodID, C = ak.CalculationTypeID }
                                  into ps from p in ps.DefaultIfEmpty()
                             where accounts.Contains(a.AccountID) && calculaTypesIds.Contains(ct.CalculationTypeID) && p == null
@@ -35,7 +38,6 @@ namespace Belcorp.Encore.Repositories.Repositories
                                 PeriodID = periodId,
                                 Value = 0,
                                 DateModified = DateTime.Now
-
                             }
                           ).ToList();
 
@@ -44,18 +46,18 @@ namespace Belcorp.Encore.Repositories.Repositories
         }
 
 
-        public decimal GetDQV_Online(int accountId, int periodId, List<CalculationTypes> calculationTypes, decimal porcent)
+        public decimal GetQV_ByAccount_PorcentRuler(int accountId, int periodId, List<CalculationTypes> calculationTypes, decimal porcentForRuler)
         {
             int calculationType_PQV = calculationTypes.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
             int calculationType_DQVT = calculationTypes.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
 
-            var result = _dbCommissions_Context.AccountKPIs.Where(a => a.AccountID == a.AccountID && a.PeriodID == periodId && a.CalculationTypeID == calculationType_DQVT).ToList();
-            var DQV_Max = result.Select(a => (a.Value * porcent)/100).FirstOrDefault();
+            var result = dbCommissions_Context.AccountKPIs.Where(a => a.AccountID == a.AccountID && a.PeriodID == periodId && a.CalculationTypeID == calculationType_DQVT).ToList();
+            var DQV_Max = result.Select(a => (a.Value * porcentForRuler)/100).FirstOrDefault();
             var DQV_Final = result.Select(a => a.Value).FirstOrDefault();
 
             var DQV_Excess =
                             (
-                                 from a in _dbCommissions_Context.AccountKPIs
+                                 from a in dbCommissions_Context.AccountKPIs
                                  where
                                  a.AccountID == accountId && a.PeriodID == periodId && a.CalculationTypeID == calculationType_PQV
                                  select new
@@ -65,15 +67,13 @@ namespace Belcorp.Encore.Repositories.Repositories
                                  }
                             ).Concat
                             (
-                                 from current_account in _dbCommissions_Context.SponsorTree
-                                 join sponsored_accounts in _dbCommissions_Context.SponsorTree on
+                                 from current_account in dbCommissions_Context.SponsorTree
+                                 join sponsored_accounts in dbCommissions_Context.SponsorTree on
                                          current_account.AccountID equals sponsored_accounts.SponsorID
-                                 join kpis in _dbCommissions_Context.AccountKPIs on
-                                         sponsored_accounts.AccountID equals kpis.AccountID
+                                 join kpis in dbCommissions_Context.AccountKPIs on
+                                         new { A = sponsored_accounts.AccountID, B = periodId, C = calculationType_DQVT } equals new { A = kpis.AccountID, B = kpis.PeriodID, C = kpis.CalculationTypeID }
                                  where
                                  current_account.AccountID == accountId &&
-                                 kpis.PeriodID == periodId &&
-                                 kpis.CalculationTypeID == calculationType_DQVT &&
                                  kpis.Value > 0
                                  select new
                                  {
@@ -86,5 +86,30 @@ namespace Belcorp.Encore.Repositories.Repositories
             return DQV_Final - DQV_Excess;
         }
 
+        public decimal GetQV_ByOrder(int orderId)
+        {
+            var result = from oip in dbCore_Context.OrderItemPrices join
+                              oi  in dbCore_Context.OrderItems on oip.OrderItemID equals oi.OrderItemID join
+                              oc  in dbCore_Context.OrderCustomers on oi.OrderCustomerID equals oc.OrderCustomerID join
+                              o   in dbCore_Context.Orders on oc.OrderID equals o.OrderID
+                         where o.OrderID == orderId && oip.ProductPriceTypeID == (int)Constants.ProductPriceType.QV
+                         group new { o, oi, oip } by new { o.OrderID } into data
+                         select new
+                         {
+                             QV = data.Sum(d => d.oip.UnitPrice * d.oi.Quantity)
+                         };
+
+            return result == null ? 0 : (decimal)result.FirstOrDefault().QV;
+        }
+
+        public decimal GetRV_ByOrder(int orderId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public decimal GetCV_ByOrder(int orderId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

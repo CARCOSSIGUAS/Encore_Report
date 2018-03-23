@@ -10,15 +10,15 @@ namespace Belcorp.Encore.Application.Services
 {
     public class SponsorTreeService : ISponsorTreeService
     {
-        private readonly IUnitOfWork<EncoreCommissions_Context> _unitOfWork;
+        private readonly IUnitOfWork<EncoreCommissions_Context> unitOfWork;
         private readonly EncoreMongo_Context encoreMongo_Context;
-        private readonly ISponsorTreeRepository _sponsorTreeRepository;
+        private readonly ISponsorTreeRepository sponsorTreeRepository;
 
-        public SponsorTreeService(IUnitOfWork<EncoreCommissions_Context> unitOfWork, ISponsorTreeRepository sponsorTreeRepository)
+        public SponsorTreeService(IUnitOfWork<EncoreCommissions_Context> _unitOfWork, ISponsorTreeRepository _sponsorTreeRepository)
         {
-            _unitOfWork = unitOfWork;
+            unitOfWork = _unitOfWork;
             encoreMongo_Context = new EncoreMongo_Context();
-            _sponsorTreeRepository = sponsorTreeRepository;
+            sponsorTreeRepository = _sponsorTreeRepository;
         }
     }
 }

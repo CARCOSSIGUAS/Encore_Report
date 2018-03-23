@@ -13,11 +13,11 @@ namespace Belcorp.Encore.Repositories.Repositories
 {
 	public class SponsorTreeRepository : Repository<SponsorTree>, ISponsorTreeRepository
     {
-        protected readonly EncoreCommissions_Context _dbCommissions_Context;
+        protected readonly EncoreCommissions_Context dbCommissions_Context;
 
-        public SponsorTreeRepository(EncoreCommissions_Context dbCommissions_Context) : base(dbCommissions_Context)
+        public SponsorTreeRepository(EncoreCommissions_Context _dbCommissions_Context) : base(_dbCommissions_Context)
         {
-            _dbCommissions_Context = dbCommissions_Context;
+            dbCommissions_Context = _dbCommissions_Context;
         }
     }
 }

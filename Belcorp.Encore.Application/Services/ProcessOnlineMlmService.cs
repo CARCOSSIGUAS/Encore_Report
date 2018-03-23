@@ -6,297 +6,333 @@ using Belcorp.Encore.Repositories;
 using Belcorp.Encore.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Belcorp.Encore.Entities.Constants;
 
 namespace Belcorp.Encore.Application.Services
 {
     public class ProcessOnlineMlmService : IProcessOnlineMlmService
     {
-        private readonly IUnitOfWork<EncoreCore_Context> _unitOfWork_Core;
-        private readonly IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm;
+        private readonly IUnitOfWork<EncoreCore_Context> unitOfWork_Core;
+        private readonly IUnitOfWork<EncoreCommissions_Context> unitOfWork_Comm;
+        private readonly EncoreMongo_Context encoreMongo_Context;
 
-        private readonly EncoreMongo_Context _encoreMongo_Context;
 
-        private readonly IProcessOnlineRepository _processOnlineRepository;
-        private readonly IAccountKPIsRepository _accountKPIsRepository;
-        private readonly IAccountInformationRepository _accountsInformationRepository;
+        private readonly IProcessOnlineRepository processOnlineRepository;
+        private readonly IAccountKPIsRepository accountKPIsRepository;
+        private readonly IAccountInformationRepository accountsInformationRepository;
 
-        public int accountId { get; set; }
+        public Orders Order { get; set; }
         public int periodId { get; set; }
-        public int orderId { get; set; }
 
-        public ProcessOnlineMlmService(IUnitOfWork<EncoreCore_Context> unitOfWork_Core, IUnitOfWork<EncoreCommissions_Context> unitOfWork_Comm, IProcessOnlineRepository processOnlineRepository, IAccountKPIsRepository accountKPIsRepository, IAccountInformationRepository accountsInformationRepository)
+        public ProcessOnlineMlmService(IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, IProcessOnlineRepository _processOnlineRepository, IAccountKPIsRepository _accountKPIsRepository, IAccountInformationRepository _accountsInformationRepository)
         {
-            _unitOfWork_Core = unitOfWork_Core;
-            _unitOfWork_Comm = unitOfWork_Comm;
-            _processOnlineRepository = processOnlineRepository;
-            _accountKPIsRepository = accountKPIsRepository;
-            _accountsInformationRepository = accountsInformationRepository;
+            unitOfWork_Core = _unitOfWork_Core;
+            unitOfWork_Comm = _unitOfWork_Comm;
+            encoreMongo_Context = new EncoreMongo_Context();
+
+            processOnlineRepository = _processOnlineRepository;
+            accountKPIsRepository = _accountKPIsRepository;
+            accountsInformationRepository = _accountsInformationRepository;
         }
 
-        public void ProcessMLM(int _periodId, int _accountId, int _orderId)
+        public void ProcessMLM(int _orderId)
         {
-            IRepository<Orders> ordersRepository = _unitOfWork_Core.GetRepository<Orders>();
-            var order = ordersRepository.GetFirstOrDefault(o => o.OrderID == orderId, null, null, true);
+            IRepository<Orders> ordersRepository = unitOfWork_Core.GetRepository<Orders>();
+            Order = ordersRepository.GetFirstOrDefault(o => o.OrderID == _orderId, null, null, true);
 
-            periodId = _periodId;
-            accountId = _accountId;
-            orderId = _orderId;
+            if (Order == null) {
+                return;
+            }
 
-            KPIsInGroup_Process();
+            periodId = (int)Order.CompletedPeriodID;
+
+            decimal QV, CV, RV;
+            QV = processOnlineRepository.GetQV_ByOrder(Order.OrderID);
+            CV = Order.CommissionableTotal == null ? 0 : (decimal)Order.CommissionableTotal;
+            RV = Order.Subtotal == null ? 0 : (decimal)Order.Subtotal;
+
+            IRepository<OrderCalculationsOnline> orderCalculationOnlineRepository = unitOfWork_Comm.GetRepository<OrderCalculationsOnline>();
+            int existsorderCalculationOnline =  orderCalculationOnlineRepository.Count(o => o.OrderID == Order.OrderID);
+
+            if (existsorderCalculationOnline == 0)
+            {
+                IndicadoresInPersonal_Process(QV, CV, RV);
+                IndicadoresInDivision_Process(QV, CV, RV);
+                OrdercalculationsOnline_Process(QV, CV, RV);
+                Migrate_AccountInformationByAccountId();
+            }
         }
 
         #region Metodos
+
         public List<CalculationTypes> GetCalculationTypesByCode(List<string> codigos)
         {
-            IRepository<CalculationTypes> calculationTypesRepository = _unitOfWork_Comm.GetRepository<CalculationTypes>();
+            IRepository<CalculationTypes> calculationTypesRepository = unitOfWork_Comm.GetRepository<CalculationTypes>();
             var result = calculationTypesRepository.GetPagedList(c => codigos.Contains(c.Code), null, null, 0, codigos.Count, true);
             return result == null ? null : result.Items.ToList();
         }
 
         private List<OrderCalculationTypes> GetOrderCalculationTypesByCode(List<string> codigos)
         { 
-            IRepository<OrderCalculationTypes> orderCalculationTypesRepository = _unitOfWork_Comm.GetRepository<OrderCalculationTypes>();
+            IRepository<OrderCalculationTypes> orderCalculationTypesRepository = unitOfWork_Comm.GetRepository<OrderCalculationTypes>();
             var result = orderCalculationTypesRepository.GetPagedList(c => codigos.Contains(c.Code), null, null, 0, codigos.Count, true);
             return result == null ? null : result.Items.ToList();
         }
 
-        public List<SponsorTree> GetAccounts_Group(int accountId)
-        {
-            IRepository<SponsorTree> sponsorTreeRepository = _unitOfWork_Comm.GetRepository<SponsorTree>();
-            var result = sponsorTreeRepository.FromSql($"SELECT * FROM [fnGetAccounts_InGroup_Aux] ({accountId})").ToList();
-            return result == null ? null : result.ToList();
-        }
-
         public List<SponsorTree> GetAccounts_UpLine(int accountId)
         {
-            IRepository<SponsorTree> sponsorTreeRepository = _unitOfWork_Comm.GetRepository<SponsorTree>();
+            IRepository<SponsorTree> sponsorTreeRepository = unitOfWork_Comm.GetRepository<SponsorTree>();
             var result = sponsorTreeRepository.FromSql($"SELECT * FROM [fnGetAccount_Upline_Aux] ({accountId})").ToList();
             return result == null ? null : result.ToList();
         }
 
-        private void KPIs_UpdateValue(List<int> accountsIds, int calculationType, decimal value)
+        private void Indicadores_UpdateValue_AccountKPIs(List<int> accountsIds, int calculationType, decimal value)
         {
-            _accountKPIsRepository.GetPagedList(a => accountsIds.Contains(a.AccountID) && a.PeriodID == periodId && a.CalculationTypeID == calculationType, null, null, 0, accountsIds.Count, true)
+            accountKPIsRepository.GetPagedList(a => accountsIds.Contains(a.AccountID) && a.PeriodID == periodId && a.CalculationTypeID == calculationType, null, null, 0, accountsIds.Count, false)
                                     .Items.
                                     ToList().ForEach(a =>
                                     {
                                         a.Value += value;
                                         a.DateModified = DateTime.Now;
-                                        _accountKPIsRepository.Update(a);
+                                        accountKPIsRepository.Update(a);
                                     });
+
+            unitOfWork_Comm.SaveChanges();
         }
 
 
         #endregion
 
         #region Calculos Personales
-        public void KPIsInPersonal_Process(decimal QV, decimal CV, decimal RV)
+        public void IndicadoresInPersonal_Process(decimal QV, decimal CV, decimal RV)
         {
-            List<string> codigos = new List<string> { "PQV", "PRV", "PCV" };
+            List<string> codigos = new List<string> { "PQV", "PCV", "PRV" };
             var calculationTypesIds = GetCalculationTypesByCode(codigos);
 
             int calculationType_PQV = calculationTypesIds.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
-            int calculationType_PRV = calculationTypesIds.Where(c => c.Code == "PRV").FirstOrDefault().CalculationTypeID;
             int calculationType_PCV = calculationTypesIds.Where(c => c.Code == "PCV").FirstOrDefault().CalculationTypeID;
+            int calculationType_PRV = calculationTypesIds.Where(c => c.Code == "PRV").FirstOrDefault().CalculationTypeID;
 
-            using (_unitOfWork_Comm)
-            {
-                KPIsInPersonal_UpdateValue(calculationType_PQV, QV);
-                KPIsInPersonal_UpdateValue(calculationType_PRV, RV);
-                KPIsInPersonal_UpdateValue(calculationType_PCV, CV);
+            IndicadoresInPersonal_UpdateValue(calculationType_PQV, QV);
+            IndicadoresInPersonal_UpdateValue(calculationType_PCV, CV);
+            IndicadoresInPersonal_UpdateValue(calculationType_PRV, RV);
+            
+            IndicadoresInPersonal_UpdateValue_AccountsInformation(QV, CV, RV);
 
-                KPIsInPersonal_ForReports(QV, CV);
-
-                _unitOfWork_Comm.SaveChanges();
-            }
         }
 
-        public void KPIsInPersonal_UpdateValue(int calculationType, decimal value)
+        public void IndicadoresInPersonal_UpdateValue(int calculationType, decimal value)
         {
-            int total = _accountKPIsRepository.Count(a => a.AccountID == accountId && a.PeriodID == periodId && a.CalculationTypeID == calculationType);
+            var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == periodId && a.CalculationTypeID == calculationType, null, null, false);
 
-            if (total > 0)
+            if (result == null)
             {
-                List<int> accountsIds = new List<int> { accountId };
-                KPIs_UpdateValue(accountsIds, calculationType, value);
+                result.Value += value;
+                result.DateModified = DateTime.Now;
+                accountKPIsRepository.Update(result);
             }
             else
             {
-                _accountKPIsRepository.Insert(
+                accountKPIsRepository.Insert(
                         new AccountKPIs
                         {
-                            AccountID = accountId,
+                            AccountID = Order.AccountID,
                             PeriodID = periodId,
                             CalculationTypeID = calculationType,
                             Value = value,
                             DateModified = DateTime.Now
                         });
             }
+
+            unitOfWork_Comm.SaveChanges();
         }
 
-        public void KPIsInPersonal_ForReports(decimal QV, decimal CV)
+        public void IndicadoresInPersonal_UpdateValue_AccountsInformation(decimal QV, decimal CV, decimal RV)
         {
-            var result_account = _accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == accountId && a.PeriodID == periodId, null, null, true);
-            result_account.PQV += QV;
-            result_account.PCV += CV;
-            _accountsInformationRepository.Update(result_account);
-        }
+            accountsInformationRepository.GetPagedList(a => a.AccountID == Order.AccountID && a.PeriodID == periodId, null, null, 0, 1, false).Items.
+                                                    ToList().ForEach(a =>
+                                                    {
+                                                        a.PQV += QV;
+                                                        a.PCV += CV;
+                                                        accountsInformationRepository.Update(a);
+                                                    });
 
-        public void KPIsInPersonal_ForReports(List<SponsorTree> accounts, decimal QV, decimal CV)
-        {
-            var lista = accounts.Select(x => x.AccountID);
-            var accountInformations = _accountsInformationRepository.GetPagedList(x => lista.Contains(x.AccountID), null, null, 0, accounts.Count, true);
-
-            foreach (var accountInformation in accountInformations.Items)
-            {
-                accountInformation.PQV += QV;
-                accountInformation.PCV += CV;
-                _accountsInformationRepository.Update(accountInformation);
-            }
-
-           
-
+            unitOfWork_Comm.SaveChanges();
         }
 
         #endregion
 
         #region Calculos Divison
-        public void KPIsInDivision_Process()
+        public void IndicadoresInDivision_Process(decimal QV, decimal CV, decimal RV)
+        {
+            var accounts = GetAccounts_UpLine(Order.AccountID).ToList();
+
+            var accountsIds = accounts.Select(a => a.AccountID).ToList();
+
+            IndicadoresInDivision_Initialize(accountsIds);
+            if (Order.OrderTypeID != (short)Constants.OrderType.ReturnOrder)
+            {
+                IndicadoresInDivision_UpdateValue(accounts, QV, CV, RV);
+                IndicadoresInDivision_UpdateValue_AccountsInformation(accounts, QV, CV, RV);
+            }
+        }
+
+        public void IndicadoresInDivision_Initialize(List<int> accountsIds)
         {
             List<string> codigos = new List<string> { "PQV", "PRV", "PCV", "GQV", "GCV", "DQV", "DCV", "CQL", "DQVT" };
             var calculationTypesIds = GetCalculationTypesByCode(codigos);
 
-            var accounts = GetAccounts_UpLine(accountId).ToList();
+            var result = processOnlineRepository.GetListAccounts_Initialize(accountsIds, calculationTypesIds, periodId);
+            accountKPIsRepository.Insert(result);
 
-            using (_unitOfWork_Comm)
-            {
-                var accountsIds = accounts.Select(a => a.AccountID).ToList();
-                KPIsInDivision_Initialize(accountsIds, calculationTypesIds);
-                KPIsInDivision_Online(accountsIds, QV: 0, CV: 0);
-                _unitOfWork_Comm.SaveChanges();
-            }
+            unitOfWork_Comm.SaveChanges();
         }
 
-        public void KPIsInDivision_Initialize(List<int> accountsIds, List<CalculationTypes> calculationTypesIds)
-        {
-            var result = _processOnlineRepository.GetListAccounts_Initialize(accountsIds, calculationTypesIds, periodId);
-            _accountKPIsRepository.Insert(result);
-        }
-
-        private void KPIsInDivision_Online(List<int> accountsIds, decimal QV, decimal CV)
+        private void IndicadoresInDivision_UpdateValue(List<SponsorTree> accounts, decimal QV, decimal CV, decimal RV)
         {
             List<string> codigos = new List<string> { "DCV", "DQVT" };
+            var accountsIds = accounts.Select(a => a.AccountID).ToList();
+
             var calculationTypesIds = GetCalculationTypesByCode(codigos);
 
-            int calculationType_DCV = calculationTypesIds.Where(c => c.Code == "DCV").FirstOrDefault().CalculationTypeID;
+            int calculationType_DCV =  calculationTypesIds.Where(c => c.Code == "DCV").FirstOrDefault().CalculationTypeID;
             int calculationType_DQVT = calculationTypesIds.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
-            int calculationType_DQV = calculationTypesIds.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
 
-            KPIs_UpdateValue(accountsIds, calculationType_DCV, value: 0);
-            KPIs_UpdateValue(accountsIds, calculationType_DQVT, value: 0);
+            Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DQVT, value: QV);
+            Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DCV,  value: CV);
+
+            IndicadoresInDivision_Valida_Porcentaje(accounts, QV);
         }
         
-        public void KPIsInDivision_Porcentaje(List<SponsorTree> accounts)
+        public void IndicadoresInDivision_Valida_Porcentaje(List<SponsorTree> accounts, decimal QV)
         {
-            List<string> codigos = new List<string> { "PQV", "DQVT" };
-            int currentAccountID, porcent, titleForDQV;
-            int? currentAccountPAT;
-            decimal dqvFinal;
+            List<string> codigos = new List<string> { "PQV", "DQV", "DQVT" };
+            int currentAccountID, porcentForRuler, titleForRuler;
+            int? currentAccountTitle;
+            decimal DQV_Result;
 
             var calculationTypesIds = GetCalculationTypesByCode(codigos);
+            int calculationType_DQV =   calculationTypesIds.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
 
-            int calculationType_PQV = calculationTypesIds.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
-            int calculationType_DQVT = calculationTypesIds.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
-            int calculationType_DQV = calculationTypesIds.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
-
-
-            IRepository<RuleTypes> ruleTypesRepository = _unitOfWork_Comm.GetRepository<RuleTypes>();
+            IRepository<RuleTypes> ruleTypesRepository = unitOfWork_Comm.GetRepository<RuleTypes>();
             
-            var ruleType = ruleTypesRepository.GetFirstOrDefault(oc => oc.Name == "VolumenDivision" && oc.Active == true, null, null, false);
+            var ruleType = ruleTypesRepository.GetFirstOrDefault(rt => rt.Name == "VolumenDivision" && rt.Active == true, null, rt => rt.Include(r => r.RequirementRules), true);
 
             if (ruleType != null)
             {
-                titleForDQV = int.Parse(ruleType.RequirementRules.Value1);
-                porcent = int.Parse(ruleType.RequirementRules.Value2);
+                porcentForRuler = int.Parse(ruleType.RequirementRules.Value1);
+                titleForRuler = int.Parse(ruleType.RequirementRules.Value2);
 
                 foreach (var account in accounts)
                 {
-                    currentAccountID = account.AccountID;
-                    currentAccountPAT = account.CurrentPAT;
+                    currentAccountID  = account.AccountID;
+                    currentAccountTitle = account.CurrentPAT;
 
-                    if (currentAccountPAT >= titleForDQV)
+                    if (currentAccountTitle >= titleForRuler)
                     {
-                        dqvFinal = _processOnlineRepository.GetDQV_Online(currentAccountID, calculationType_DQVT, calculationTypesIds, porcent);
-                        KPIs_UpdateValue(new List<int> { currentAccountID }, calculationType_DQV, value: dqvFinal);
+                        DQV_Result = 0;
+                        DQV_Result = processOnlineRepository.GetQV_ByAccount_PorcentRuler(currentAccountID, periodId, calculationTypesIds, porcentForRuler);
+
+                        Indicadores_UpdateValue_AccountKPIs(new List<int> { currentAccountID }, calculationType_DQV, value: DQV_Result);
                     }
                     else
-                        KPIs_UpdateValue(new List<int> { currentAccountID }, calculationType_DQV, value: 0);
+                        Indicadores_UpdateValue_AccountKPIs(new List<int> { currentAccountID }, calculationType_DQV, value: QV);
                 }
             }
 
         }
 
-        #endregion
+        public void IndicadoresInDivision_UpdateValue_AccountsInformation(List<SponsorTree> accounts, decimal QV, decimal CV, decimal RV)
+        {
+            var calculationTypesIds = GetCalculationTypesByCode(new List<string> { "DQV" });
+            int calculationType_DQV = calculationTypesIds.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
 
-        #region Calculos Grupo
+            var result_account = accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == periodId, null, null, false);
+            result_account.DCV += CV;
+            result_account.DQVT += QV;
+            accountsInformationRepository.Update(result_account);
 
-        public void KPIsInGroup_Process() {
+            unitOfWork_Comm.SaveChanges();
 
-            List<string> codigos_ct = new List<string> { "PQV", "PRV", "PCV", "GQV", "GCV", "DQV", "DCV", "CQL" };
-            var calculationTypesIds = GetCalculationTypesByCode(codigos_ct);
+            var lista = accounts.Select(a => a.AccountID);
+            var accountInformations = accountsInformationRepository.GetPagedList(a => lista.Contains(a.AccountID), null, null, 0, accounts.Count, false);
 
-            int calculationType_PQV = calculationTypesIds.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
-            int calculationType_PCV = calculationTypesIds.Where(c => c.Code == "PCV").FirstOrDefault().CalculationTypeID;
-
-            List<string> codigos_oct = new List<string> { "QV", "CV" };
-            var orderCalculationTypesIds = GetOrderCalculationTypesByCode(codigos_oct);
-
-            int orderCalculationType_QV = orderCalculationTypesIds.Where(c => c.Code == "QV").FirstOrDefault().OrderCalculationTypeID;
-            int orderCalculationType_CV = orderCalculationTypesIds.Where(c => c.Code == "CV").FirstOrDefault().OrderCalculationTypeID;
-
-            List<int> accountsIds = GetAccounts_Group(accountId).Select(a => a.AccountID).ToList();
-
-            using (_unitOfWork_Comm)
+            foreach (var accountInformation in accountInformations.Items)
             {
-                KPIsInGroup_Initialize(accountsIds, calculationTypesIds);
-
-                KPIsInGroup_Online(accountsIds, calculationType_PQV, orderCalculationType_QV);
-                KPIsInGroup_Online(accountsIds, calculationType_PCV, orderCalculationType_CV);
-
-                KPIsInGroup_ForReports(accountsIds, QV: 0, CV: 0);
-
-                _unitOfWork_Comm.SaveChanges();
+                var result = accountKPIsRepository.GetFirstOrDefault(akp => akp.AccountID == accountInformation.AccountID && akp.PeriodID == periodId && akp.CalculationTypeID == calculationType_DQV, null, null, true);
+                accountInformation.DQV = result.Value;
+                accountsInformationRepository.Update(accountInformation);
             }
+
+            unitOfWork_Comm.SaveChanges();
         }
 
-        public void KPIsInGroup_Initialize(List<int> accountsIds, List<CalculationTypes> calculationTypesIds)
+
+        #endregion
+
+        #region Calculos OrdercalculationsOnline
+        public void OrdercalculationsOnline_Process(decimal QV, decimal CV, decimal RV)
         {
-            var result_InitializesKPIsInGroup = _processOnlineRepository.GetListAccounts_Initialize(accountsIds, calculationTypesIds, periodId);
-            _accountKPIsRepository.Insert(result_InitializesKPIsInGroup);
+            List<string> codigos = new List<string> { "QV", "CV", "RP" };
+            var calculationTypesIds = GetOrderCalculationTypesByCode(codigos);
+
+            int orderCalculationTypeID_QV = calculationTypesIds.Where(c => c.Code == "QV").FirstOrDefault().OrderCalculationTypeID;
+            int orderCalculationTypeID_CV = calculationTypesIds.Where(c => c.Code == "CV").FirstOrDefault().OrderCalculationTypeID;
+            int orderCalculationTypeID_RP = calculationTypesIds.Where(c => c.Code == "RP").FirstOrDefault().OrderCalculationTypeID;
+
+            OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_QV, QV);
+            OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_CV, CV);
+            OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_RP, RV);
         }
 
-        public void KPIsInGroup_Online(List<int> accountsIds, int calculationType, int orderCalculationTypeID)
+        public void OrdercalculationsOnline_UpdateValue(int calculationType, decimal value)
         {
-            IRepository<OrderCalculationsOnline> orderCalculationsOnlineRepository = _unitOfWork_Comm.GetRepository<OrderCalculationsOnline>();
-            var value = orderCalculationsOnlineRepository.GetFirstOrDefault(oc => oc.AccountID == accountId && oc.OrderID == orderId && oc.OrderCalculationTypeID == orderCalculationTypeID, null, null, false).Value;
-            KPIs_UpdateValue(accountsIds, calculationType, value);
-        }
+            IRepository<OrderCalculationsOnline> orderCalculationOnlineRepository = unitOfWork_Comm.GetRepository<OrderCalculationsOnline>();
+            IRepository<Accounts> accountsRepository = unitOfWork_Comm.GetRepository<Accounts>();
 
-        public void KPIsInGroup_ForReports(List<int> accountsIds, decimal QV, decimal CV)
-        {
-            _accountsInformationRepository.GetPagedList(a => accountsIds.Contains(a.AccountID) && a.PeriodID == periodId, null, null, 0, accountsIds.Count, true)
-                                    .Items.
-                                    ToList().ForEach(a =>
-                                    {
-                                        a.GQV += QV;
-                                        a.GCV += CV;
-                                        _accountsInformationRepository.Update(a);
-                                    });
+            var result = orderCalculationOnlineRepository.GetFirstOrDefault(o => o.OrderID == Order.OrderID && o.OrderCalculationTypeID == calculationType, null, null, false);
+            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID, null, null, true);
+
+            if (result != null)
+            {
+                result.Value = value;
+                result.DateModifiedUTC = DateTime.Now;
+                orderCalculationOnlineRepository.Update(result);
+            }
+            else
+            {
+                orderCalculationOnlineRepository.Insert(
+                        new OrderCalculationsOnline
+                        {
+                            AccountID = Order.AccountID,
+                            OrderID = Order.OrderID,
+                            OrderCalculationTypeID = calculationType,
+                            OrderStatusID = Order.OrderStatusID,
+                            Value = value,
+                            CalculationDateUTC = Order.CommissionDateUTC,
+                            ParentOrderID = Order.ParentOrderID,
+                            AccountTypeID = account.AccountTypeID,
+                            OrderTypeID = Order.OrderTypeID,
+                            DateModifiedUTC = DateTime.Now
+                        });
+            }
+
+            unitOfWork_Comm.SaveChanges();
         }
         #endregion
+
+        public void Migrate_AccountInformationByAccountId()
+        {
+            var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
+            var result = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(periodId, accountsId).ToList();
+
+            encoreMongo_Context.AccountsInformationProvider.DeleteMany(ai => ai.PeriodID == periodId && accountsId.Contains(ai.AccountID));
+            encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
+        }
     }
 }

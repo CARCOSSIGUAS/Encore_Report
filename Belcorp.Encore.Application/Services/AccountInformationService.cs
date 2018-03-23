@@ -16,39 +16,30 @@ namespace Belcorp.Encore.Application
 {
     public class AccountInformationService : IAccountInformationService
     {
-        private readonly IUnitOfWork<EncoreCommissions_Context> _unitOfWork;
+        private readonly IUnitOfWork<EncoreCommissions_Context> unitOfWork_Comm;
         private readonly EncoreMongo_Context encoreMongo_Context;
-        private readonly IAccountInformationRepository _accountInformationRepository;
+        private readonly IAccountInformationRepository accountInformationRepository;
 
-        public AccountInformationService(IUnitOfWork<EncoreCommissions_Context> unitOfWork, IAccountInformationRepository accountInformationRepository)
+        public AccountInformationService(IUnitOfWork<EncoreCommissions_Context> _unitOfWork, IAccountInformationRepository _accountInformationRepository)
         {
-            _accountInformationRepository = accountInformationRepository;
-            _unitOfWork = unitOfWork;
+            unitOfWork_Comm = _unitOfWork;
+            accountInformationRepository = _accountInformationRepository;
             encoreMongo_Context = new EncoreMongo_Context();
         }
 
-        public IEnumerable<AccountsInformation> GetListAccountInformationByPeriodId(int periodId)
-        {
-            return _accountInformationRepository.GetListAccountInformationByPeriodId(periodId);
-        }
-
-        public IEnumerable<Report_Downline> GetListAccountInformationByPeriodIdAndAccountId(int periodId, int accountId)
-        {
-            return _accountInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(periodId, accountId);
-        }
-
+        [Obsolete]
         public void Migrate_AccountInformationWithAccountsByPeriod(int periodId)
         {
-            var total = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 20000, true);
+            var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 20000, true);
             int ii = total.TotalPages;
 
             encoreMongo_Context.AccountsInformationProvider.DeleteMany( p => p.PeriodID == periodId);
-            IRepository<Accounts> _accountsRepository = _unitOfWork.GetRepository<Accounts>();
+            IRepository<Accounts> _accountsRepository = unitOfWork_Comm.GetRepository<Accounts>();
 
             var accounts = _accountsRepository.GetAll().ToList();
             for (int i = 0; i < ii; i++)
             {
-                var accountsInformation = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 20000, true).Items;
+                var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 20000, true).Items;
                 var data =
                 accountsInformation.Join(accounts, r => r.AccountID, a => a.AccountID, (r, a) => new { r, a }).Select(result => new Report_Downline
                 {
@@ -80,14 +71,14 @@ namespace Belcorp.Encore.Application
 
         public void Migrate_AccountInformationByPeriod(int periodId)
         {
-            var total = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 20000, true);
+            var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 20000, true);
             int ii = total.TotalPages;
 
             encoreMongo_Context.AccountsInformationProvider.DeleteMany(p => p.PeriodID == periodId);
 
             for (int i = 0; i < ii; i++)
             {
-                var accountsInformation = _accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 20000, true).Items;
+                var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 20000, true).Items;
                 var data =
                 accountsInformation.Select(result => new Report_Downline
                 {
@@ -112,27 +103,6 @@ namespace Belcorp.Encore.Application
                 });
 
                 encoreMongo_Context.AccountsInformationProvider.InsertMany(data);
-            }
-        }
-
-        public void Migrate_AccountInformationByAccountId(int periodId, int accountId)
-        {
-            var account = _accountInformationRepository.GetFirstOrDefault(ai => ai.PeriodID == periodId && ai.AccountID == accountId, null, null, true);
-            var result =  _accountInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(periodId, accountId);
-
-            encoreMongo_Context.AccountsInformationProvider.DeleteMany( 
-                                                                        ai => ai.PeriodID == periodId && 
-                                                                        ai.LeftBower == account.LeftBower && 
-                                                                        ai.RightBower == account.RightBower
-                                                                      );
-
-            encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
-        }
-        
-        public void ProcessMlmOnline(int orderId, int orderStatusId)
-        {
-            using (_unitOfWork)
-            {
             }
         }
     }

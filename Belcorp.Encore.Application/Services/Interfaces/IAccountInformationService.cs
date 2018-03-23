@@ -9,10 +9,6 @@ namespace Belcorp.Encore.Application.Services
 {
     public interface IAccountInformationService
     {
-        IEnumerable<AccountsInformation> GetListAccountInformationByPeriodId(int periodId);
-        IEnumerable<Report_Downline> GetListAccountInformationByPeriodIdAndAccountId(int periodId, int accountId);
-
-        void Migrate_AccountInformationByAccountId(int periodId, int accountId);
         void Migrate_AccountInformationByPeriod(int periodId);
     }
 }

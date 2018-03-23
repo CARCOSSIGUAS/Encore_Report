@@ -24,7 +24,10 @@ namespace Belcorp.Encore.Data.Contexts
                 .HasKey(c => new { c.AccountID, c.OrderID, c.OrderCalculationTypeID });
 
             builder.Entity<RuleTypes>()
-             .HasOne(p => p.RequirementRules);
+                .HasOne(p => p.RequirementRules);
+
+            builder.Entity<RequirementRules>()
+                .HasKey(c => new { c.RuleRequirementID, c.RuleTypeID });
         }
 
         public DbSet<AccountsInformation> AccountsInformation { get; set; }

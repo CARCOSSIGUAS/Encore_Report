@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Belcorp.Encore.Entities.Entities
 {
     public class RuleTypes
     {
+        [Key]
         public int RuleTypeID { get; set; }
+
         public string Name { get; set; }
         public string TermName { get; set; }
         public string Description { get; set; }

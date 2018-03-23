@@ -18,6 +18,9 @@ namespace Belcorp.Encore.Data.Contexts
         }
 
         public DbSet<Orders> Orders { get; set; }
+        public DbSet<OrderCustomers> OrderCustomers  { get; set; }
+        public DbSet<OrderItems> OrderItems { get; set; }
+        public DbSet<OrderItemPrices> OrderItemPrices { get; set; }
 
     }
 }

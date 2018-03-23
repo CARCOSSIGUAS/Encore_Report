@@ -18,11 +18,11 @@ namespace Belcorp.Encore.Entities.Entities
         public int OrderCalculationTypeID { get; set; }
 
         public int OrderStatusID { get; set; }
-        public decimal Value { get; set; }
-        public DateTime CalculationDateUTC { get; set; }
-        public int ParentOrderID { get; set; }
-        public int AccountTypeID { get; set; }
-        public int OrderTypeID { get; set; }
-        public DateTime DateModifiedUTC { get; set; }
+        public decimal ? Value { get; set; }
+        public DateTime ? CalculationDateUTC { get; set; }
+        public int ? ParentOrderID { get; set; }
+        public int ? AccountTypeID { get; set; }
+        public int ? OrderTypeID { get; set; }
+        public DateTime ? DateModifiedUTC { get; set; }
     }
 }

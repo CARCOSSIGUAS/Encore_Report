@@ -18,20 +18,20 @@
 
         static void ConfigureContainer(IServiceCollection services)
         {
-            services.AddTransient<IAccountInformationRepository, AccountInformationRepository>();
-            services.AddTransient<IAccountInformationService, AccountInformationService>();
+            services.AddScoped<IAccountInformationRepository, AccountInformationRepository>();
+            services.AddScoped<IAccountInformationService, AccountInformationService>();
 
-            services.AddTransient<ISponsorTreeService, SponsorTreeService>();
-            services.AddTransient<ISponsorTreeRepository, SponsorTreeRepository>();
+            services.AddScoped<ISponsorTreeService, SponsorTreeService>();
+            services.AddScoped<ISponsorTreeRepository, SponsorTreeRepository>();
 
-            services.AddTransient<IAccountsRepository, AccountsRepository>();
-            services.AddTransient<IAccountsService, AccountsService>();
+            services.AddScoped<IAccountsRepository, AccountsRepository>();
+            services.AddScoped<IAccountsService, AccountsService>();
 
-            services.AddTransient<ITitlesRepository, TitlesRepository>();
-            services.AddTransient<IAccountKPIsRepository, AccountKPIsRepository>();
+            services.AddScoped<ITitlesRepository, TitlesRepository>();
+            services.AddScoped<IAccountKPIsRepository, AccountKPIsRepository>();
 
-            services.AddTransient<IProcessOnlineMlmService, ProcessOnlineMlmService>();
-            services.AddTransient<IProcessOnlineRepository, ProcessOnlineRepository>();
+            services.AddScoped<IProcessOnlineMlmService, ProcessOnlineMlmService>();
+            services.AddScoped<IProcessOnlineRepository, ProcessOnlineRepository>();
         }
     }
 }

@@ -52,8 +52,14 @@ namespace Belcorp.Encore.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseHangfireServer();
-            app.UseHangfireDashboard();
+            app.UseHangfireServer(new BackgroundJobServerOptions
+            {
+                HeartbeatInterval = new System.TimeSpan(0, 1, 0),
+                ServerCheckInterval = new System.TimeSpan(0, 1, 0),
+                SchedulePollingInterval = new System.TimeSpan(0, 1, 0)
+            });
+
+            app.UseHangfireDashboard("/Monitor");
 
             if (env.IsDevelopment())
             {
