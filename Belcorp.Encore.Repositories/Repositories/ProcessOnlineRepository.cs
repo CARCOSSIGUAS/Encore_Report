@@ -45,13 +45,19 @@ namespace Belcorp.Encore.Repositories.Repositories
 
         }
 
+        public bool GetExists_OrderCalculationsOnline(int orderId)
+        {
+            var result = dbCommissions_Context.OrderCalculationsOnline.Any(oco => oco.OrderID == orderId);    
+            return result;
+        }
+
 
         public decimal GetQV_ByAccount_PorcentRuler(int accountId, int periodId, List<CalculationTypes> calculationTypes, decimal porcentForRuler)
         {
             int calculationType_PQV = calculationTypes.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
             int calculationType_DQVT = calculationTypes.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
 
-            var result = dbCommissions_Context.AccountKPIs.Where(a => a.AccountID == a.AccountID && a.PeriodID == periodId && a.CalculationTypeID == calculationType_DQVT).ToList();
+            var result = dbCommissions_Context.AccountKPIs.Where(a => a.AccountID == accountId && a.PeriodID == periodId && a.CalculationTypeID == calculationType_DQVT).ToList();
             var DQV_Max = result.Select(a => (a.Value * porcentForRuler)/100).FirstOrDefault();
             var DQV_Final = result.Select(a => a.Value).FirstOrDefault();
 
@@ -80,8 +86,9 @@ namespace Belcorp.Encore.Repositories.Repositories
                                      sponsored_accounts.AccountID,
                                      kpis.Value
                                  }
-                             ).Where(r => r.Value > DQV_Max)
-                              .Max(r => r.Value - DQV_Max);
+                             )
+                             .Where(r => r.Value > DQV_Max)
+                             .Max(r => r.Value - DQV_Max);
 
             return DQV_Final - DQV_Excess;
         }
@@ -90,10 +97,9 @@ namespace Belcorp.Encore.Repositories.Repositories
         {
             var result = from oip in dbCore_Context.OrderItemPrices join
                               oi  in dbCore_Context.OrderItems on oip.OrderItemID equals oi.OrderItemID join
-                              oc  in dbCore_Context.OrderCustomers on oi.OrderCustomerID equals oc.OrderCustomerID join
-                              o   in dbCore_Context.Orders on oc.OrderID equals o.OrderID
-                         where o.OrderID == orderId && oip.ProductPriceTypeID == (int)Constants.ProductPriceType.QV
-                         group new { o, oi, oip } by new { o.OrderID } into data
+                              oc  in dbCore_Context.OrderCustomers on oi.OrderCustomerID equals oc.OrderCustomerID
+                         where oc.OrderID == orderId && oip.ProductPriceTypeID == (int)Constants.ProductPriceType.QV
+                         group new { oi, oip } by oc.OrderID into data
                          select new
                          {
                              QV = data.Sum(d => d.oip.UnitPrice * d.oi.Quantity)

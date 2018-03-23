@@ -21,7 +21,7 @@ namespace Belcorp.Encore.Api.Controllers
             accountInformationService = _accountInformationService;
         }
 
-        [HttpGet("[action]/{periodId}")]
+        [HttpGet("[action]/{PeriodId}")]
         public void Report_Period(int periodId)
         {
             BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(periodId));

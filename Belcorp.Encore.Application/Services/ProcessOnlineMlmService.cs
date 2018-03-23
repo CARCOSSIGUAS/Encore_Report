@@ -27,7 +27,9 @@ namespace Belcorp.Encore.Application.Services
         private readonly IAccountInformationRepository accountsInformationRepository;
 
         public Orders Order { get; set; }
-        public int periodId { get; set; }
+        public int PeriodId { get; set; }
+        public List<CalculationTypes> CalculationTypes { get; set; }
+        public List<SponsorTree> Accounts { get; set; }
 
         public ProcessOnlineMlmService(IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, IProcessOnlineRepository _processOnlineRepository, IAccountKPIsRepository _accountKPIsRepository, IAccountInformationRepository _accountsInformationRepository)
         {
@@ -38,6 +40,7 @@ namespace Belcorp.Encore.Application.Services
             processOnlineRepository = _processOnlineRepository;
             accountKPIsRepository = _accountKPIsRepository;
             accountsInformationRepository = _accountsInformationRepository;
+            CalculationTypes = GetCalculationTypesByCode();
         }
 
         public void ProcessMLM(int _orderId)
@@ -49,29 +52,32 @@ namespace Belcorp.Encore.Application.Services
                 return;
             }
 
-            periodId = (int)Order.CompletedPeriodID;
+            PeriodId = (int)Order.CompletedPeriodID;
+            Accounts = GetAccounts_UpLine(Order.AccountID);
 
             decimal QV, CV, RV;
             QV = processOnlineRepository.GetQV_ByOrder(Order.OrderID);
             CV = Order.CommissionableTotal == null ? 0 : (decimal)Order.CommissionableTotal;
             RV = Order.Subtotal == null ? 0 : (decimal)Order.Subtotal;
 
-            IRepository<OrderCalculationsOnline> orderCalculationOnlineRepository = unitOfWork_Comm.GetRepository<OrderCalculationsOnline>();
-            int existsorderCalculationOnline =  orderCalculationOnlineRepository.Count(o => o.OrderID == Order.OrderID);
+            var existsorderCalculationOnline = processOnlineRepository.GetExists_OrderCalculationsOnline(Order.OrderID);
 
-            if (existsorderCalculationOnline == 0)
+            if (!existsorderCalculationOnline)
             {
-                IndicadoresInPersonal_Process(QV, CV, RV);
+                //IndicadoresInPersonal_Process(QV, CV, RV);
                 IndicadoresInDivision_Process(QV, CV, RV);
-                OrdercalculationsOnline_Process(QV, CV, RV);
-                Migrate_AccountInformationByAccountId();
+                //Indicadores_UpdateValue_AccountsInformation(QV, CV, RV);
+                //OrdercalculationsOnline_Process(QV, CV, RV);
+                //Migrate_AccountInformationByAccountId();
             }
         }
 
         #region Metodos
 
-        public List<CalculationTypes> GetCalculationTypesByCode(List<string> codigos)
+        public List<CalculationTypes> GetCalculationTypesByCode()
         {
+            List<string> codigos = new List<string> { "PQV", "PRV", "PCV", "GQV", "GCV", "DQV", "DCV", "CQL", "DQVT" };
+
             IRepository<CalculationTypes> calculationTypesRepository = unitOfWork_Comm.GetRepository<CalculationTypes>();
             var result = calculationTypesRepository.GetPagedList(c => codigos.Contains(c.Code), null, null, 0, codigos.Count, true);
             return result == null ? null : result.Items.ToList();
@@ -93,7 +99,7 @@ namespace Belcorp.Encore.Application.Services
 
         private void Indicadores_UpdateValue_AccountKPIs(List<int> accountsIds, int calculationType, decimal value)
         {
-            accountKPIsRepository.GetPagedList(a => accountsIds.Contains(a.AccountID) && a.PeriodID == periodId && a.CalculationTypeID == calculationType, null, null, 0, accountsIds.Count, false)
+            accountKPIsRepository.GetPagedList(a => accountsIds.Contains(a.AccountID) && a.PeriodID == PeriodId && a.CalculationTypeID == calculationType, null, null, 0, accountsIds.Count, false)
                                     .Items.
                                     ToList().ForEach(a =>
                                     {
@@ -111,26 +117,20 @@ namespace Belcorp.Encore.Application.Services
         #region Calculos Personales
         public void IndicadoresInPersonal_Process(decimal QV, decimal CV, decimal RV)
         {
-            List<string> codigos = new List<string> { "PQV", "PCV", "PRV" };
-            var calculationTypesIds = GetCalculationTypesByCode(codigos);
-
-            int calculationType_PQV = calculationTypesIds.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
-            int calculationType_PCV = calculationTypesIds.Where(c => c.Code == "PCV").FirstOrDefault().CalculationTypeID;
-            int calculationType_PRV = calculationTypesIds.Where(c => c.Code == "PRV").FirstOrDefault().CalculationTypeID;
+            int calculationType_PQV = CalculationTypes.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
+            int calculationType_PCV = CalculationTypes.Where(c => c.Code == "PCV").FirstOrDefault().CalculationTypeID;
+            int calculationType_PRV = CalculationTypes.Where(c => c.Code == "PRV").FirstOrDefault().CalculationTypeID;
 
             IndicadoresInPersonal_UpdateValue(calculationType_PQV, QV);
             IndicadoresInPersonal_UpdateValue(calculationType_PCV, CV);
             IndicadoresInPersonal_UpdateValue(calculationType_PRV, RV);
-            
-            IndicadoresInPersonal_UpdateValue_AccountsInformation(QV, CV, RV);
-
         }
 
         public void IndicadoresInPersonal_UpdateValue(int calculationType, decimal value)
         {
-            var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == periodId && a.CalculationTypeID == calculationType, null, null, false);
+            var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == PeriodId && a.CalculationTypeID == calculationType, null, null, false);
 
-            if (result == null)
+            if (result != null)
             {
                 result.Value += value;
                 result.DateModified = DateTime.Now;
@@ -142,7 +142,7 @@ namespace Belcorp.Encore.Application.Services
                         new AccountKPIs
                         {
                             AccountID = Order.AccountID,
-                            PeriodID = periodId,
+                            PeriodID = PeriodId,
                             CalculationTypeID = calculationType,
                             Value = value,
                             DateModified = DateTime.Now
@@ -152,61 +152,41 @@ namespace Belcorp.Encore.Application.Services
             unitOfWork_Comm.SaveChanges();
         }
 
-        public void IndicadoresInPersonal_UpdateValue_AccountsInformation(decimal QV, decimal CV, decimal RV)
-        {
-            accountsInformationRepository.GetPagedList(a => a.AccountID == Order.AccountID && a.PeriodID == periodId, null, null, 0, 1, false).Items.
-                                                    ToList().ForEach(a =>
-                                                    {
-                                                        a.PQV += QV;
-                                                        a.PCV += CV;
-                                                        accountsInformationRepository.Update(a);
-                                                    });
-
-            unitOfWork_Comm.SaveChanges();
-        }
-
         #endregion
 
         #region Calculos Divison
         public void IndicadoresInDivision_Process(decimal QV, decimal CV, decimal RV)
         {
-            var accounts = GetAccounts_UpLine(Order.AccountID).ToList();
-
-            var accountsIds = accounts.Select(a => a.AccountID).ToList();
-
-            IndicadoresInDivision_Initialize(accountsIds);
+            IndicadoresInDivision_Initialize();
             if (Order.OrderTypeID != (short)Constants.OrderType.ReturnOrder)
             {
-                IndicadoresInDivision_UpdateValue(accounts, QV, CV, RV);
-                IndicadoresInDivision_UpdateValue_AccountsInformation(accounts, QV, CV, RV);
+                IndicadoresInDivision_UpdateValue(QV, CV, RV);
             }
         }
 
-        public void IndicadoresInDivision_Initialize(List<int> accountsIds)
+        public void IndicadoresInDivision_Initialize()
         {
             List<string> codigos = new List<string> { "PQV", "PRV", "PCV", "GQV", "GCV", "DQV", "DCV", "CQL", "DQVT" };
-            var calculationTypesIds = GetCalculationTypesByCode(codigos);
+            var calculationTypesIds = CalculationTypes.Where(c => codigos.Contains(c.Code)).ToList();
 
-            var result = processOnlineRepository.GetListAccounts_Initialize(accountsIds, calculationTypesIds, periodId);
+            var result = processOnlineRepository.GetListAccounts_Initialize(Accounts.Select(a => a.AccountID).ToList(), calculationTypesIds, PeriodId);
             accountKPIsRepository.Insert(result);
 
             unitOfWork_Comm.SaveChanges();
         }
 
-        private void IndicadoresInDivision_UpdateValue(List<SponsorTree> accounts, decimal QV, decimal CV, decimal RV)
+        private void IndicadoresInDivision_UpdateValue(decimal QV, decimal CV, decimal RV)
         {
             List<string> codigos = new List<string> { "DCV", "DQVT" };
-            var accountsIds = accounts.Select(a => a.AccountID).ToList();
+            var accountsIds = Accounts.Select(a => a.AccountID).ToList();
 
-            var calculationTypesIds = GetCalculationTypesByCode(codigos);
-
-            int calculationType_DCV =  calculationTypesIds.Where(c => c.Code == "DCV").FirstOrDefault().CalculationTypeID;
-            int calculationType_DQVT = calculationTypesIds.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
+            int calculationType_DCV =  CalculationTypes.Where(c => c.Code == "DCV").FirstOrDefault().CalculationTypeID;
+            int calculationType_DQVT = CalculationTypes.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
 
             Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DQVT, value: QV);
             Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DCV,  value: CV);
 
-            IndicadoresInDivision_Valida_Porcentaje(accounts, QV);
+            IndicadoresInDivision_Valida_Porcentaje(Accounts, QV);
         }
         
         public void IndicadoresInDivision_Valida_Porcentaje(List<SponsorTree> accounts, decimal QV)
@@ -216,7 +196,7 @@ namespace Belcorp.Encore.Application.Services
             int? currentAccountTitle;
             decimal DQV_Result;
 
-            var calculationTypesIds = GetCalculationTypesByCode(codigos);
+            var calculationTypesIds =   CalculationTypes.Where(c => codigos.Contains(c.Code)).ToList();
             int calculationType_DQV =   calculationTypesIds.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
 
             IRepository<RuleTypes> ruleTypesRepository = unitOfWork_Comm.GetRepository<RuleTypes>();
@@ -236,7 +216,7 @@ namespace Belcorp.Encore.Application.Services
                     if (currentAccountTitle >= titleForRuler)
                     {
                         DQV_Result = 0;
-                        DQV_Result = processOnlineRepository.GetQV_ByAccount_PorcentRuler(currentAccountID, periodId, calculationTypesIds, porcentForRuler);
+                        DQV_Result = processOnlineRepository.GetQV_ByAccount_PorcentRuler(currentAccountID, PeriodId, calculationTypesIds, porcentForRuler);
 
                         Indicadores_UpdateValue_AccountKPIs(new List<int> { currentAccountID }, calculationType_DQV, value: DQV_Result);
                     }
@@ -247,24 +227,26 @@ namespace Belcorp.Encore.Application.Services
 
         }
 
-        public void IndicadoresInDivision_UpdateValue_AccountsInformation(List<SponsorTree> accounts, decimal QV, decimal CV, decimal RV)
+        public void Indicadores_UpdateValue_AccountsInformation(decimal QV, decimal CV, decimal RV)
         {
-            var calculationTypesIds = GetCalculationTypesByCode(new List<string> { "DQV" });
-            int calculationType_DQV = calculationTypesIds.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
+            int calculationType_DQV = CalculationTypes.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
 
-            var result_account = accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == periodId, null, null, false);
+            var result_account = accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == PeriodId, null, null, false);
+
+            result_account.PCV += CV;
+            result_account.PQV += QV;
             result_account.DCV += CV;
             result_account.DQVT += QV;
             accountsInformationRepository.Update(result_account);
 
             unitOfWork_Comm.SaveChanges();
 
-            var lista = accounts.Select(a => a.AccountID);
-            var accountInformations = accountsInformationRepository.GetPagedList(a => lista.Contains(a.AccountID), null, null, 0, accounts.Count, false);
+            var lista = Accounts.Select(a => a.AccountID);
+            var accountInformations = accountsInformationRepository.GetPagedList(a => lista.Contains(a.AccountID), null, null, 0, Accounts.Count, false);
 
             foreach (var accountInformation in accountInformations.Items)
             {
-                var result = accountKPIsRepository.GetFirstOrDefault(akp => akp.AccountID == accountInformation.AccountID && akp.PeriodID == periodId && akp.CalculationTypeID == calculationType_DQV, null, null, true);
+                var result = accountKPIsRepository.GetFirstOrDefault(akp => akp.AccountID == accountInformation.AccountID && akp.PeriodID == PeriodId && akp.CalculationTypeID == calculationType_DQV, null, null, true);
                 accountInformation.DQV = result.Value;
                 accountsInformationRepository.Update(accountInformation);
             }
@@ -281,22 +263,23 @@ namespace Belcorp.Encore.Application.Services
             List<string> codigos = new List<string> { "QV", "CV", "RP" };
             var calculationTypesIds = GetOrderCalculationTypesByCode(codigos);
 
+            IRepository<Accounts> accountsRepository = unitOfWork_Comm.GetRepository<Accounts>();
+            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID, null, null, true);
+
             int orderCalculationTypeID_QV = calculationTypesIds.Where(c => c.Code == "QV").FirstOrDefault().OrderCalculationTypeID;
             int orderCalculationTypeID_CV = calculationTypesIds.Where(c => c.Code == "CV").FirstOrDefault().OrderCalculationTypeID;
             int orderCalculationTypeID_RP = calculationTypesIds.Where(c => c.Code == "RP").FirstOrDefault().OrderCalculationTypeID;
 
-            OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_QV, QV);
-            OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_CV, CV);
-            OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_RP, RV);
+            OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_QV, QV, account.AccountTypeID);
+            OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_CV, CV, account.AccountTypeID);
+            OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_RP, RV, account.AccountTypeID);
         }
 
-        public void OrdercalculationsOnline_UpdateValue(int calculationType, decimal value)
+        public void OrdercalculationsOnline_UpdateValue(int calculationType, decimal value, int accountTypeId)
         {
             IRepository<OrderCalculationsOnline> orderCalculationOnlineRepository = unitOfWork_Comm.GetRepository<OrderCalculationsOnline>();
-            IRepository<Accounts> accountsRepository = unitOfWork_Comm.GetRepository<Accounts>();
 
             var result = orderCalculationOnlineRepository.GetFirstOrDefault(o => o.OrderID == Order.OrderID && o.OrderCalculationTypeID == calculationType, null, null, false);
-            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID, null, null, true);
 
             if (result != null)
             {
@@ -316,7 +299,7 @@ namespace Belcorp.Encore.Application.Services
                             Value = value,
                             CalculationDateUTC = Order.CommissionDateUTC,
                             ParentOrderID = Order.ParentOrderID,
-                            AccountTypeID = account.AccountTypeID,
+                            AccountTypeID = accountTypeId,
                             OrderTypeID = Order.OrderTypeID,
                             DateModifiedUTC = DateTime.Now
                         });
@@ -329,9 +312,9 @@ namespace Belcorp.Encore.Application.Services
         public void Migrate_AccountInformationByAccountId()
         {
             var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
-            var result = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(periodId, accountsId).ToList();
+            var result = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId).ToList();
 
-            encoreMongo_Context.AccountsInformationProvider.DeleteMany(ai => ai.PeriodID == periodId && accountsId.Contains(ai.AccountID));
+            encoreMongo_Context.AccountsInformationProvider.DeleteMany(ai => ai.PeriodID == PeriodId && accountsId.Contains(ai.AccountID));
             encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
         }
     }
