@@ -11,7 +11,7 @@ namespace Belcorp.Encore.Entities
     public class AccountsInformation
     {
         [Key]
-        public int AccountsInformationID { get; set; }
+        public virtual int AccountsInformationID { get; set; }
 
         public int PeriodID { get; set; }
         public int AccountID { get; set; }

@@ -15,12 +15,18 @@ namespace Belcorp.Encore.Data.Contexts
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<Accounts>()
+                .HasMany(p => p.AccountPhones);
+
         }
 
         public DbSet<Orders> Orders { get; set; }
-        public DbSet<OrderCustomers> OrderCustomers  { get; set; }
+        public DbSet<OrderCustomers> OrderCustomers { get; set; }
         public DbSet<OrderItems> OrderItems { get; set; }
         public DbSet<OrderItemPrices> OrderItemPrices { get; set; }
+
+        public DbSet<Accounts> Accounts { get; set; }
+        public DbSet<AccountPhones> AccountPhones { get; set; }
 
     }
 }

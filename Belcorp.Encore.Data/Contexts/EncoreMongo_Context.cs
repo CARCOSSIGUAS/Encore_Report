@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Belcorp.Encore.Entities;
 using Belcorp.Encore.Entities.Entities;
+using Belcorp.Encore.Entities.Entities.MetaData_Mongo;
 using MongoDB.Driver;
 
 namespace Belcorp.Encore.Data.Contexts
@@ -17,8 +18,8 @@ namespace Belcorp.Encore.Data.Contexts
         }
 
         #region Collections
-        public IMongoCollection<Report_Downline> AccountsInformationProvider => Database.GetCollection<Report_Downline>("Report_Downline");
-        public IMongoCollection<Accounts> AccountsProvider => Database.GetCollection<Accounts>("Accounts");
+        public IMongoCollection<AccountsInformation_DTO> AccountsInformationProvider => Database.GetCollection<AccountsInformation_DTO>("AccountsInformation");
+        public IMongoCollection<Accounts_DTO> AccountsProvider => Database.GetCollection<Accounts_DTO>("Accounts");
         #endregion
     }
 }

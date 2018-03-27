@@ -10,7 +10,7 @@ namespace Belcorp.Encore.Entities.Entities
         [Key]
         public int OrderCustomerID { get; set; }
 
-        public Int16 OrderCustomerTypeID { get; set; }
+        public short OrderCustomerTypeID { get; set; }
         public int OrderID { get; set; }
         public int AccountID { get; set; }
         public decimal ? ShippingTotal { get; set; }

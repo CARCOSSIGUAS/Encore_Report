@@ -268,7 +268,7 @@ namespace Belcorp.Encore.Application.Services
             List<string> codigos = new List<string> { "QV", "CV", "RP" };
             var calculationTypesIds = GetOrderCalculationTypesByCode(codigos);
 
-            IRepository<Accounts> accountsRepository = unitOfWork_Comm.GetRepository<Accounts>();
+            IRepository<Accounts> accountsRepository = unitOfWork_Core.GetRepository<Accounts>();
             var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID, null, null, true);
 
             int orderCalculationTypeID_QV = calculationTypesIds.Where(c => c.Code == "QV").FirstOrDefault().OrderCalculationTypeID;

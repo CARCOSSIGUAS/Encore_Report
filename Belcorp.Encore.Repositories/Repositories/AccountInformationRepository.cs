@@ -24,12 +24,12 @@ namespace Belcorp.Encore.Repositories
             return result;
         }
 
-        public IEnumerable<Report_Downline> GetListAccountInformationByPeriodIdAndAccountId(int periodId, List<int> accountIds)
+        public IEnumerable<AccountsInformation_DTO> GetListAccountInformationByPeriodIdAndAccountId(int periodId, List<int> accountIds)
         {
             var result = from ai in dbCommissions_Context.AccountsInformation.AsNoTracking()
                          where ai.PeriodID == periodId && accountIds.Contains(ai.AccountID)
                          select 
-                         (  new Report_Downline
+                         (  new AccountsInformation_DTO
                             {
                                 AccountsInformationID = ai.AccountsInformationID,
                                 PeriodID = ai.PeriodID,

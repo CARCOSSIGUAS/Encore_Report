@@ -26,7 +26,7 @@ namespace Belcorp.Encore.Repositories.Repositories
             var calculaTypesIds = calculationsTypes.Select(c => c.CalculationTypeID);
 
             var result = (
-                            from a in dbCommissions_Context.Accounts join
+                            from a in dbCore_Context.Accounts join
                                  ct in dbCommissions_Context.CalculationTypes on 1 equals 1 join
                                  ak in dbCommissions_Context.AccountKPIs on
                                     new { A = a.AccountID, B = periodId, C = ct.CalculationTypeID } equals new { A = ak.AccountID, B = ak.PeriodID, C = ak.CalculationTypeID }

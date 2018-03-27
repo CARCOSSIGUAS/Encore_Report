@@ -15,10 +15,12 @@ namespace Belcorp.Encore.Api.Controllers
     public class MigrateController : Controller
     {
         private readonly IAccountInformationService accountInformationService;
+        private readonly IAccountsService accountsService;
 
-        public MigrateController(IAccountInformationService _accountInformationService)
+        public MigrateController(IAccountInformationService _accountInformationService, IAccountsService _accountsService)
         {
             accountInformationService = _accountInformationService;
+            accountsService = _accountsService;
         }
 
         [HttpGet("[action]/{PeriodId}")]
@@ -33,6 +35,13 @@ namespace Belcorp.Encore.Api.Controllers
         {
             BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod());
             return Json(new { Status = "Process" } );
+        }
+
+        [HttpGet("[action]")]
+        public ActionResult Migrate_Accounts()
+        {
+            accountsService.Migrate_Accounts();
+            return Json(new { Status = "Process" });
         }
     }
 }

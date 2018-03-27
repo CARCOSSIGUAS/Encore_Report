@@ -11,8 +11,8 @@ namespace Belcorp.Encore.Entities.Entities
         public int OrderID { get; set; }
 
         public string OrderNumber { get; set; }
-        public Int16 OrderStatusID { get; set; }
-        public Int16 OrderTypeID { get; set; }
+        public short OrderStatusID { get; set; }
+        public short OrderTypeID { get; set; }
         public int AccountID { get; set; }
         public int? SiteID { get; set; }
         public int? ParentOrderID { get; set; }

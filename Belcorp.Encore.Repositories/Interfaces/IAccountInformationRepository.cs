@@ -11,6 +11,6 @@ namespace Belcorp.Encore.Repositories
     public interface IAccountInformationRepository : IRepository<AccountsInformation>
     {
         IEnumerable<AccountsInformation> GetListAccountInformationByPeriodId(int periodId);
-        IEnumerable<Report_Downline> GetListAccountInformationByPeriodIdAndAccountId(int periodId, List<int> accountIds);
+        IEnumerable<AccountsInformation_DTO> GetListAccountInformationByPeriodIdAndAccountId(int periodId, List<int> accountIds);
     }
 }

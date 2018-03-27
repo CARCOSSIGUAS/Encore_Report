@@ -16,13 +16,16 @@ namespace Belcorp.Encore.Application
 {
     public class AccountInformationService : IAccountInformationService 
     {
+        private readonly IUnitOfWork<EncoreCore_Context> unitOfWork_Core;
         private readonly IUnitOfWork<EncoreCommissions_Context> unitOfWork_Comm;
+
         private readonly EncoreMongo_Context encoreMongo_Context;
         private readonly IAccountInformationRepository accountInformationRepository;
 
-        public AccountInformationService(IUnitOfWork<EncoreCommissions_Context> _unitOfWork, IAccountInformationRepository _accountInformationRepository)
+        public AccountInformationService(IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, IAccountInformationRepository _accountInformationRepository)
         {
-            unitOfWork_Comm = _unitOfWork;
+            unitOfWork_Comm = _unitOfWork_Comm;
+            unitOfWork_Core = _unitOfWork_Core;
             accountInformationRepository = _accountInformationRepository;
             encoreMongo_Context = new EncoreMongo_Context();
         }
@@ -36,14 +39,14 @@ namespace Belcorp.Encore.Application
             int ii = total.TotalPages;
 
             encoreMongo_Context.AccountsInformationProvider.DeleteMany( p => p.PeriodID == periodId);
-            IRepository<Accounts> _accountsRepository = unitOfWork_Comm.GetRepository<Accounts>();
+            IRepository<Accounts> accountsRepository = unitOfWork_Core.GetRepository<Accounts>();
 
-            var accounts = _accountsRepository.GetAll().ToList();
+            var accounts = accountsRepository.GetAll().ToList();
             for (int i = 0; i < ii; i++)
             {
                 var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 20000, true).Items;
                 var data =
-                accountsInformation.Join(accounts, r => r.AccountID, a => a.AccountID, (r, a) => new { r, a }).Select(result => new Report_Downline
+                accountsInformation.Join(accounts, r => r.AccountID, a => a.AccountID, (r, a) => new { r, a }).Select(result => new AccountsInformation_DTO
                 {
                     AccountsInformationID = result.r.AccountsInformationID,
                     PeriodID = result.r.PeriodID,
@@ -62,9 +65,8 @@ namespace Belcorp.Encore.Application
                     LEVEL = result.r.LEVEL,
                     SortPath = result.r.SortPath,
                     LeftBower = result.r.LeftBower,
-                    RightBower = result.r.RightBower,
+                    RightBower = result.r.RightBower
 
-                    accounts = result.a
                 });
 
                 encoreMongo_Context.AccountsInformationProvider.InsertMany(data);
@@ -84,7 +86,7 @@ namespace Belcorp.Encore.Application
             {
                 var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 20000, true).Items;
                 var data =
-                accountsInformation.Select(result => new Report_Downline
+                accountsInformation.Select(result => new AccountsInformation_DTO
                 {
                     AccountsInformationID = result.AccountsInformationID,
                     PeriodID = result.PeriodID,
@@ -98,12 +100,22 @@ namespace Belcorp.Encore.Application
                     City = result.City,
                     STATE = result.STATE,
 
+                    PQV = result.PQV,
+                    DQV = result.DQV,
+                    DQVT = result.DQVT,
+
+                    CareerTitle =  result.CareerTitle,
+                    PaidAsCurrentMonth = result.PaidAsCurrentMonth,
+                    CareerTitle_Des = "",
+                    PaidAsCurrentMonth_Des = "",
+
                     JoinDate = result.JoinDate,
                     Generation = result.Generation,
                     LEVEL = result.LEVEL,
                     SortPath = result.SortPath,
                     LeftBower = result.LeftBower,
-                    RightBower = result.RightBower
+                    RightBower = result.RightBower,
+                    Activity =  result.Activity
                 });
 
                 encoreMongo_Context.AccountsInformationProvider.InsertMany(data);
