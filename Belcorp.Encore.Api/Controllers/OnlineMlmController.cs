@@ -11,21 +11,22 @@ using Microsoft.AspNetCore.Mvc;
 namespace Belcorp.Encore.Api.Controllers
 {
     [Produces("application/json")]
-    [Route("api/OnlineMlm")]
-    public class OnlineMlmController : Controller
+    [Route("api/OnlineMLM")]
+    public class OnlineMLMController : Controller
     {
         private readonly IProcessOnlineMlmService processOnlineMlmService;
 
-        public OnlineMlmController(IProcessOnlineMlmService _processOnlineMlmService)
+        public OnlineMLMController(IProcessOnlineMlmService _processOnlineMlmService)
         {
             processOnlineMlmService = _processOnlineMlmService;
         }
 
-        [HttpGet("[action]/{orderId}")]
+        [HttpGet("Process/{orderId}")]
         [AutomaticRetry(Attempts = 0)]
-        public void Process(int orderId)
+        public ActionResult Process(int orderId)
         {
             BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLM(orderId));
+            return Json(new { Status = "Process" });
         }
 
     }

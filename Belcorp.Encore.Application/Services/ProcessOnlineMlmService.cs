@@ -60,15 +60,22 @@ namespace Belcorp.Encore.Application.Services
             CV = Order.CommissionableTotal == null ? 0 : (decimal)Order.CommissionableTotal;
             RV = Order.Subtotal == null ? 0 : (decimal)Order.Subtotal;
 
+            if (Order.OrderTypeID == (short)Constants.OrderType.ReturnOrder)
+            {
+                QV = QV * -1;
+                CV = CV * -1;
+                RV = RV * -1;
+            }
+
             var existsorderCalculationOnline = processOnlineRepository.GetExists_OrderCalculationsOnline(Order.OrderID);
 
             if (!existsorderCalculationOnline)
             {
-                //IndicadoresInPersonal_Process(QV, CV, RV);
+                IndicadoresInPersonal_Process(QV, CV, RV);
                 IndicadoresInDivision_Process(QV, CV, RV);
-                //Indicadores_UpdateValue_AccountsInformation(QV, CV, RV);
-                //OrdercalculationsOnline_Process(QV, CV, RV);
-                //Migrate_AccountInformationByAccountId();
+                Indicadores_UpdateValue_AccountsInformation(QV, CV, RV);
+                OrdercalculationsOnline_Process(QV, CV, RV);
+                Migrate_AccountInformationByAccountId();
             }
         }
 
@@ -76,11 +83,9 @@ namespace Belcorp.Encore.Application.Services
 
         public List<CalculationTypes> GetCalculationTypesByCode()
         {
-            List<string> codigos = new List<string> { "PQV", "PRV", "PCV", "GQV", "GCV", "DQV", "DCV", "CQL", "DQVT" };
-
             IRepository<CalculationTypes> calculationTypesRepository = unitOfWork_Comm.GetRepository<CalculationTypes>();
-            var result = calculationTypesRepository.GetPagedList(c => codigos.Contains(c.Code), null, null, 0, codigos.Count, true);
-            return result == null ? null : result.Items.ToList();
+            var result = calculationTypesRepository.GetAll();
+            return result == null ? null : result.ToList();
         }
 
         private List<OrderCalculationTypes> GetOrderCalculationTypesByCode(List<string> codigos)

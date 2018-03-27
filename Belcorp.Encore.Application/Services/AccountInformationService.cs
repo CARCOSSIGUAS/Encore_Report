@@ -14,7 +14,7 @@ using Belcorp.Encore.Application.Services;
 
 namespace Belcorp.Encore.Application
 {
-    public class AccountInformationService : IAccountInformationService
+    public class AccountInformationService : IAccountInformationService 
     {
         private readonly IUnitOfWork<EncoreCommissions_Context> unitOfWork_Comm;
         private readonly EncoreMongo_Context encoreMongo_Context;
@@ -28,8 +28,10 @@ namespace Belcorp.Encore.Application
         }
 
         [Obsolete]
-        public void Migrate_AccountInformationWithAccountsByPeriod(int periodId)
+        public void Migrate_AccountInformationWithAccountsByPeriod()
         {
+            int periodId = 201703;
+
             var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 20000, true);
             int ii = total.TotalPages;
 
@@ -69,8 +71,10 @@ namespace Belcorp.Encore.Application
             }
         }
 
-        public void Migrate_AccountInformationByPeriod(int periodId)
+        public void Migrate_AccountInformationByPeriod()
         {
+            int periodId = 201703;
+
             var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 20000, true);
             int ii = total.TotalPages;
 

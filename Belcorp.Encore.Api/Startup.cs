@@ -1,4 +1,6 @@
 ﻿using Belcorp.Encore.Api.InstanceProviders;
+using Belcorp.Encore.Application;
+using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Data.Contexts;
 using Hangfire;
 using Hangfire.Mongo;
@@ -43,8 +45,15 @@ namespace Belcorp.Encore.Api
             .AddDbContext<EncoreCore_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Core")))
             .AddUnitOfWork<EncoreCommissions_Context, EncoreCore_Context>();
 
-
             services.RegisterServices();
+
+            #region HangFire_Jobs
+            JobStorage.Current = new MongoStorage(Configuration.GetConnectionString("Encore_Mongo"), "Encore_HangFire");
+            var provider = services.BuildServiceProvider();
+            IAccountInformationService accountInformationService = provider.GetService<IAccountInformationService>();
+
+            RecurringJob.AddOrUpdate("Report_CloseDaily", () => accountInformationService.Migrate_AccountInformationByPeriod(), "0 0 * * *");   //Todos los dias a las 00:00
+            #endregion
 
             services.AddMvc();
         }

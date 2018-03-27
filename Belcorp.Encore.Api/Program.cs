@@ -19,9 +19,7 @@ namespace Belcorp.Encore.Api
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
+                .UseUrls("http://localhost:3389")
                 .UseStartup<Startup>()
                 .Build();
     }

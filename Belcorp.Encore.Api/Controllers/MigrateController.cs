@@ -22,9 +22,17 @@ namespace Belcorp.Encore.Api.Controllers
         }
 
         [HttpGet("[action]/{PeriodId}")]
-        public void Report_Period(int periodId)
+        public ActionResult Report_Period(int periodId)
         {
-            BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(periodId));
+            BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod());
+            return Json(new { Status = "Process" });
+        }
+
+        [HttpGet("[action]")]
+        public ActionResult Report_Period()
+        {
+            BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod());
+            return Json(new { Status = "Process" } );
         }
     }
 }
