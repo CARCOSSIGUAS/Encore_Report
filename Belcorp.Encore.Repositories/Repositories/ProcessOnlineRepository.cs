@@ -95,7 +95,7 @@ namespace Belcorp.Encore.Repositories.Repositories
 
         public decimal GetQV_ByOrder(int orderId)
         {
-            var result = from oip in dbCore_Context.OrderItemPrices join
+            var result = (from oip in dbCore_Context.OrderItemPrices join
                               oi  in dbCore_Context.OrderItems on oip.OrderItemID equals oi.OrderItemID join
                               oc  in dbCore_Context.OrderCustomers on oi.OrderCustomerID equals oc.OrderCustomerID
                          where oc.OrderID == orderId && oip.ProductPriceTypeID == (int)Constants.ProductPriceType.QV
@@ -103,7 +103,7 @@ namespace Belcorp.Encore.Repositories.Repositories
                          select new
                          {
                              QV = data.Sum(d => d.oip.UnitPrice * d.oi.Quantity)
-                         };
+                         }).ToList();
 
             return result == null ? 0 : (decimal)result.FirstOrDefault().QV;
         }
