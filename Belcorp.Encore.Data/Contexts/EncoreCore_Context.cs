@@ -1,9 +1,5 @@
-﻿using Belcorp.Encore.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Belcorp.Encore.Entities.Entities.Core;
 using Microsoft.EntityFrameworkCore;
-using Belcorp.Encore.Entities.Entities;
 
 namespace Belcorp.Encore.Data.Contexts
 {

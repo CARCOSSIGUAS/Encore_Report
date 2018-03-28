@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Belcorp.Encore.Entities;
 using Belcorp.Encore.Data.Contexts;
 using System.Linq;
+using Belcorp.Encore.Entities.Entities.Core;
 
 namespace Belcorp.Encore.Repositories
 {

@@ -1,13 +1,10 @@
 ﻿using Belcorp.Encore.Data.Contexts;
-using Belcorp.Encore.Entities;
-using Belcorp.Encore.Entities.Entities;
-using Belcorp.Encore.Entities.Entities.MetaData_Mongo;
+using Belcorp.Encore.Entities.Entities.Core;
+using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Repositories;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 
 namespace Belcorp.Encore.Application.Services

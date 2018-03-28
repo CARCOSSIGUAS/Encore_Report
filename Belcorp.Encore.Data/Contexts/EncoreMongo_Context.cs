@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Belcorp.Encore.Entities;
 using Belcorp.Encore.Entities.Entities;
-using Belcorp.Encore.Entities.Entities.MetaData_Mongo;
+using Belcorp.Encore.Entities.Entities.DTO;
 using MongoDB.Driver;
 
 namespace Belcorp.Encore.Data.Contexts

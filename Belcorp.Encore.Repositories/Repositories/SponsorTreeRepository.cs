@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Belcorp.Encore.Entities;
+﻿using Microsoft.EntityFrameworkCore;
 using Belcorp.Encore.Data.Contexts;
-using System.Linq;
-using Belcorp.Encore.Entities.Entities;
-using System.Collections;
 using Belcorp.Encore.Repositories.Interfaces;
+using Belcorp.Encore.Entities.Entities.Commissions;
 
 namespace Belcorp.Encore.Repositories.Repositories
 {
-	public class SponsorTreeRepository : Repository<SponsorTree>, ISponsorTreeRepository
+    public class SponsorTreeRepository : Repository<SponsorTree>, ISponsorTreeRepository
     {
         protected readonly EncoreCommissions_Context dbCommissions_Context;
 

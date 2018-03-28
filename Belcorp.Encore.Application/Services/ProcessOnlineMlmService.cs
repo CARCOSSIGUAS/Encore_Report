@@ -1,17 +1,15 @@
 ﻿using Belcorp.Encore.Application.Interfaces;
 using Belcorp.Encore.Data.Contexts;
-using Belcorp.Encore.Entities;
-using Belcorp.Encore.Entities.Entities;
 using Belcorp.Encore.Repositories;
 using Belcorp.Encore.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Belcorp.Encore.Entities.Constants;
+using Belcorp.Encore.Entities.Entities.Core;
+using Belcorp.Encore.Entities.Entities.Commissions;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -268,7 +266,7 @@ namespace Belcorp.Encore.Application.Services
             List<string> codigos = new List<string> { "QV", "CV", "RP" };
             var calculationTypesIds = GetOrderCalculationTypesByCode(codigos);
 
-            IRepository<Accounts> accountsRepository = unitOfWork_Core.GetRepository<Accounts>();
+            IRepository<Entities.Entities.Core.Accounts> accountsRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
             var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID, null, null, true);
 
             int orderCalculationTypeID_QV = calculationTypesIds.Where(c => c.Code == "QV").FirstOrDefault().OrderCalculationTypeID;
@@ -316,11 +314,11 @@ namespace Belcorp.Encore.Application.Services
 
         public void Migrate_AccountInformationByAccountId()
         {
-            var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
-            var result = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId).ToList();
+            //var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
+            //var result = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId).ToList();
 
-            encoreMongo_Context.AccountsInformationProvider.DeleteMany(ai => ai.PeriodID == PeriodId && accountsId.Contains(ai.AccountID));
-            encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
+            //encoreMongo_Context.AccountsInformationProvider.DeleteMany(ai => ai.PeriodID == PeriodId && accountsId.Contains(ai.AccountID));
+            //encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
         }
     }
 }

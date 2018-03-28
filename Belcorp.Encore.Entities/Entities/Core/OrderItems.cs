@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Belcorp.Encore.Entities.Entities
+namespace Belcorp.Encore.Entities.Entities.Core
 {
     public class OrderItems
     {

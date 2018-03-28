@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Reflection.Emit;
+using Belcorp.Encore.Entities.Entities.Commissions;
 
 namespace Belcorp.Encore.Data.Contexts
 {
@@ -31,7 +32,8 @@ namespace Belcorp.Encore.Data.Contexts
         }
 
         public DbSet<AccountsInformation> AccountsInformation { get; set; }
-        
+        public DbSet<Accounts> Accounts { get; set; }
+
         public DbSet<Titles> Titles { get; set; }
 		public DbSet<SponsorTree> SponsorTree { get; set; }
         public DbSet<CalculationTypes> CalculationTypes { get; set; }

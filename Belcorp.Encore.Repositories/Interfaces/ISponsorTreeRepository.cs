@@ -1,14 +1,10 @@
-﻿using Belcorp.Encore.Entities.Entities;
+﻿using Belcorp.Encore.Entities.Entities.Commissions;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Belcorp.Encore.Repositories.Interfaces
 {
-	public interface ISponsorTreeRepository : IRepository<SponsorTree>
+    public interface ISponsorTreeRepository : IRepository<SponsorTree>
 	{
 
     }
-
 }

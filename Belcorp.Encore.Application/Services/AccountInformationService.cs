@@ -11,6 +11,9 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Belcorp.Encore.Entities.Entities;
 using Belcorp.Encore.Application.Services;
+using Belcorp.Encore.Entities.Entities.Core;
+using Belcorp.Encore.Entities.Entities.Commissions;
+using Belcorp.Encore.Entities.Entities.DTO;
 
 namespace Belcorp.Encore.Application
 {
@@ -39,7 +42,7 @@ namespace Belcorp.Encore.Application
             int ii = total.TotalPages;
 
             encoreMongo_Context.AccountsInformationProvider.DeleteMany( p => p.PeriodID == periodId);
-            IRepository<Accounts> accountsRepository = unitOfWork_Core.GetRepository<Accounts>();
+            IRepository<Entities.Entities.Core.Accounts> accountsRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
 
             var accounts = accountsRepository.GetAll().ToList();
             for (int i = 0; i < ii; i++)

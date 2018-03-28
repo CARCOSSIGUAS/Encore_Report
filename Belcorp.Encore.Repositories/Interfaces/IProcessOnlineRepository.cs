@@ -1,8 +1,5 @@
-﻿using Belcorp.Encore.Entities;
-using Belcorp.Encore.Entities.Entities;
-using System;
+﻿using Belcorp.Encore.Entities.Entities.Commissions;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Belcorp.Encore.Repositories.Interfaces
 {

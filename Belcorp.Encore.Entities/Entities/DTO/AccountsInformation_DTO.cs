@@ -1,9 +1,7 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Belcorp.Encore.Entities.Entities.Commissions;
+using MongoDB.Bson.Serialization.Attributes;
 
-namespace Belcorp.Encore.Entities.Entities
+namespace Belcorp.Encore.Entities.Entities.DTO
 {
     public class AccountsInformation_DTO : AccountsInformation
     {
