@@ -135,20 +135,20 @@ namespace Belcorp.Encore.Application
 		public IEnumerable<ReportPerformance_DetailModel> GetPerformance_Detail(int accountId, int sponsorId, int periodId)
 		{
 
-			var accountInformationCollection = encoreMongo_Context.AccountsInformationProvider.Find(k => k.AccountID == accountId && k.SponsorID == sponsorId && k.PeriodID == periodId);
+			var accountInformationCollection = encoreMongo_Context.AccountsInformationProvider.Find(q => q.AccountID == accountId && q.SponsorID == sponsorId && q.PeriodID == periodId);
 
 			var accountCollection = encoreMongo_Context.AccountsProvider.Find(t => t.AccountID == accountId | t.AccountID == sponsorId);
-				
-			var detail = encoreMongo_Context.AccountsInformationProvider.Find()
-							.Aggregate()
-							.Lookup<AccountsInformation_DTO,Accounts_DTO,AccountsInformationbyAccount_DTO>(
-							encoreMongo_Context.Database.GetCollection<Accounts_DTO>("Accounts"),
-								p => p.AccountID,
-								q=>q.AccountID,
-								r=>r.Accounts_DTOs						
-							);
+							
+			//var detail = encoreMongo_Context.AccountsInformationProvider.Find(new BsonDocument).ToList
+			//				.Aggregate()
+			//				.Lookup<AccountsInformation_DTO,Accounts_DTO,AccountsInformationbyAccount_DTO>(
+			//				encoreMongo_Context.Database.GetCollection<Accounts_DTO>("Accounts"),
+			//					p => p.AccountID,
+			//					q=>q.AccountID,
+			//					r=>r.Accounts_DTOs						
+			//				);
 
-			detail = detail.Project(qq => new ReportPerformance_DetailModel { Nombre=qq. }).ToList();
+			//detail = detail.Project(qq => new ReportPerformance_DetailModel { Nombre=qq. }).ToList();
 
 
 
