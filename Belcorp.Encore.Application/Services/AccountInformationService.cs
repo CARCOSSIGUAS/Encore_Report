@@ -132,26 +132,45 @@ namespace Belcorp.Encore.Application
 			return header;
 		}
 
-		public IEnumerable<ReportPerformance_DetailModel> GetPerformance_Detail(int accountId, int sponsorId, int periodId)
+		public List<ReportPerformance_DetailModel> GetPerformance_Detail(int accountId, int sponsorId, int periodId)
 		{
 
 			var accountInformationCollection = encoreMongo_Context.AccountsInformationProvider.Find(q => q.AccountID == accountId && q.SponsorID == sponsorId && q.PeriodID == periodId);
 
-			var accountCollection = encoreMongo_Context.AccountsProvider.Find(t => t.AccountID == accountId | t.AccountID == sponsorId);
-							
-			//var detail = encoreMongo_Context.AccountsInformationProvider.Find(new BsonDocument).ToList
-			//				.Aggregate()
-			//				.Lookup<AccountsInformation_DTO,Accounts_DTO,AccountsInformationbyAccount_DTO>(
-			//				encoreMongo_Context.Database.GetCollection<Accounts_DTO>("Accounts"),
-			//					p => p.AccountID,
-			//					q=>q.AccountID,
-			//					r=>r.Accounts_DTOs						
-			//				);
+            var detail = encoreMongo_Context.AccountsInformationProvider
+                            .Aggregate()
+                            .Match(q => q.AccountID == accountId | (q.SponsorID == accountId && q.PeriodID == periodId))
+                            .Lookup<AccountsInformation_DTO, Accounts_DTO, AccountsInformation_DTO>(
+                            encoreMongo_Context.Database.GetCollection<Accounts_DTO>("Accounts"),
+                                p => p.AccountID,
+                                q => q.AccountID,
+                                r => r
+                            ).Project(ttt => new AccountsInformation_DTO
+                                {
+                                   AccountID = ttt.AccountID,
+                                }
+                            ).
+                            ToList();
 
-			//detail = detail.Project(qq => new ReportPerformance_DetailModel { Nombre=qq. }).ToList();
+            return null;
 
+            //detail = detail.Project(qq => new ReportPerformance_DetailModel { Nombre=qq. }).ToList();
 
+            //var report = ContextNew.Rentals
+            //    .Aggregate()
+            //    .Lookup<Rental, ZipCode, RentalWithZipCodes>(
+            //        ContextNew.Database.GetCollection<ZipCode>("zips"),
+            //        r => r.ZipCode,
+            //        z => z.Id,
+            //        w => w.ZipCodes
+            //    )
+            //    .ToList();
 
-		}
-	}
+        }
+
+        public IEnumerable<ReportPerformance_DetailModel> GetPerformance_Detail(int sponsorId, int periodId)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
