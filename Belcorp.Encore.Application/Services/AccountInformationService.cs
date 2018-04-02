@@ -132,45 +132,125 @@ namespace Belcorp.Encore.Application
 			return header;
 		}
 
-		public List<ReportPerformance_DetailModel> GetPerformance_Detail(int accountId, int sponsorId, int periodId)
-		{
-
-			var accountInformationCollection = encoreMongo_Context.AccountsInformationProvider.Find(q => q.AccountID == accountId && q.SponsorID == sponsorId && q.PeriodID == periodId);
-
-            var detail = encoreMongo_Context.AccountsInformationProvider
-                            .Aggregate()
-                            .Match(q => q.AccountID == accountId | (q.SponsorID == accountId && q.PeriodID == periodId))
-                            .Lookup<AccountsInformation_DTO, Accounts_DTO, AccountsInformation_DTO>(
-                            encoreMongo_Context.Database.GetCollection<Accounts_DTO>("Accounts"),
-                                p => p.AccountID,
-                                q => q.AccountID,
-                                r => r
-                            ).Project(ttt => new AccountsInformation_DTO
-                                {
-                                   AccountID = ttt.AccountID,
-                                }
-                            ).
-                            ToList();
-
-            return null;
-
-            //detail = detail.Project(qq => new ReportPerformance_DetailModel { Nombre=qq. }).ToList();
-
-            //var report = ContextNew.Rentals
-            //    .Aggregate()
-            //    .Lookup<Rental, ZipCode, RentalWithZipCodes>(
-            //        ContextNew.Database.GetCollection<ZipCode>("zips"),
-            //        r => r.ZipCode,
-            //        z => z.Id,
-            //        w => w.ZipCodes
-            //    )
-            //    .ToList();
-
-        }
-
-        public IEnumerable<ReportPerformance_DetailModel> GetPerformance_Detail(int sponsorId, int periodId)
+        public IEnumerable<ReportPerformance_DetailModel> GetPerformance_Detail(int accountId, int periodId)
         {
-            throw new NotImplementedException();
-        }
-    }
+
+			List<ReportPerformance_DetailModel> reportPerformanceDetailModel = new List<ReportPerformance_DetailModel>();
+
+			var detail = (from ai in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
+						  join
+						a in encoreMongo_Context.AccountsProvider.AsQueryable() on
+						ai.AccountID equals a.AccountID
+						  where (ai.PeriodID == periodId && (ai.AccountID == accountId || ai.SponsorID == accountId))
+						  select new
+						  {
+							  ai.PeriodID,
+							  ai.AccountID,
+							  ai.AccountNumber,
+							  ai.AccountName,
+							  ai.SponsorID,
+							  ai.SponsorName,
+							  ai.Address,
+							  ai.PostalCode,
+							  ai.City,
+							  ai.STATE,
+							  ai.Region,
+							  ai.NewStatus,
+							  ai.TimeLimitToBeDemote,
+							  ai.CareerTitle,
+							  ai.PaidAsCurrentMonth,
+							  ai.PaidAsLastMonth,
+							  ai.VolumeForCareerTitle,
+							  ai.Activity,
+							  ai.NineMonthsPQV,
+							  ai.PQV,
+							  ai.PCV,
+							  ai.GQV,
+							  ai.GCV,
+							  ai.DQVT,
+							  ai.DCV,
+							  ai.DQV,
+							  ai.JoinDate,
+							  ai.Generation,
+							  ai.LEVEL,
+							  ai.SortPath,
+							  ai.LeftBower,
+							  ai.RightBower,
+							  ai.RequirementNewGeneration,
+							  ai.TimeLimitForNewGeneration,
+							  ai.Title1Legs,
+							  ai.Title2Legs,
+							  ai.Title3Legs,
+							  ai.Title4Legs,
+							  ai.Title5Legs,
+							  ai.Title6Legs,
+							  ai.Title7Legs,
+							  ai.Title8Legs,
+							  ai.Title9Legs,
+							  ai.Title10Legs,
+							  ai.Title11Legs,
+							  ai.Title12Legs,
+							  ai.Title13Legs,
+							  ai.Title14Legs,
+							  ai.EmailAddress,
+							  ai.CQL,
+							  ai.LastOrderDate,
+							  ai.IsCommissionQualified,
+							  ai.BirthdayUTC,
+							  ai.UplineLeaderM3,
+							  ai.UplineLeaderM3Name,
+							  ai.UplineLeaderL1,
+							  ai.UplineLeaderL1Name,
+							  ai.TotalDownline,
+							  ai.CreditAvailable,
+							  ai.DebtsToExpire,
+							  ai.ExpiredDebts,
+							  ai.GenerationM3,
+							  ai.ActiveDownline,
+							  ai.TitleMaintainance,
+							  ai.SalesAverage,
+							  ai.NewQualification,
+							  ai.NewEnrollments,
+							  ai.NineMonthsGQV,
+							  ai.NineMonthsDQV,
+							  ai.ConsultActive,
+							  a
+						  }).ToList();
+
+			foreach (var item in detail)
+			{
+				reportPerformanceDetailModel.Add(new ReportPerformance_DetailModel
+				{
+					Nombre = item.AccountName,
+					Codigo = item.AccountNumber,
+					Cumpleanio = item.BirthdayUTC,
+					Estado = item.STATE,
+					Nivel = item.LEVEL,
+					Generacion = item.Generation,
+					Status = item.Activity,
+					VentaPersonal = item.PQV,
+					VOT = item.DQV,
+					VOQ = item.DQVT,
+					TitCarrera = item.CareerTitle,
+					Permanencia = "",
+					TitPago = item.PaidAsCurrentMonth,
+					CodPatrocinador = item.a.SponsorID,
+					NombrePatrocinador = item.a.FirstName,
+					EmailPatrocinador = item.a.EmailAddress,
+					TelefonoPatrocinador = item.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault(),
+					CodLider = item.UplineLeaderM3,
+					NombreLider = item.UplineLeaderM3Name,
+					EmailLider = "",
+					TelefonoLider = "",
+					ConsultoresActivos = 0,
+					CantidadEmpresariosGeneracion = 0,
+					BrazosActivos = ""
+				});
+
+			}
+
+			return reportPerformanceDetailModel;
+
+		}
+	}
 }

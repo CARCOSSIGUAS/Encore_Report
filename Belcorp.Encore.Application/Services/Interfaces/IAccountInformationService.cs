@@ -15,7 +15,7 @@ namespace Belcorp.Encore.Application.Services
 
 		IEnumerable<ReportPerformance_HeaderModel> GetPerformance_Header(int accountId, int periodId);
 
-        IEnumerable<ReportPerformance_DetailModel> GetPerformance_Detail(int accountId, int sponsorId, int periodId);
+        IEnumerable<ReportPerformance_DetailModel> GetPerformance_Detail(int accountId, int periodId);
 
 
     }

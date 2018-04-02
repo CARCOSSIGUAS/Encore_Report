@@ -10,21 +10,21 @@ namespace Belcorp.Encore.Application.ViewModel
 
 		public string Codigo { get; set; }
 
-		public DateTime Cumpleanio { get; set; }
+		public DateTime? Cumpleanio { get; set; }
 
-		public int Estado { get; set; }
+		public string Estado { get; set; }
 
-		public int Nivel { get; set; }
+		public int? Nivel { get; set; }
 
-		public int Generacion { get; set; }
+		public int? Generacion { get; set; }
 
 		public string Status { get; set; }
 
-		public string VentaPersonal { get; set; }
+		public decimal? VentaPersonal { get; set; }
 
-		public int VOT { get; set; }
+		public decimal? VOT { get; set; }
 
-		public int VOQ { get; set; }
+		public decimal? VOQ { get; set; }
 
 		public string TitCarrera { get; set; }
 
@@ -32,7 +32,7 @@ namespace Belcorp.Encore.Application.ViewModel
 
 		public string TitPago { get; set; }
 
-		public int CodPatrocinador { get; set; }
+		public int? CodPatrocinador { get; set; }
 
 		public string NombrePatrocinador { get; set; }
 
@@ -40,7 +40,7 @@ namespace Belcorp.Encore.Application.ViewModel
 
 		public string TelefonoPatrocinador { get; set; }
 
-		public int CodLider { get; set; }
+		public int? CodLider { get; set; }
 
 		public string NombreLider { get; set; }
 
