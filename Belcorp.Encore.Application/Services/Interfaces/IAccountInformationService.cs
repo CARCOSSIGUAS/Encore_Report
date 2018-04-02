@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -13,10 +14,9 @@ namespace Belcorp.Encore.Application.Services
     {
         void Migrate_AccountInformationByPeriod();
 
-		IEnumerable<ReportPerformance_HeaderModel> GetPerformance_Header(int accountId, int periodId);
+		Task<IEnumerable<ReportPerformance_HeaderModel>> GetPerformance_Header(int accountId, int periodId);
 
-        IEnumerable<ReportPerformance_DetailModel> GetPerformance_Detail(int accountId, int periodId);
-
+        Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId);
 
     }
 }

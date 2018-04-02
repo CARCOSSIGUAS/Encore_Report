@@ -14,6 +14,7 @@ using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Services.Report.ViewModel;
 using Belcorp.Encore.Application.ViewModel;
 using Belcorp.Encore.Entities.Entities.MetaData_Mongo;
+using System.Threading.Tasks;
 
 namespace Belcorp.Encore.Application
 {
@@ -125,19 +126,21 @@ namespace Belcorp.Encore.Application
 			}
 		}
 
-		public IEnumerable<ReportPerformance_HeaderModel> GetPerformance_Header(int accountId, int periodId)
+		public async Task<IEnumerable<ReportPerformance_HeaderModel>> GetPerformance_Header(int accountId, int periodId)
 		{
-			var header = encoreMongo_Context.AccountsInformationProvider.Find(p => p.AccountID == accountId && p.PeriodID == periodId, null).Project(qq => new ReportPerformance_HeaderModel { VP = qq.PQV, VOT = qq.DQV, VOQ = qq.DQVT, IdTituloCarrera = qq.CareerTitle, TituloCarrera = qq.CareerTitle_Des, IdTituloPago = qq.PaidAsCurrentMonth, TituloPago = qq.PaidAsCurrentMonth_Des, BrazosActivos = "" }).ToList();
+			var header = await encoreMongo_Context.AccountsInformationProvider.Find(p => p.AccountID == accountId && p.PeriodID == periodId, null).Project(Builders<AccountsInformation_DTO>.Projection.Exclude("_id")).As<AccountsInformation_DTO>().ToListAsync();
 
-			return header;
+			var reportHeader = header.Select(qq => new ReportPerformance_HeaderModel { VP = qq.PQV, VOT = qq.DQV, VOQ = qq.DQVT, IdTituloCarrera = qq.CareerTitle, TituloCarrera = qq.CareerTitle_Des, IdTituloPago = qq.PaidAsCurrentMonth, TituloPago = qq.PaidAsCurrentMonth_Des, BrazosActivos = "" });
+
+			return reportHeader;
 		}
 
-        public IEnumerable<ReportPerformance_DetailModel> GetPerformance_Detail(int accountId, int periodId)
+        public async Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId)
         {
 
 			List<ReportPerformance_DetailModel> reportPerformanceDetailModel = new List<ReportPerformance_DetailModel>();
 
-			var detail = (from ai in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
+			var detailWA =  ( from ai in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
 						  join
 						a in encoreMongo_Context.AccountsProvider.AsQueryable() on
 						ai.AccountID equals a.AccountID
@@ -215,9 +218,11 @@ namespace Belcorp.Encore.Application
 							  ai.NineMonthsDQV,
 							  ai.ConsultActive,
 							  a
-						  }).ToList();
+						  });
 
-			foreach (var item in detail)
+			var detailWTA = await detailWA.AsQueryable().ToAsyncEnumerable().ToList();
+
+			foreach (var item in detailWTA)
 			{
 				reportPerformanceDetailModel.Add(new ReportPerformance_DetailModel
 				{
@@ -246,9 +251,7 @@ namespace Belcorp.Encore.Application
 					CantidadEmpresariosGeneracion = 0,
 					BrazosActivos = ""
 				});
-
 			}
-
 			return reportPerformanceDetailModel;
 
 		}
