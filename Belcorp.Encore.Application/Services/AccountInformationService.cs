@@ -33,53 +33,8 @@ namespace Belcorp.Encore.Application
             encoreMongo_Context = new EncoreMongo_Context();
         }
 
-        [Obsolete]
-        public void Migrate_AccountInformationWithAccountsByPeriod()
+        public void Migrate_AccountInformationByPeriod(int periodId)
         {
-            int periodId = 201703;
-
-            var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 20000, true);
-            int ii = total.TotalPages;
-
-            encoreMongo_Context.AccountsInformationProvider.DeleteMany( p => p.PeriodID == periodId);
-            IRepository<Entities.Entities.Core.Accounts> accountsRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
-
-            var accounts = accountsRepository.GetAll().ToList();
-            for (int i = 0; i < ii; i++)
-            {
-                var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 20000, true).Items;
-                var data =
-                accountsInformation.Join(accounts, r => r.AccountID, a => a.AccountID, (r, a) => new { r, a }).Select(result => new AccountsInformation_DTO
-                {
-                    AccountsInformationID = result.r.AccountsInformationID,
-                    PeriodID = result.r.PeriodID,
-                    AccountID = result.r.AccountID,
-                    AccountNumber = result.r.AccountNumber,
-                    AccountName = result.r.AccountName,
-                    SponsorID = result.r.SponsorID,
-                    SponsorName = result.r.SponsorName,
-                    Address = result.r.Address,
-                    PostalCode = result.r.PostalCode,
-                    City = result.r.City,
-                    STATE = result.r.STATE,
-
-                    JoinDate = result.r.JoinDate,
-                    Generation = result.r.Generation,
-                    LEVEL = result.r.LEVEL,
-                    SortPath = result.r.SortPath,
-                    LeftBower = result.r.LeftBower,
-                    RightBower = result.r.RightBower
-
-                });
-
-                encoreMongo_Context.AccountsInformationProvider.InsertMany(data);
-            }
-        }
-
-        public void Migrate_AccountInformationByPeriod()
-        {
-            int periodId = 201703;
-
             var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 20000, true);
             int ii = total.TotalPages;
 
@@ -123,6 +78,7 @@ namespace Belcorp.Encore.Application
 
                 encoreMongo_Context.AccountsInformationProvider.InsertMany(data);
             }
+
         }
     }
 }

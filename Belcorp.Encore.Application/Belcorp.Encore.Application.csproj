@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="6.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Belcorp.Encore.Data\Belcorp.Encore.Data.csproj" />
     <ProjectReference Include="..\Belcorp.Encore.Entities\Belcorp.Encore.Entities.csproj" />
     <ProjectReference Include="..\Belcorp.Encore.Repositories\Belcorp.Encore.Repositories.csproj" />

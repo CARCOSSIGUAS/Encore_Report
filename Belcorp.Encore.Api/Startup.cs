@@ -52,7 +52,7 @@ namespace Belcorp.Encore.Api
             var provider = services.BuildServiceProvider();
             IAccountInformationService accountInformationService = provider.GetService<IAccountInformationService>();
 
-            RecurringJob.AddOrUpdate("Report_CloseDaily", () => accountInformationService.Migrate_AccountInformationByPeriod(), "0 0 * * *");   //Todos los dias a las 00:00
+            //RecurringJob.AddOrUpdate("Report_CloseDaily", () => accountInformationService.Migrate_AccountInformationByPeriod(), "0 0 * * *");   //Todos los dias a las 00:00
             #endregion
 
             services.AddMvc();

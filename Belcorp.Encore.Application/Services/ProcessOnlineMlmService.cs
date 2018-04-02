@@ -10,6 +10,7 @@ using System.Linq;
 using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Commissions;
+using Belcorp.Encore.Entities.Entities.DTO;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -314,11 +315,18 @@ namespace Belcorp.Encore.Application.Services
 
         public void Migrate_AccountInformationByAccountId()
         {
-            //var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
-            //var result = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId).ToList();
+            var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
+            var result = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId)
+                        .Select(ai => new AccountsInformation_DTO
+                        {
+                              
+                        }
+                        ).ToList();
 
-            //encoreMongo_Context.AccountsInformationProvider.DeleteMany(ai => ai.PeriodID == PeriodId && accountsId.Contains(ai.AccountID));
-            //encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
+            foreach (var item in result)
+            {
+                encoreMongo_Context.AccountsInformationProvider.ReplaceOneAsync(ai => ai.PeriodID == PeriodId && ai.AccountID == item.AccountID, item, new UpdateOptions {  IsUpsert = true } );
+            }
         }
     }
 }

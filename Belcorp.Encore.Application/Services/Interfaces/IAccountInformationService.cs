@@ -9,6 +9,6 @@ namespace Belcorp.Encore.Application.Services
 {
     public interface IAccountInformationService
     {
-        void Migrate_AccountInformationByPeriod();
+        void Migrate_AccountInformationByPeriod(int periodId);
     }
 }

@@ -26,7 +26,7 @@ namespace Belcorp.Encore.Api.Controllers
         public ActionResult Process(int orderId)
         {
             BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLM(orderId));
-            return Json(new { Status = "Process" });
+            return Json(new { Status = "Processing Background" });
         }
 
     }
