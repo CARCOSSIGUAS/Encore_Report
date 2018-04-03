@@ -39,6 +39,15 @@ namespace Belcorp.Encore.Services.Report.Controllers
 			return Json(header);
 		}
 
+		// GET: api/Performance
+		[HttpGet("[action]/{AccountId}")]
+		public async Task<IActionResult> GetPerformance_HeaderFront(int accountId)
+		{
+			var header = await accountInformationService.GetPerformance_HeaderFront(accountId);
+
+			return Json(header);
+		}
+
 
 		// GET: api/Performance/5
 		[HttpGet("{id}", Name = "Get")]

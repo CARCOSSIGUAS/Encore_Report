@@ -143,8 +143,8 @@ namespace Belcorp.Encore.Application
 			var detailWA =  ( from ai in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
 						  join
 						a in encoreMongo_Context.AccountsProvider.AsQueryable() on
-						ai.AccountID equals a.AccountID
-						  where (ai.PeriodID == periodId && (ai.AccountID == accountId || ai.SponsorID == accountId))
+						ai.SponsorID equals a.AccountID
+						  where (ai.PeriodID == periodId && (ai.SponsorID == accountId))
 						  select new
 						  {
 							  ai.PeriodID,
@@ -239,14 +239,14 @@ namespace Belcorp.Encore.Application
 					TitCarrera = item.CareerTitle,
 					Permanencia = "",
 					TitPago = item.PaidAsCurrentMonth,
-					CodPatrocinador = item.a.SponsorID,
-					NombrePatrocinador = item.a.FirstName,
-					EmailPatrocinador = item.a.EmailAddress,
-					TelefonoPatrocinador = item.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault(),
-					CodLider = item.UplineLeaderM3,
+					CodPatrocinador = item.SponsorID,
+					NombrePatrocinador = item.SponsorName,
+					EmailPatrocinador = (item.a.AccountID==item.SponsorID)? item.a.EmailAddress : "",
+					TelefonoPatrocinador = (item.a.AccountID == item.SponsorID) ? item.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
+					CodLider = item.UplineLeaderM3, //Falta Calc
 					NombreLider = item.UplineLeaderM3Name,
-					EmailLider = "",
-					TelefonoLider = "",
+					EmailLider = (item.a.AccountID == item.UplineLeaderM3) ? item.a.EmailAddress : "",
+					TelefonoLider = (item.a.AccountID == item.UplineLeaderM3) ? item.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
 					ConsultoresActivos = 0,
 					CantidadEmpresariosGeneracion = 0,
 					BrazosActivos = ""
@@ -254,6 +254,13 @@ namespace Belcorp.Encore.Application
 			}
 			return reportPerformanceDetailModel;
 
+		}
+
+		public async Task<IEnumerable<Accounts_DTO>> GetPerformance_HeaderFront(int accountId)
+		{
+			var header = await encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).Project(Builders<Accounts_DTO>.Projection.Exclude("_id")).As<Accounts_DTO>().ToListAsync();
+
+			return header;
 		}
 	}
 }

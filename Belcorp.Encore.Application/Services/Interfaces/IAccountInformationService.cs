@@ -1,6 +1,7 @@
 ﻿using Belcorp.Encore.Application.ViewModel;
 using Belcorp.Encore.Entities;
 using Belcorp.Encore.Entities.Entities;
+using Belcorp.Encore.Entities.Entities.MetaData_Mongo;
 using Belcorp.Encore.Services.Report.ViewModel;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -18,5 +19,8 @@ namespace Belcorp.Encore.Application.Services
 
         Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId);
 
-    }
+		Task<IEnumerable<Accounts_DTO>> GetPerformance_HeaderFront(int accountId);
+
+
+	}
 }
