@@ -30,6 +30,6 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public DateTime? ActivationDateUTC { get; set; }
         public int? ActivationPeriodID { get; set; }
 
-        public IEnumerable<AccountPhones> AccountPhones { get; set; }
+        public List<AccountPhones> AccountPhones { get; set; }
     }
 }

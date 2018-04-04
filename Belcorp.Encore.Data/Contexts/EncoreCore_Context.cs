@@ -14,8 +14,8 @@ namespace Belcorp.Encore.Data.Contexts
             builder.Entity<Accounts>()
                 .HasMany(p => p.AccountPhones);
 
-            builder.Entity<MonitorMongoDetails>()
-                .HasOne(p => p.MonitorMongo);
+            builder.Entity<MonitorMongo>()
+                .HasMany(p => p.MonitorMongoDetails);
 
         }
 
@@ -27,8 +27,8 @@ namespace Belcorp.Encore.Data.Contexts
         public DbSet<Accounts> Accounts { get; set; }
         public DbSet<AccountPhones> AccountPhones { get; set; }
 
-
         public DbSet<MonitorMongo> MonitorMongo { get; set; }
+        public DbSet<MonitorMongoDetails> MonitorMongoDetails { get; set; }
 
     }
 }

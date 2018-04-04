@@ -51,8 +51,14 @@ namespace Belcorp.Encore.Api
             JobStorage.Current = new MongoStorage(Configuration.GetConnectionString("Encore_Mongo"), "Encore_HangFire");
             var provider = services.BuildServiceProvider();
             IAccountInformationService accountInformationService = provider.GetService<IAccountInformationService>();
+            IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();
 
-            //RecurringJob.AddOrUpdate("Report_CloseDaily", () => accountInformationService.Migrate_AccountInformationByPeriod(), "0 0 * * *");   //Todos los dias a las 00:00
+            //Todos los dias a las 00:00
+            //RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => accountInformationService.Migrate_AccountInformationByPeriod(), "0 0 * * *");   
+
+            //Todos los dias, cada 5 minutos
+            RecurringJob.AddOrUpdate("Monitor_Mongo", () => monitorMongoService.Migrate(), Cron.MinuteInterval(5));  
+
             #endregion
 
             services.AddMvc();

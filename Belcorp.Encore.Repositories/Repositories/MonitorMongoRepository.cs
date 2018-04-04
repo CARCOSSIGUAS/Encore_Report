@@ -20,7 +20,12 @@ namespace Belcorp.Encore.Repositories.Repositories
 
         public IEnumerable<MonitorMongo> GetDataForProcess()
         {
-            return dbCore_Context.MonitorMongo.Where(m => m.Process == false).ToList();
+            var result = dbCore_Context.MonitorMongo.Include(c => c.MonitorMongoDetails)
+                                              .Where(m => m.Process == false || m.MonitorMongoDetails.Any(md => md.Process == false))
+                                              .Take(50)
+                                              .ToList();
+
+            return result;
         }
     }
 }

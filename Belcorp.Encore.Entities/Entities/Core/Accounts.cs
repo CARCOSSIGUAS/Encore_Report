@@ -57,6 +57,6 @@ namespace Belcorp.Encore.Entities.Entities.Core
         public short ? AccountBlockingTypeID { get; set; }
         public short ? AccountBlockingSubTypeID { get; set; }
 
-        public IEnumerable<AccountPhones> AccountPhones { get; set; }
+        public List<AccountPhones> AccountPhones { get; set; }
     }
 }

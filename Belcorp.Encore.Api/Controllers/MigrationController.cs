@@ -16,11 +16,13 @@ namespace Belcorp.Encore.Api.Controllers
     {
         private readonly IAccountInformationService accountInformationService;
         private readonly IAccountsService accountsService;
+        private readonly IMonitorMongoService monitorMongoService;
 
-        public MigrationController(IAccountInformationService _accountInformationService, IAccountsService _accountsService)
+        public MigrationController(IAccountInformationService _accountInformationService, IAccountsService _accountsService, IMonitorMongoService _monitorMongoService)
         {
             accountInformationService = _accountInformationService;
             accountsService = _accountsService;
+            monitorMongoService = _monitorMongoService;
         }
 
         [HttpGet("[action]/{PeriodId}")]

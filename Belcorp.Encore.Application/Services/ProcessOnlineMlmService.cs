@@ -30,7 +30,14 @@ namespace Belcorp.Encore.Application.Services
         public List<CalculationTypes> CalculationTypes { get; set; }
         public List<SponsorTree> Accounts { get; set; }
 
-        public ProcessOnlineMlmService(IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, IProcessOnlineRepository _processOnlineRepository, IAccountKPIsRepository _accountKPIsRepository, IAccountInformationRepository _accountsInformationRepository)
+        public ProcessOnlineMlmService
+        (
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
+            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, 
+            IProcessOnlineRepository _processOnlineRepository, 
+            IAccountKPIsRepository _accountKPIsRepository, 
+            IAccountInformationRepository _accountsInformationRepository
+        )
         {
             unitOfWork_Core = _unitOfWork_Core;
             unitOfWork_Comm = _unitOfWork_Comm;
@@ -51,30 +58,40 @@ namespace Belcorp.Encore.Application.Services
                 return;
             }
 
-            PeriodId = (int)Order.CompletedPeriodID;
-            Accounts = GetAccounts_UpLine(Order.AccountID);
-
-            decimal QV, CV, RV;
-            QV = processOnlineRepository.GetQV_ByOrder(Order.OrderID);
-            CV = Order.CommissionableTotal == null ? 0 : (decimal)Order.CommissionableTotal;
-            RV = Order.Subtotal == null ? 0 : (decimal)Order.Subtotal;
-
-            if (Order.OrderTypeID == (short)Constants.OrderType.ReturnOrder)
+            if (
+                    Order.OrderStatusID == (short)Constants.OrderStatus.Paid ||
+                    Order.OrderStatusID == (short)Constants.OrderStatus.Printed ||
+                    Order.OrderStatusID == (short)Constants.OrderStatus.Shipped ||
+                    Order.OrderStatusID == (short)Constants.OrderStatus.Invoiced ||
+                    Order.OrderStatusID == (short)Constants.OrderStatus.Embarked
+               )
             {
-                QV = QV * -1;
-                CV = CV * -1;
-                RV = RV * -1;
-            }
 
-            var existsorderCalculationOnline = processOnlineRepository.GetExists_OrderCalculationsOnline(Order.OrderID);
+                PeriodId = (int)Order.CompletedPeriodID;
+                Accounts = GetAccounts_UpLine(Order.AccountID);
 
-            if (!existsorderCalculationOnline)
-            {
-                IndicadoresInPersonal_Process(QV, CV, RV);
-                IndicadoresInDivision_Process(QV, CV, RV);
-                Indicadores_UpdateValue_AccountsInformation(QV, CV, RV);
-                OrdercalculationsOnline_Process(QV, CV, RV);
-                Migrate_AccountInformationByAccountId();
+                decimal QV, CV, RV;
+                QV = processOnlineRepository.GetQV_ByOrder(Order.OrderID);
+                CV = Order.CommissionableTotal == null ? 0 : (decimal)Order.CommissionableTotal;
+                RV = Order.Subtotal == null ? 0 : (decimal)Order.Subtotal;
+
+                if (Order.OrderTypeID == (short)Constants.OrderType.ReturnOrder)
+                {
+                    QV = QV * -1;
+                    CV = CV * -1;
+                    RV = RV * -1;
+                }
+
+                var existsorderCalculationOnline = processOnlineRepository.GetExists_OrderCalculationsOnline(Order.OrderID);
+
+                if (!existsorderCalculationOnline)
+                {
+                    IndicadoresInPersonal_Process(QV, CV, RV);
+                    IndicadoresInDivision_Process(QV, CV, RV);
+                    Indicadores_UpdateValue_AccountsInformation(QV, CV, RV);
+                    OrdercalculationsOnline_Process(QV, CV, RV);
+                    Migrate_AccountInformationByAccountId();
+                }
             }
         }
 
@@ -114,7 +131,6 @@ namespace Belcorp.Encore.Application.Services
 
             unitOfWork_Comm.SaveChanges();
         }
-
 
         #endregion
 
