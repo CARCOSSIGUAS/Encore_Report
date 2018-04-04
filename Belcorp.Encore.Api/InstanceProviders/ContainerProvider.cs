@@ -33,8 +33,8 @@
             services.AddScoped<IProcessOnlineMlmService, ProcessOnlineMlmService>();
             services.AddScoped<IProcessOnlineRepository, ProcessOnlineRepository>();
 
-            services.AddScoped<IMonitorMongoService, MonitorMongoService>();
-            services.AddScoped<IMonitorMongoRepository, MonitorMongoRepository>();
+            services.AddScoped<IMonitorMongoService, MonitorService>();
+            services.AddScoped<IMonitorRepository, MonitorRepository>();
 
         }
     }

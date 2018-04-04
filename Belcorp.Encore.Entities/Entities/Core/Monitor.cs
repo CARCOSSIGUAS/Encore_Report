@@ -6,17 +6,17 @@ using System.Text;
 
 namespace Belcorp.Encore.Entities.Entities.Core
 {
-    [Table("MonitorMongo", Schema = "Mongo")]
-    public class MonitorMongo
+    [Table("Monitor", Schema = "Mongo")]
+    public class Monitor
     {
         [Key]
-        public int MonitorMongoId { get; set; }
+        public int MonitorId { get; set; }
 
         public int RowId { get; set; }
-        public string TableNamePrincipal { get; set; }
+        public int TableIdPrincipal { get; set; }
         public bool Process { get; set; }
         public DateTime? DateProcess { get; set; }
 
-        public IEnumerable<MonitorMongoDetails> MonitorMongoDetails { get; set; }
+        public IEnumerable<MonitorDetails> MonitorDetails { get; set; }
     }
 }

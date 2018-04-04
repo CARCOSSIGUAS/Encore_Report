@@ -4,8 +4,9 @@ using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Repositories;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using System.Collections.Generic;
-
+using System.Threading.Tasks;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -66,6 +67,12 @@ namespace Belcorp.Encore.Application.Services
 
                 encoreMongo_Context.AccountsProvider.InsertMany(accounts_aux);
             }
+        }
+
+        public async Task<List<Accounts_DTO>> GetListAccounts(int accountId)
+        {
+            var result = await encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).Project(Builders<Accounts_DTO>.Projection.Exclude("_id")).As<Accounts_DTO>().ToListAsync();
+            return result;
         }
     }
 }

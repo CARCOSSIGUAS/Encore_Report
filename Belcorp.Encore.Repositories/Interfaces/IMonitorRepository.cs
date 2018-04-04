@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Belcorp.Encore.Repositories.Interfaces
 {
-    public interface IMonitorMongoRepository
+    public interface IMonitorRepository
     {
-        IEnumerable<MonitorMongo> GetDataForProcess();
+        IEnumerable<Monitor> GetDataForProcess();
     }
 }
