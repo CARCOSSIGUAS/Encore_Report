@@ -1,8 +1,5 @@
-﻿using Belcorp.Encore.Entities;
+﻿using Belcorp.Encore.Entities.Entities.Core;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Belcorp.Encore.Repositories
 {

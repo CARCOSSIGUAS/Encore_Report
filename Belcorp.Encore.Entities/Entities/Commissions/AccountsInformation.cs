@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-namespace Belcorp.Encore.Entities
+namespace Belcorp.Encore.Entities.Entities.Commissions
 {
     [Table("AccountsInformation", Schema = "Reports")]
     public class AccountsInformation

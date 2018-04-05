@@ -1,10 +1,4 @@
-﻿using Belcorp.Encore.Data.Contexts;
-using Belcorp.Encore.Entities.Entities;
-using Belcorp.Encore.Repositories;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Belcorp.Encore.Entities.Entities.Core;
 
 namespace Belcorp.Encore.Application.OnlineMLM
 {

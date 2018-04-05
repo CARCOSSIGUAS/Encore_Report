@@ -65,5 +65,12 @@ namespace Belcorp.Encore.Entities.Constants
             QV = 21,
             Wholesale = 22,
         }
+
+        public enum MonitorTables : int
+        {
+            NotSet = 0,
+            Accounts = 1,
+            AccountsPhones = 2
+        }
     }
 }

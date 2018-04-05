@@ -1,12 +1,10 @@
 ﻿using Belcorp.Encore.Data.Contexts;
-using Belcorp.Encore.Entities;
-using Belcorp.Encore.Entities.Entities;
 using Belcorp.Encore.Repositories.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using Belcorp.Encore.Entities.Constants;
+using Belcorp.Encore.Entities.Entities.Commissions;
 
 namespace Belcorp.Encore.Repositories.Repositories
 {
@@ -26,7 +24,7 @@ namespace Belcorp.Encore.Repositories.Repositories
             var calculaTypesIds = calculationsTypes.Select(c => c.CalculationTypeID);
 
             var result = (
-                            from a in dbCore_Context.Accounts join
+                            from a in dbCommissions_Context.Accounts join
                                  ct in dbCommissions_Context.CalculationTypes on 1 equals 1 join
                                  ak in dbCommissions_Context.AccountKPIs on
                                     new { A = a.AccountID, B = periodId, C = ct.CalculationTypeID } equals new { A = ak.AccountID, B = ak.PeriodID, C = ak.CalculationTypeID }
@@ -88,7 +86,11 @@ namespace Belcorp.Encore.Repositories.Repositories
                                  }
                              )
                              .Where(r => r.Value > DQV_Max)
-                             .Max(r => r.Value - DQV_Max);
+                             .Select(r => r.Value)
+                             .DefaultIfEmpty(0)
+                             .Max();
+
+            DQV_Excess = DQV_Excess == 0 ? 0 : DQV_Excess - DQV_Max;
 
             return DQV_Final - DQV_Excess;
         }
@@ -105,7 +107,7 @@ namespace Belcorp.Encore.Repositories.Repositories
                              QV = data.Sum(d => d.oip.UnitPrice * d.oi.Quantity)
                          }).ToList();
 
-            return result == null ? 0 : (decimal)result.FirstOrDefault().QV;
+            return result == null || result.Count == 0 ? 0 : (decimal)result.FirstOrDefault().QV;
         }
 
         public decimal GetRV_ByOrder(int orderId)

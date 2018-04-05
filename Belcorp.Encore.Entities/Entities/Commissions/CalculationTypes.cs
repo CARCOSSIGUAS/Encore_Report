@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 
-namespace Belcorp.Encore.Entities.Entities
+namespace Belcorp.Encore.Entities.Entities.Commissions
 {
     public class CalculationTypes
     {

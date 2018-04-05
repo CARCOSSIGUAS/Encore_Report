@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace Belcorp.Encore.Entities
+namespace Belcorp.Encore.Entities.Entities.Core
 {
     public class Accounts
     {
@@ -57,6 +57,6 @@ namespace Belcorp.Encore.Entities
         public short ? AccountBlockingTypeID { get; set; }
         public short ? AccountBlockingSubTypeID { get; set; }
 
-        public IEnumerable<AccountPhones> AccountPhones { get; set; }
+        public List<AccountPhones> AccountPhones { get; set; }
     }
 }
