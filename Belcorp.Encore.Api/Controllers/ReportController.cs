@@ -35,5 +35,38 @@ namespace Belcorp.Encore.Api.Controllers
 
             return Ok(result);
         }
-    }
+
+		// GET: api/Report
+		[HttpGet("[action]/{AccountId}/{PeriodId}")]
+		public async Task<IActionResult> GetPerformance_Header(int accountId, int periodId)
+		{
+			var header = await accountInformationService.GetPerformance_Header(accountId, periodId);
+
+			return Json(header);
+		}
+
+		// GET: api/Report
+		[HttpGet("[action]/{AccountId}/{PeriodId}")]
+		public async Task<IActionResult> GetPerformance_Detail(int accountId, int periodId)
+		{
+			var header = await accountInformationService.GetPerformance_Detail(accountId, periodId);
+
+			return Json(header);
+		}
+
+		// GET: api/Report
+		[HttpGet("[action]/{AccountId}")]
+		public JsonResult GetPerformance_HeaderFront(int accountId)
+		{
+			var header = accountInformationService.GetPerformance_HeaderFront(accountId);
+			return Json(header);
+		}
+		// GET: api/Report
+		[HttpGet("[action]/{AccountId}/{PeriodId}")]
+		public JsonResult GetPerformance_AccountInformation(int accountId, int periodId)
+		{
+			var header = accountInformationService.GetPerformance_AccountInformation(accountId, periodId);
+			return Json(header);
+		}
+	}
 }
