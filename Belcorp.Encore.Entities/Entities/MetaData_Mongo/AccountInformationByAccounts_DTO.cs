@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Belcorp.Encore.Entities.Entities.DTO;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
