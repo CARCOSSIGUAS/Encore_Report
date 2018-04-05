@@ -29,6 +29,7 @@ namespace Belcorp.Encore.Data.Contexts
 
         public DbSet<Monitor> Monitor { get; set; }
         public DbSet<MonitorDetails> MonitorDetails { get; set; }
+        public DbSet<MonitorOrders> MonitorOrders { get; set; }
 
     }
 }

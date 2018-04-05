@@ -344,5 +344,20 @@ namespace Belcorp.Encore.Application.Services
                 encoreMongo_Context.AccountsInformationProvider.ReplaceOneAsync(ai => ai.PeriodID == PeriodId && ai.AccountID == item.AccountID, item, new UpdateOptions {  IsUpsert = true } );
             }
         }
+
+        public void ProcessMLM_BackPayment()
+        {
+            IRepository<MonitorOrders> monitorOrdersRepository = unitOfWork_Core.GetRepository<MonitorOrders>();
+            var orders = monitorOrdersRepository.GetPagedList(o => o.Process == false, o => o.OrderBy( oo => oo.MonnitorOrderId ), null, 0, 100, false).Items;
+
+            foreach (var order in orders)
+            {
+                ProcessMLM(order.OrderId);
+                order.Process = true;
+                order.DateProcess = DateTime.Now;
+
+                unitOfWork_Core.SaveChanges();
+            }
+        }
     }
 }

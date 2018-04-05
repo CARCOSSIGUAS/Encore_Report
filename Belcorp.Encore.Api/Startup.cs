@@ -1,5 +1,6 @@
 ﻿using Belcorp.Encore.Api.InstanceProviders;
 using Belcorp.Encore.Application;
+using Belcorp.Encore.Application.Interfaces;
 using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Data.Contexts;
 using Hangfire;
@@ -52,12 +53,14 @@ namespace Belcorp.Encore.Api
             var provider = services.BuildServiceProvider();
             IAccountInformationService accountInformationService = provider.GetService<IAccountInformationService>();
             IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();
+            IProcessOnlineMlmService processOnlineMlmService = provider.GetService<IProcessOnlineMlmService>();
 
             //Todos los dias a las 00:00
             //RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => accountInformationService.Migrate_AccountInformationByPeriod(), "0 0 * * *");   
 
             //Todos los dias, cada 5 minutos
-            RecurringJob.AddOrUpdate("Monitor_Mongo", () => monitorMongoService.Migrate(), Cron.MinuteInterval(5));  
+            RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(), Cron.MinuteInterval(5));
+            RecurringJob.AddOrUpdate("Monitor_Tabla_Ordenes",  () => processOnlineMlmService.ProcessMLM_BackPayment(), Cron.MinuteInterval(5));
 
             #endregion
 
