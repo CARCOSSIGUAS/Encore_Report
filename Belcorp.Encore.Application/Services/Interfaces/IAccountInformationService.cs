@@ -19,8 +19,9 @@ namespace Belcorp.Encore.Application.Services
 
         Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId);
 
-		Task<IEnumerable<Accounts_DTO>> GetPerformance_HeaderFront(int accountId);
+		IEnumerable<Accounts_DTO> GetPerformance_HeaderFront(int accountId);
 
+		Task<List<AccountsInformation_DTO>> GetPerformance_AccountInformation(int accountId, int periodId);
 
 	}
 }

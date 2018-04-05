@@ -19,7 +19,8 @@ namespace Belcorp.Encore.Services.Report
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
+			    .UseUrls("http://localhost:3389")
+				.UseStartup<Startup>()
                 .Build();
     }
 }
