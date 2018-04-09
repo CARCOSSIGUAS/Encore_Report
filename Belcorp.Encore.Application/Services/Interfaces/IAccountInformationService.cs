@@ -25,6 +25,9 @@ namespace Belcorp.Encore.Application.Services
 
         Task<List<AccountsInformation_DTO>> GetPerformance_AccountInformation(int accountId, int periodId);
 
-    }
+		AccountsExtended GetAccounts(Filtros_DTO filtrosDTO);
+
+
+	}
 
 }

@@ -107,6 +107,18 @@ namespace Belcorp.Encore.Application
             return devolver;
         }
 
+		public AccountsExtended GetAccounts(Filtros_DTO filtrosDTO)
+		{
+			var devolver = encoreMongo_Context.AccountsProvider.AsQueryable().Where(p => (p.FirstName.Contains(filtrosDTO.NombreConsultora))).ToList();
+
+			var devolverData = devolver.Skip(filtrosDTO.NumeroPagina).Take(filtrosDTO.NumeroRegistros).ToList();
+
+			var totalPages = devolver.Count() / (filtrosDTO.NumeroRegistros);
+
+			return new AccountsExtended { numPage = totalPages, accountsDTO = devolverData };
+			
+		}
+
         public async Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId)
         {
 
@@ -192,43 +204,47 @@ namespace Belcorp.Encore.Application
                                 a
                             });
 
-            var detailWTA = await detailWA.AsQueryable().ToAsyncEnumerable().ToList();
 
-            Parallel.ForEach(detailWTA, detailItem =>
-            {
-                reportPerformanceDetailModel.Add(new ReportPerformance_DetailModel
-                {
-                    Nombre = detailItem.AccountName,
-                    Codigo = detailItem.AccountNumber,
-                    Cumpleanio = detailItem.BirthdayUTC,
-                    Estado = detailItem.STATE,
-                    Nivel = detailItem.LEVEL,
-                    Generacion = detailItem.Generation,
-                    Status = detailItem.Activity,
-                    VentaPersonal = detailItem.PQV,
-                    VOT = detailItem.DQV,
-                    VOQ = detailItem.DQVT,
-                    TitCarrera = detailItem.CareerTitle,
-                    Permanencia = "",
-                    TitPago = detailItem.PaidAsCurrentMonth,
-                    CodPatrocinador = detailItem.SponsorID,
-                    NombrePatrocinador = detailItem.SponsorName,
-                    EmailPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.EmailAddress : "",
-                    TelefonoPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
-                    CodLider = detailItem.UplineLeaderM3, //Falta Calc
-                NombreLider = detailItem.UplineLeaderM3Name,
-                    EmailLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.EmailAddress : "",
-                    TelefonoLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
-                    ConsultoresActivos = 0,
-                    CantidadEmpresariosGeneracion = 0,
-                    BrazosActivos = ""
-                });
 
-            });
+			var detailWTA = await detailWA.AsQueryable().ToAsyncEnumerable().ToList();
 
-            return reportPerformanceDetailModel;
+			Parallel.ForEach(detailWTA, detailItem =>
+			{
+				reportPerformanceDetailModel.Add(new ReportPerformance_DetailModel
+				{
+					Nombre = detailItem.AccountName,
+					Codigo = detailItem.AccountNumber,
+					Cumpleanio = detailItem.BirthdayUTC,
+					Estado = detailItem.STATE,
+					Nivel = detailItem.LEVEL,
+					Generacion = detailItem.Generation,
+					Status = detailItem.Activity,
+					VentaPersonal = detailItem.PQV,
+					VOT = detailItem.DQV,
+					VOQ = detailItem.DQVT,
+					TitCarrera = detailItem.CareerTitle,
+					Permanencia = "",
+					TitPago = detailItem.PaidAsCurrentMonth,
+					CodPatrocinador = detailItem.SponsorID,
+					NombrePatrocinador = detailItem.SponsorName,
+					EmailPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.EmailAddress : "",
+					TelefonoPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
+					CodLider = detailItem.UplineLeaderM3, //Falta Calc
+					NombreLider = detailItem.UplineLeaderM3Name,
+					EmailLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.EmailAddress : "",
+					TelefonoLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
+					ConsultoresActivos = 0,
+					CantidadEmpresariosGeneracion = 0,
+					BrazosActivos = ""
+				});
+
+			});
+
+			return reportPerformanceDetailModel;
 
         }
+
+		
 
         public IEnumerable<Accounts_DTO> GetPerformance_HeaderFront(int accountId)
         {

@@ -24,7 +24,9 @@ namespace Belcorp.Encore.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHangfire(config =>
+
+
+			services.AddHangfire(config =>
             {
                 // Read DefaultConnection string from appsettings.json
                 var connectionString = Configuration.GetConnectionString("Encore_Mongo");
@@ -67,7 +69,11 @@ namespace Belcorp.Encore.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseHangfireServer(new BackgroundJobServerOptions
+			app.UseCors(builder =>
+						builder.WithOrigins("http://localhost:3000")
+						.AllowAnyHeader());
+
+			app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 HeartbeatInterval = new System.TimeSpan(0, 1, 0),
                 ServerCheckInterval = new System.TimeSpan(0, 1, 0),

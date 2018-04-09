@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Belcorp.Encore.Application.Services;
+using Belcorp.Encore.Entities.Entities.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,6 +54,31 @@ namespace Belcorp.Encore.Api.Controllers
 
 			return Json(header);
 		}
+
+		[HttpPost("[action]")]
+		public JsonResult Mundo(int periodo)
+		{
+			var header = "Hola";
+
+			return Json(header);
+		}
+
+
+		[HttpPost("[action]")]
+		public IActionResult GetAccountsFilterPaginated([FromBody] Filtros_DTO filtrosDTO)
+		{
+			if (filtrosDTO == null)
+			{
+				return BadRequest();
+			}
+
+			var header = accountInformationService.GetAccounts(filtrosDTO);
+
+			return Json(header);
+		}
+
+
+
 
 		// GET: api/Report
 		[HttpGet("[action]")]
