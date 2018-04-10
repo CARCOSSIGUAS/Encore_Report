@@ -6,15 +6,16 @@ using System.Text;
 
 namespace Belcorp.Encore.Entities.Entities.Core
 {
-    [Table("MonitorOrders", Schema = "Mongo")]
-    public class MonitorOrders
+    [Table("MonitorLotes", Schema = "Mongo")]
+    public class MonitorLotes
     {
         [Key]
-        public int MonitorOrderId { get; set; }
-
         public int LoteId { get; set; }
-        public int OrderId { get; set; }
-        public bool Process { get; set; }
+
         public DateTime ? DateProcess { get; set; }
+        public bool Process { get; set; }
+
+        public IEnumerable<MonitorOrders> MonitorOrders { get; set; }
+
     }
 }

@@ -41,6 +41,11 @@ namespace Belcorp.Encore.Api
                 config.UseMongoStorage(connectionString, "Encore_HangFire", storageOptions);
             });
 
+            services.AddMvc(setupAction =>
+            {
+                setupAction.ReturnHttpNotAcceptable = true;
+            });
+
             services
             .AddDbContext<EncoreCommissions_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Commissions")))
             .AddDbContext<EncoreCore_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Core")))
@@ -58,9 +63,9 @@ namespace Belcorp.Encore.Api
             //Todos los dias a las 00:00
             //RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => accountInformationService.Migrate_AccountInformationByPeriod(), "0 0 * * *");   
 
-            //Todos los dias, cada 5 minutos
-            RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(), Cron.MinuteInterval(5));
-            RecurringJob.AddOrUpdate("Monitor_Tabla_Ordenes",  () => processOnlineMlmService.ProcessMLM_BackPayment(), Cron.MinuteInterval(5));
+            //Todos los dias, cada 10 minutos
+              RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(), Cron.MinuteInterval(10));
+            //RecurringJob.AddOrUpdate("Monitor_Tabla_Ordenes",  () => processOnlineMlmService.ProcessMLM_BankPayment(), Cron.MinuteInterval(5));
 
             #endregion
 

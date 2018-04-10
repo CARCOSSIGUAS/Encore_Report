@@ -17,6 +17,9 @@ namespace Belcorp.Encore.Data.Contexts
             builder.Entity<Monitor>()
                 .HasMany(p => p.MonitorDetails);
 
+            builder.Entity<MonitorLotes>()
+                .HasMany(p => p.MonitorOrders);
+
         }
 
         public DbSet<Orders> Orders { get; set; }
@@ -29,6 +32,8 @@ namespace Belcorp.Encore.Data.Contexts
 
         public DbSet<Monitor> Monitor { get; set; }
         public DbSet<MonitorDetails> MonitorDetails { get; set; }
+
+        public DbSet<MonitorLotes> MonitorLotes { get; set; }
         public DbSet<MonitorOrders> MonitorOrders { get; set; }
 
     }
