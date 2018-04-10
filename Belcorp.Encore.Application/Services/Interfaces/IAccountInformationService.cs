@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Belcorp.Encore.Entities.Entities.DTO;
 
 namespace Belcorp.Encore.Application.Services
 {

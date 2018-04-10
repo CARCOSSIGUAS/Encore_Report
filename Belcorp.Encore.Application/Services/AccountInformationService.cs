@@ -18,6 +18,7 @@ using Belcorp.Encore.Services.Report.ViewModel;
 using Belcorp.Encore.Application.ViewModel;
 
 using System.Threading.Tasks;
+using Belcorp.Encore.Entities.Entities.DTO;
 
 namespace Belcorp.Encore.Application
 {
@@ -114,8 +115,8 @@ namespace Belcorp.Encore.Application
 			var sponsorSearch = GetPerformance_HeaderFront(filtrosDTO.CodConsultoraSearched, filtrosDTO.Period);
 
 			var sponsorFilter = encoreMongo_Context.AccountsInformationProvider.AsQueryable().Where(q =>
-													 		q.LeftBower >=filtrosDTO.LeftBower && q.RightBower <= filtrosDTO.RigthBower && q.PeriodID == filtrosDTO.Period &&  (q.PaidAsLastMonth.Contains(filtrosDTO.TituloPago ?? "") || string.IsNullOrEmpty(q.PaidAsLastMonth))
-													 	&& (q.LeftBower<= sponsorSearch.LeftBower && q.RightBower <= sponsorSearch.RigthBower)
+													 q.LeftBower >=filtrosDTO.LeftBower && q.RightBower <= filtrosDTO.RigthBower && q.PeriodID == filtrosDTO.Period &&  (q.PaidAsLastMonth.Contains(filtrosDTO.TituloPago ?? "") || string.IsNullOrEmpty(q.PaidAsLastMonth))
+													 && (q.LeftBower<= sponsorSearch.LeftBower && q.RightBower <= sponsorSearch.RigthBower)
 													 && (q.CareerTitle.Contains(filtrosDTO.TituloCarrera??"") || string.IsNullOrEmpty(q.CareerTitle))
 													 && (q.STATE.Contains(filtrosDTO.Estado??"") ||( string.IsNullOrEmpty(q.STATE) ||(string.IsNullOrEmpty(filtrosDTO.Estado))) )
 													 && (q.PQV == filtrosDTO.VentaPersonal || (q.PQV == 0) || (filtrosDTO.VentaPersonal == 0))
@@ -266,10 +267,16 @@ namespace Belcorp.Encore.Application
 			{
 				var header = encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).ToList();
 
+
+
 				var headerByAccountInformation = from headerInitial in header
 												 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c=>c.AccountID==accountId && c.PeriodID==period).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
-												 select new AccountsInformationExtended { LeftBower=reportAccountInitial.LeftBower, RigthBower=reportAccountInitial.RightBower , accounts_DTO= headerInitial };
+												 select new AccountsInformationExtended { LeftBower=reportAccountInitial.LeftBower, RigthBower=reportAccountInitial.RightBower , accounts_Mongo= headerInitial };
+												 
 
+				//var headerByAccountInformation = encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == period).ToList();
+
+				
 				return headerByAccountInformation.FirstOrDefault();
 				
             }
