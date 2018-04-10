@@ -7,6 +7,6 @@ namespace Belcorp.Encore.Entities.Entities.DTO
     public class AccountsExtended
     {
 		public int numPage;
-		public List<Accounts_DTO> accountsDTO;
+		public List<AccountsInformation_DTO> accountsInformationDTO;
     }
 }

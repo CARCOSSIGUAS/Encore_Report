@@ -7,35 +7,35 @@ using Belcorp.Encore.Entities.Entities.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Belcorp.Encore.Api.Controllers
+namespace Belcorp.Encore.Services.Report.Controllers
 {
-    [Produces("application/json")]
-    [Route("api/Report")]
-    public class ReportController : Controller
-    {
-        private readonly IAccountInformationService accountInformationService;
-        private readonly IAccountsService accountsService;
-        private readonly IMonitorMongoService monitorMongoService;
+	[Produces("application/json")]
+	[Route("api/Report")]
+	public class ReportController : Controller
+	{
+		private readonly IAccountInformationService accountInformationService;
+		private readonly IAccountsService accountsService;
+		private readonly IMonitorMongoService monitorMongoService;
 
-        public ReportController(IAccountInformationService _accountInformationService, IAccountsService _accountsService, IMonitorMongoService _monitorMongoService)
-        {
-            accountInformationService = _accountInformationService;
-            accountsService = _accountsService;
-            monitorMongoService = _monitorMongoService;
-        }
+		public ReportController(IAccountInformationService _accountInformationService, IAccountsService _accountsService, IMonitorMongoService _monitorMongoService)
+		{
+			accountInformationService = _accountInformationService;
+			accountsService = _accountsService;
+			monitorMongoService = _monitorMongoService;
+		}
 
 		[HttpGet("[action]")]
 		public async Task<ActionResult> Accounts(int accountId)
-        {
-            var result = await accountsService.GetListAccounts(accountId);
+		{
+			var result = await accountsService.GetListAccounts(accountId);
 
-            if (result == null)
-            {
-                NotFound();
-            }
+			if (result == null)
+			{
+				NotFound();
+			}
 
-            return Ok(result);
-        }
+			return Ok(result);
+		}
 
 		// GET: api/Report
 		[HttpGet("[action]")]
@@ -77,13 +77,11 @@ namespace Belcorp.Encore.Api.Controllers
 			return Json(header);
 		}
 
-
-
 		// GET: api/Report
 		[HttpGet("[action]")]
 		public JsonResult GetPerformance_HeaderFront(int accountId, int period)
 		{
-			var header = accountInformationService.GetPerformance_HeaderFront(accountId,period);
+			var header = accountInformationService.GetPerformance_HeaderFront(accountId, period);
 			return Json(header);
 		}
 		// GET: api/Report

@@ -109,15 +109,29 @@ namespace Belcorp.Encore.Application
 
 		public AccountsExtended GetAccounts(Filtros_DTO filtrosDTO)
 		{
-			var devolver = encoreMongo_Context.AccountsProvider.AsQueryable().Where(p => (p.FirstName.Contains(filtrosDTO.NombreConsultora))).ToList();
+			//Usuario Logeado
+			var sponsorSearch = GetPerformance_HeaderFront(filtrosDTO.CodConsultoraSearched, filtrosDTO.Period);
 
-			var devolverData = devolver.Skip(filtrosDTO.NumeroPagina).Take(filtrosDTO.NumeroRegistros).ToList();
+			var sponsorFilter = encoreMongo_Context.AccountsInformationProvider.AsQueryable().Where(q =>
+													 		q.LeftBower >=filtrosDTO.LeftBower && q.RightBower <= filtrosDTO.RigthBower && q.PeriodID == filtrosDTO.Period &&  (q.PaidAsLastMonth.Contains(filtrosDTO.TituloPago ?? "") || string.IsNullOrEmpty(q.PaidAsLastMonth))
+													 	&& (q.LeftBower<= sponsorSearch.LeftBower && q.RightBower <= sponsorSearch.RigthBower)
+													 && (q.CareerTitle.Contains(filtrosDTO.TituloCarrera??"") || string.IsNullOrEmpty(q.CareerTitle))
+													 && (q.STATE.Contains(filtrosDTO.Estado??"") ||( string.IsNullOrEmpty(q.STATE) ||(string.IsNullOrEmpty(filtrosDTO.Estado))) )
+													 && (q.PQV == filtrosDTO.VentaPersonal || (q.PQV == 0) || (filtrosDTO.VentaPersonal == 0))
+													 && (q.LEVEL == filtrosDTO.Nivel || (q.LEVEL == 0) || (filtrosDTO.Nivel == 0))
+													 && (q.Generation == filtrosDTO.Generation || (q.Generation == 0) || (filtrosDTO.Generation == 0))
+													 && (q.DQVT == filtrosDTO.VOT || (q.DQVT == 0) || (filtrosDTO.VOT == 0))
+													 && (q.DQV == filtrosDTO.VOQ || (q.DQV == 0) || (filtrosDTO.VOQ==0))												
+													).ToList();
 
-			var totalPages = devolver.Count() / (filtrosDTO.NumeroRegistros);
+			var devolverData = sponsorFilter.Skip(filtrosDTO.NumeroPagina).Take(filtrosDTO.NumeroRegistros).ToList();
 
-			return new AccountsExtended { numPage = totalPages, accountsDTO = devolverData };
+			var totalPages = sponsorFilter.Count() / (filtrosDTO.NumeroRegistros);
+
+			return new AccountsExtended { numPage = totalPages, accountsInformationDTO = devolverData };
 			
 		}
+
 
         public async Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId)
         {
@@ -244,22 +258,24 @@ namespace Belcorp.Encore.Application
 
         }
 
-		
 
-        public IEnumerable<Accounts_DTO> GetPerformance_HeaderFront(int accountId)
+		public AccountsInformationExtended GetPerformance_HeaderFront(int accountId,int period)
         {
-            try
-            {
-                var header = encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).ToList();
+			try
+			{
+				var header = encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).ToList();
 
-                return header;
+				var headerByAccountInformation = from headerInitial in header
+												 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c=>c.AccountID==accountId && c.PeriodID==period).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
+												 select new AccountsInformationExtended { LeftBower=reportAccountInitial.LeftBower, RigthBower=reportAccountInitial.RightBower , accounts_DTO= headerInitial };
 
+				return headerByAccountInformation.FirstOrDefault();
+				
             }
             catch (Exception ex)
             {
                 throw new Exception { };
             }
         }
-
-    }
+	}
 }
