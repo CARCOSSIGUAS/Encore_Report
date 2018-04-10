@@ -25,29 +25,7 @@ namespace Belcorp.Encore.Repositories
         {
             var result = from ai in dbCommissions_Context.AccountsInformation.AsNoTracking()
                          where ai.PeriodID == periodId && accountIds.Contains(ai.AccountID)
-                         select
-                         (new AccountsInformation
-                         {
-                             AccountsInformationID = ai.AccountsInformationID,
-                             PeriodID = ai.PeriodID,
-                             AccountID = ai.AccountID,
-                             AccountNumber = ai.AccountNumber,
-                             AccountName = ai.AccountName,
-                             SponsorID = ai.SponsorID,
-                             SponsorName = ai.SponsorName,
-                             Address = ai.Address,
-                             PostalCode = ai.PostalCode,
-                             City = ai.City,
-                             STATE = ai.STATE,
-
-                             JoinDate = ai.JoinDate,
-                             Generation = ai.Generation,
-                             LEVEL = ai.LEVEL,
-                             SortPath = ai.SortPath,
-                             LeftBower = ai.LeftBower,
-                             RightBower = ai.RightBower
-                         }
-                        );
+                         select ai;
 
             return result.ToList();
         }

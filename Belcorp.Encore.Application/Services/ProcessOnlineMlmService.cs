@@ -10,7 +10,7 @@ using System.Linq;
 using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Commissions;
-using Belcorp.Encore.Entities.Entities.DTO;
+using Belcorp.Encore.Entities.Entities.Mongo;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -49,7 +49,7 @@ namespace Belcorp.Encore.Application.Services
             CalculationTypes = GetCalculationTypesByCode();
         }
 
-        public void ProcessMLM(int _orderId)
+        public void ProcessMLM_Order(int _orderId)
         {
             IRepository<Orders> ordersRepository = unitOfWork_Core.GetRepository<Orders>();
             Order = ordersRepository.GetFirstOrDefault(o => o.OrderID == _orderId, null, null, true);
@@ -67,7 +67,7 @@ namespace Belcorp.Encore.Application.Services
                )
             {
 
-                PeriodId = (int)Order.CompletedPeriodID;
+                PeriodId = GetPeriodId();
                 Accounts = GetAccounts_UpLine(Order.AccountID);
 
                 decimal QV, CV, RV;
@@ -130,6 +130,13 @@ namespace Belcorp.Encore.Application.Services
                                     });
 
             unitOfWork_Comm.SaveChanges();
+        }
+
+        public int GetPeriodId()
+        {
+            IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
+            var result = periodsRepository.GetFirstOrDefault(p => Order.CompleteDateUTC >= p.StartDateUTC && Order.CompleteDateUTC <= p.EndDateUTC && p.PlanID == 1, null, null, true);
+            return result.PeriodID;
         }
 
         #endregion
@@ -331,17 +338,99 @@ namespace Belcorp.Encore.Application.Services
 
         public void Migrate_AccountInformationByAccountId()
         {
+            IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
+            var titles = titlesRepository.GetAll().ToList();
+
             var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
-            var result = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId)
-                        .Select(ai => new AccountsInformation_DTO
-                        {
-                              
-                        }
-                        ).ToList();
+            var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId);
+
+            var result = from ai in accountsInformation
+                         join titlesInfo_Career in titles on Int32.Parse(ai.CareerTitle) equals titlesInfo_Career.TitleID
+                         join titlesInfo_Paid in titles on Int32.Parse(ai.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
+                         select new AccountsInformation_Mongo
+                         {
+                             CountryID = 0,
+                             AccountsInformationID = ai.AccountsInformationID,
+
+                             PeriodID = ai.PeriodID,
+                             AccountID = ai.AccountID,
+                             AccountNumber = ai.AccountNumber,
+                             AccountName = ai.AccountName,
+                             SponsorID = ai.SponsorID,
+                             SponsorName = ai.SponsorName,
+                             Address = ai.Address,
+                             PostalCode = ai.PostalCode,
+                             City = ai.City,
+                             STATE = ai.STATE,
+
+                             PQV = ai.PQV,
+                             DQV = ai.DQV,
+                             DQVT = ai.DQVT,
+
+                             CareerTitle = ai.CareerTitle,
+                             PaidAsCurrentMonth = ai.PaidAsCurrentMonth,
+                             CareerTitle_Des = titlesInfo_Career.Name,
+                             PaidAsCurrentMonth_Des = titlesInfo_Paid.Name,
+
+                             JoinDate = ai.JoinDate,
+                             Generation = ai.Generation,
+                             LEVEL = ai.LEVEL,
+                             SortPath = ai.SortPath,
+                             LeftBower = ai.LeftBower,
+                             RightBower = ai.RightBower,
+                             Activity = ai.Activity
+                         };
 
             foreach (var item in result)
             {
-                encoreMongo_Context.AccountsInformationProvider.ReplaceOneAsync(ai => ai.PeriodID == PeriodId && ai.AccountID == item.AccountID, item, new UpdateOptions {  IsUpsert = true } );
+                var item_Mongo = encoreMongo_Context.AccountsInformationProvider.Find(ai => ai.CountryID == 0 && ai.PeriodID == PeriodId && ai.AccountID == item.AccountID).FirstOrDefault();
+                if (item_Mongo != null)
+                {
+                    item.Id = item_Mongo.Id;
+                    encoreMongo_Context.AccountsInformationProvider.ReplaceOne(ai => ai.CountryID == 0 && ai.PeriodID == PeriodId && ai.AccountID == item.AccountID, item, new UpdateOptions { IsUpsert = true });
+                }
+                else
+                {
+                    encoreMongo_Context.AccountsInformationProvider.InsertOne(item);
+                }
+            }
+        }
+
+        public void ProcessMLM_Lote(int loteId)
+        {
+            IRepository<MonitorLotes> monitorLotesRepository = unitOfWork_Core.GetRepository<MonitorLotes>();
+            IRepository<MonitorOrders> monitorOrdersRepository = unitOfWork_Core.GetRepository<MonitorOrders>();
+
+            
+            int total = monitorOrdersRepository.Count(o => o.LoteId == loteId);
+            if (total > 0)
+            {
+                var ordenes = monitorOrdersRepository.GetPagedList(l => l.LoteId == loteId && l.Process == false, null, null, 0, total, false).Items;
+
+                foreach (var order in ordenes)
+                {
+                    try
+                    {
+                        ProcessMLM_Order(order.OrderId);
+                        order.Process = true;
+                        order.DateProcess = DateTime.Now;
+
+                        unitOfWork_Core.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+
+                int ordenes_pendientes = monitorLotesRepository.Count(l => l.LoteId == loteId && l.MonitorOrders.Any(o => o.Process == false));
+                if (ordenes_pendientes == 0)
+                {
+                    var lote = monitorLotesRepository.GetFirstOrDefault(l => l.LoteId == loteId, null, null, false);
+                    lote.DateProcess = DateTime.Now;
+                    lote.Process = true;
+                    unitOfWork_Core.SaveChanges();
+                }
             }
         }
     }

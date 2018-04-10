@@ -1,14 +1,18 @@
 ﻿using Belcorp.Encore.Entities.Entities.Core;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Belcorp.Encore.Entities.Entities.DTO
+namespace Belcorp.Encore.Entities.Entities.Mongo
 {
-    public class Accounts_DTO
+    public class Accounts_Mongo
     {
-        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
+
+        public int CountryID { get; set; }
         public int AccountID { get; set; }
 
         public string AccountNumber { get; set; }
@@ -24,12 +28,12 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public int? AccountStatusChangeReasonID { get; set; }
         public int? AccountStatusID { get; set; }
         public string EntityName { get; set; }
-        public int CountryID { get; set; }
         public DateTime? BirthdayUTC { get; set; }
         public DateTime? TerminatedDateUTC { get; set; }
         public DateTime? ActivationDateUTC { get; set; }
         public int? ActivationPeriodID { get; set; }
 
         public List<AccountPhones> AccountPhones = new List<AccountPhones>();
+        
     }
 }

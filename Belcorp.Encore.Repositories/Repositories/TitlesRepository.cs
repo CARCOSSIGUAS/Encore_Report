@@ -12,5 +12,6 @@ namespace Belcorp.Encore.Repositories
         {
             dbCommissions_Context = _dbCommissions_Context;
         }
+
     }
 }

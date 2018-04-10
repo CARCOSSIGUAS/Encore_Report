@@ -13,7 +13,7 @@ using Belcorp.Encore.Entities.Entities;
 using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Commissions;
-using Belcorp.Encore.Entities.Entities.DTO;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Services.Report.ViewModel;
 using Belcorp.Encore.Application.ViewModel;
 
@@ -28,7 +28,6 @@ namespace Belcorp.Encore.Application
 
         private readonly EncoreMongo_Context encoreMongo_Context;
         private readonly IAccountInformationRepository accountInformationRepository;
-        private readonly ITitlesRepository titlesRepository;
 
         public AccountInformationService(IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, IAccountInformationRepository _accountInformationRepository)
         {
@@ -42,65 +41,67 @@ namespace Belcorp.Encore.Application
         {
             var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
             int ii = total.TotalPages;
-            var titles = titlesRepository.GetAll().AsQueryable().ToList();
 
+            IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
+            var titles = titlesRepository.GetAll().ToList();
 
-            encoreMongo_Context.AccountsInformationProvider.DeleteMany(p => p.PeriodID == periodId);
+            encoreMongo_Context.AccountsInformationProvider.DeleteMany(p => p.PeriodID == periodId && p.CountryID == 0);
 
             for (int i = 0; i < ii; i++)
             {
                 var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
 
-                var x = from accountsInfo in accountsInformation
-                        join titlesInfo in titles on Int32.Parse(accountsInfo.CareerTitle) equals titlesInfo.TitleID
-                        join titlesInfo2 in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo2.TitleID
-                        select new AccountsInformation_DTO
-                        {
-                            AccountsInformationID = accountsInfo.AccountsInformationID,
-                            PeriodID = accountsInfo.PeriodID,
-                            AccountID = accountsInfo.AccountID,
-                            AccountNumber = accountsInfo.AccountNumber,
-                            AccountName = accountsInfo.AccountName,
-                            SponsorID = accountsInfo.SponsorID,
-                            SponsorName = accountsInfo.SponsorName,
-                            Address = accountsInfo.Address,
-                            PostalCode = accountsInfo.PostalCode,
-                            City = accountsInfo.City,
-                            STATE = accountsInfo.STATE,
+                var result = from accountsInfo in accountsInformation
+                             join titlesInfo in titles on Int32.Parse(accountsInfo.CareerTitle) equals titlesInfo.TitleID
+                             join titlesInfo2 in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo2.TitleID
+                             select new AccountsInformation_Mongo
+                             {
+                                 CountryID = 0,
+                                 AccountsInformationID = accountsInfo.AccountsInformationID,
 
-                            PQV = accountsInfo.PQV,
-                            DQV = accountsInfo.DQV,
-                            DQVT = accountsInfo.DQVT,
+                                 PeriodID = accountsInfo.PeriodID,
+                                 AccountID = accountsInfo.AccountID,
+                                 AccountNumber = accountsInfo.AccountNumber,
+                                 AccountName = accountsInfo.AccountName,
+                                 SponsorID = accountsInfo.SponsorID,
+                                 SponsorName = accountsInfo.SponsorName,
+                                 Address = accountsInfo.Address,
+                                 PostalCode = accountsInfo.PostalCode,
+                                 City = accountsInfo.City,
+                                 STATE = accountsInfo.STATE,
 
-                            CareerTitle = accountsInfo.CareerTitle,
-                            PaidAsCurrentMonth = accountsInfo.PaidAsCurrentMonth,
-                            CareerTitle_Des = titlesInfo.Name,
-                            PaidAsCurrentMonth_Des = titlesInfo2.Name,
+                                 PQV = accountsInfo.PQV,
+                                 DQV = accountsInfo.DQV,
+                                 DQVT = accountsInfo.DQVT,
 
-                            JoinDate = accountsInfo.JoinDate,
-                            Generation = accountsInfo.Generation,
-                            LEVEL = accountsInfo.LEVEL,
-                            SortPath = accountsInfo.SortPath,
-                            LeftBower = accountsInfo.LeftBower,
-                            RightBower = accountsInfo.RightBower,
-                            Activity = accountsInfo.Activity
-                        };
+                                 CareerTitle = accountsInfo.CareerTitle,
+                                 PaidAsCurrentMonth = accountsInfo.PaidAsCurrentMonth,
+                                 CareerTitle_Des = titlesInfo.Name,
+                                 PaidAsCurrentMonth_Des = titlesInfo2.Name,
 
-                encoreMongo_Context.AccountsInformationProvider.InsertMany(x);
+                                 JoinDate = accountsInfo.JoinDate,
+                                 Generation = accountsInfo.Generation,
+                                 LEVEL = accountsInfo.LEVEL,
+                                 SortPath = accountsInfo.SortPath,
+                                 LeftBower = accountsInfo.LeftBower,
+                                 RightBower = accountsInfo.RightBower,
+                                 Activity = accountsInfo.Activity
+                             };
+
+                encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
             }
-
         }
 
         public async Task<IEnumerable<ReportPerformance_HeaderModel>> GetPerformance_Header(int accountId, int periodId)
         {
-            var header = await encoreMongo_Context.AccountsInformationProvider.Find(p => p.AccountID == accountId && p.PeriodID == periodId, null).Project(Builders<AccountsInformation_DTO>.Projection.Exclude("_id")).As<AccountsInformation_DTO>().ToListAsync();
+            var header = await encoreMongo_Context.AccountsInformationProvider.Find(p => p.AccountID == accountId && p.PeriodID == periodId, null).Project(Builders<AccountsInformation_Mongo>.Projection.Exclude("_id")).As<AccountsInformation_Mongo>().ToListAsync();
 
             var reportHeader = header.Select(qq => new ReportPerformance_HeaderModel { VP = qq.PQV, VOT = qq.DQV, VOQ = qq.DQVT, IdTituloCarrera = qq.CareerTitle, TituloCarrera = qq.CareerTitle_Des, IdTituloPago = qq.PaidAsCurrentMonth, TituloPago = qq.PaidAsCurrentMonth_Des, BrazosActivos = "" });
 
             return reportHeader;
         }
 
-        public async Task<List<AccountsInformation_DTO>> GetPerformance_AccountInformation(int accountId, int periodId)
+        public async Task<List<AccountsInformation_Mongo>> GetPerformance_AccountInformation(int accountId, int periodId)
         {
             var devolver = await encoreMongo_Context.AccountsInformationProvider.AsQueryable().Where(p => p.AccountID == accountId && p.PeriodID == periodId).ToListAsync();
 
@@ -222,35 +223,35 @@ namespace Belcorp.Encore.Application
 
 			var detailWTA = await detailWA.AsQueryable().ToAsyncEnumerable().ToList();
 
-			Parallel.ForEach(detailWTA, detailItem =>
-			{
-				reportPerformanceDetailModel.Add(new ReportPerformance_DetailModel
-				{
-					Nombre = detailItem.AccountName,
-					Codigo = detailItem.AccountNumber,
-					Cumpleanio = detailItem.BirthdayUTC,
-					Estado = detailItem.STATE,
-					Nivel = detailItem.LEVEL,
-					Generacion = detailItem.Generation,
-					Status = detailItem.Activity,
-					VentaPersonal = detailItem.PQV,
-					VOT = detailItem.DQV,
-					VOQ = detailItem.DQVT,
-					TitCarrera = detailItem.CareerTitle,
-					Permanencia = "",
-					TitPago = detailItem.PaidAsCurrentMonth,
-					CodPatrocinador = detailItem.SponsorID,
-					NombrePatrocinador = detailItem.SponsorName,
-					EmailPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.EmailAddress : "",
-					TelefonoPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
-					CodLider = detailItem.UplineLeaderM3, //Falta Calc
-					NombreLider = detailItem.UplineLeaderM3Name,
-					EmailLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.EmailAddress : "",
-					TelefonoLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
-					ConsultoresActivos = 0,
-					CantidadEmpresariosGeneracion = 0,
-					BrazosActivos = ""
-				});
+            Parallel.ForEach(detailWTA, detailItem =>
+            {
+                reportPerformanceDetailModel.Add(new ReportPerformance_DetailModel
+                {
+                    Nombre = detailItem.AccountName,
+                    Codigo = detailItem.AccountNumber,
+                    Cumpleanio = detailItem.BirthdayUTC,
+                    Estado = detailItem.STATE,
+                    Nivel = detailItem.LEVEL,
+                    Generacion = detailItem.Generation,
+                    Status = detailItem.Activity,
+                    VentaPersonal = detailItem.PQV,
+                    VOT = detailItem.DQV,
+                    VOQ = detailItem.DQVT,
+                    TitCarrera = detailItem.CareerTitle,
+                    Permanencia = "",
+                    TitPago = detailItem.PaidAsCurrentMonth,
+                    CodPatrocinador = detailItem.SponsorID,
+                    NombrePatrocinador = detailItem.SponsorName,
+                    EmailPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.EmailAddress : "",
+                    TelefonoPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
+                    CodLider = detailItem.UplineLeaderM3, //Falta Calc
+                    NombreLider = detailItem.UplineLeaderM3Name,
+                    EmailLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.EmailAddress : "",
+                    TelefonoLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
+                    ConsultoresActivos = 0,
+                    CantidadEmpresariosGeneracion = 0,
+                    BrazosActivos = ""
+                });
 
 			});
 

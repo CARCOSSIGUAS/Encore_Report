@@ -1,4 +1,4 @@
-﻿using Belcorp.Encore.Entities.Entities.DTO;
+﻿using Belcorp.Encore.Entities.Entities.Mongo;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +9,6 @@ namespace Belcorp.Encore.Application.Services
     public interface IAccountsService
     {
         void Migrate_Accounts();
-        Task<List<Accounts_DTO>> GetListAccounts(int accountId);
+        Task<List<Accounts_Mongo>> GetListAccounts(int accountId);
     }
 }

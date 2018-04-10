@@ -3,7 +3,7 @@ using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities;
 using Belcorp.Encore.Entities.Entities.Core;
-using Belcorp.Encore.Entities.Entities.DTO;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
@@ -62,12 +62,14 @@ namespace Belcorp.Encore.Application.Services
         {
             IRepository<Accounts> accountsRepository = unitOfWork_Core.GetRepository<Accounts>();
 
-            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, null, true);
-            var account_Mongo = encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == account.AccountID).FirstOrDefault();
+            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, a => a.Include(p => p.AccountPhones), true);
+            var account_Mongo = encoreMongo_Context.AccountsProvider.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
 
-            Accounts_DTO account_DTO = new Accounts_DTO()
+            Accounts_Mongo registro = new Accounts_Mongo()
             {
+                CountryID = 0,
                 AccountID = account.AccountID,
+
                 AccountNumber = account.AccountNumber,
                 AccountTypeID = account.AccountTypeID,
                 FirstName = account.FirstName,
@@ -83,20 +85,22 @@ namespace Belcorp.Encore.Application.Services
                 EntityName = account.EntityName,
 
                 BirthdayUTC = account.BirthdayUTC,
-                TerminatedDateUTC = account.TerminatedDateUTC            
+                TerminatedDateUTC = account.TerminatedDateUTC,
+
+                AccountPhones = account.AccountPhones
             };
 
             if (account == null)
             {
-                encoreMongo_Context.AccountsProvider.DeleteOne(a => a.AccountID == monitor.RowId);
+                encoreMongo_Context.AccountsProvider.DeleteOne(a => a.CountryID == 0 && a.AccountID == monitor.RowId);
             }
             else if (account_Mongo == null)
             {
-                encoreMongo_Context.AccountsProvider.InsertOne(account_DTO);
+                encoreMongo_Context.AccountsProvider.InsertOne(registro);
             }
             else
             {
-                var updatesAttributes = Builders<Accounts_DTO>.Update
+                var updatesAttributes = Builders<Accounts_Mongo>.Update
                 .Set(a => a.AccountNumber, account.AccountNumber)
                 .Set(a => a.AccountTypeID, account.AccountTypeID)
                 .Set(a => a.FirstName, account.FirstName)
@@ -107,60 +111,66 @@ namespace Belcorp.Encore.Application.Services
                 .Set(a => a.EnrollerID, account.EnrollerID)
                 .Set(a => a.EnrollmentDateUTC, account.EnrollmentDateUTC);
 
-                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.AccountID == account.AccountID, updatesAttributes);
+                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes);
             }
 
-            if (monitor.MonitorDetails != null)
+            if (monitor.MonitorDetails != null && monitor.MonitorDetails.Any(md => md.Process == false))
             {
                 foreach (var detail in monitor.MonitorDetails)
                 {
-                    if (detail.TableIdSecundary == (int)Constants.MonitorTables.AccountsPhones)
+                    if (detail.Process == false)
                     {
-                        Migrate_Phones(account, account_Mongo, detail);
-                    }
+                        if (detail.TableIdSecundary == (int)Constants.MonitorTables.AccountsPhones)
+                        {
+                            Migrate_Phones(account, detail);
+                        }
 
-                    detail.Process = true;
-                    detail.DateProcess = DateTime.Now;
+                        detail.Process = true;
+                        detail.DateProcess = DateTime.Now;
+                    }
                 }
             }
         }
 
-        private void Migrate_Phones(Accounts account, Accounts_DTO account_Mongo, MonitorDetails detail)
+        private void Migrate_Phones(Accounts account, MonitorDetails detail)
         {
             IRepository<AccountPhones> accountPhonesRepository = unitOfWork_Core.GetRepository<AccountPhones>();
+            var account_Mongo = encoreMongo_Context.AccountsProvider.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
 
             var phone = accountPhonesRepository.GetFirstOrDefault(ap => ap.AccountID == account.AccountID && ap.AccountPhoneID == detail.RowDetalleId, null, null, true);
             var phone_Mongo = account_Mongo.AccountPhones == null ? null : account_Mongo.AccountPhones.FirstOrDefault(p => p.AccountPhoneID == detail.RowDetalleId);
 
-            UpdateDefinition<Accounts_DTO> updatesAttributes = null;
+            UpdateDefinition<Accounts_Mongo> updatesAttributes = null;
 
-            if (phone == null)
+            //Existe en Encore y no existe en Mongo
+            if (phone == null && phone_Mongo != null)
             {
-                updatesAttributes = Builders<Accounts_DTO>.Update.PullFilter(a => a.AccountPhones, builder => builder.AccountPhoneID == detail.RowDetalleId);
-
-                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
+                updatesAttributes = Builders<Accounts_Mongo>.Update.PullFilter(a => a.AccountPhones, builder => builder.AccountPhoneID == detail.RowDetalleId);
+                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
             }
-            else if (phone_Mongo == null)
+            //No existe en Encore y existe en Mongo
+            else if (phone != null && phone_Mongo == null)
             {
                 if (account_Mongo.AccountPhones == null)
                 {
-                    updatesAttributes = Builders<Accounts_DTO>.Update.Set(a => a.AccountPhones, new List<AccountPhones> { phone } );
+                    updatesAttributes = Builders<Accounts_Mongo>.Update.Set(a => a.AccountPhones, new List<AccountPhones> { phone } );
                 }
                 else
                 {
-                    updatesAttributes = Builders<Accounts_DTO>.Update.Push(a => a.AccountPhones, phone);
+                    updatesAttributes = Builders<Accounts_Mongo>.Update.Push(a => a.AccountPhones, phone);
                 }
 
-                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true } );
+                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true } );
             }
-            else
+            //Existe en Encore y existe en Mongo
+            else if (phone != null && phone_Mongo != null)
             {
-                updatesAttributes = Builders<Accounts_DTO>.Update.Set(a => a.AccountPhones[-1].IsDefault, phone.IsDefault)
+                updatesAttributes = Builders<Accounts_Mongo>.Update.Set(a => a.AccountPhones[-1].IsDefault, phone.IsDefault)
                                              .Set(a => a.AccountPhones[-1].IsPrivate, phone.IsPrivate)
                                              .Set(a => a.AccountPhones[-1].PhoneNumber, phone.PhoneNumber)
                                              .Set(a => a.AccountPhones[-1].PhoneTypeID, phone.PhoneTypeID);
 
-                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
+                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
             }
         }
     }

@@ -1,7 +1,7 @@
 ﻿using Belcorp.Encore.Application.ViewModel;
 using Belcorp.Encore.Entities;
 using Belcorp.Encore.Entities.Entities;
-using Belcorp.Encore.Entities.Entities.DTO;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Entities.Entities.MetaData_Mongo;
 using Belcorp.Encore.Services.Report.ViewModel;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +23,7 @@ namespace Belcorp.Encore.Application.Services
 
 		AccountsInformationExtended GetPerformance_HeaderFront(int accountId, int periodId);
 
-        Task<List<AccountsInformation_DTO>> GetPerformance_AccountInformation(int accountId, int periodId);
+        Task<List<AccountsInformation_Mongo>> GetPerformance_AccountInformation(int accountId, int periodId);
 
 		AccountsExtended GetAccounts(Filtros_DTO filtrosDTO);
 
