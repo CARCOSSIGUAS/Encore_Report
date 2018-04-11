@@ -37,12 +37,11 @@ namespace Belcorp.Encore.Application.Services
             {
                 var accounts = accountsRepository.GetPagedList(null, null, a => a.Include(p => p.AccountPhones), i, 10000, true).Items;
 
-                List<Accounts_Mongo> accounts_aux = new List<Accounts_Mongo>();
+                List<Accounts_Mongo> accounts_Mongo = new List<Accounts_Mongo>();
                 foreach (var account in accounts)
                 {
-                    Accounts_Mongo accounts_Mongo = new Accounts_Mongo()
+                    Accounts_Mongo account_Mongo = new Accounts_Mongo()
                     {
-
                         CountryID = 0,
                         AccountID = account.AccountID,
 
@@ -67,16 +66,16 @@ namespace Belcorp.Encore.Application.Services
 
                     };
 
-                    accounts_aux.Add(accounts_Mongo);
+                    accounts_Mongo.Add(account_Mongo);
                 }
 
-                encoreMongo_Context.AccountsProvider.InsertMany(accounts_aux);
+                encoreMongo_Context.AccountsProvider.InsertMany(accounts_Mongo);
             }
         }
 
         public async Task<List<Accounts_Mongo>> GetListAccounts(int accountId)
         {
-            var result = await encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).Project(Builders<Accounts_Mongo>.Projection.Exclude("_id")).As<Accounts_Mongo>().ToListAsync();
+            var result = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountId).Project(Builders<Accounts_Mongo>.Projection.Exclude("_id")).As<Accounts_Mongo>().ToListAsync();
             return result;
         }
     }

@@ -28,7 +28,7 @@ namespace Belcorp.Encore.Application.Services
         public Orders Order { get; set; }
         public int PeriodId { get; set; }
         public List<CalculationTypes> CalculationTypes { get; set; }
-        public List<SponsorTree> Accounts { get; set; }
+        public List<SponsorTree> Accounts_UpLine { get; set; }
 
         public ProcessOnlineMlmService
         (
@@ -58,17 +58,21 @@ namespace Belcorp.Encore.Application.Services
                 return;
             }
 
+            var existsorderCalculationOnline = processOnlineRepository.GetExists_OrderCalculationsOnline(Order.OrderID);
+
             if (
-                    Order.OrderStatusID == (short)Constants.OrderStatus.Paid ||
-                    Order.OrderStatusID == (short)Constants.OrderStatus.Printed ||
-                    Order.OrderStatusID == (short)Constants.OrderStatus.Shipped ||
-                    Order.OrderStatusID == (short)Constants.OrderStatus.Invoiced ||
-                    Order.OrderStatusID == (short)Constants.OrderStatus.Embarked
-               )
+                    (
+                        Order.OrderStatusID == (short)Constants.OrderStatus.Paid ||
+                        Order.OrderStatusID == (short)Constants.OrderStatus.Printed ||
+                        Order.OrderStatusID == (short)Constants.OrderStatus.Shipped ||
+                        Order.OrderStatusID == (short)Constants.OrderStatus.Invoiced ||
+                        Order.OrderStatusID == (short)Constants.OrderStatus.Embarked
+                    ) && !existsorderCalculationOnline
+                )
             {
 
                 PeriodId = GetPeriodId();
-                Accounts = GetAccounts_UpLine(Order.AccountID);
+                Accounts_UpLine = GetAccounts_UpLine(Order.AccountID);
 
                 decimal QV, CV, RV;
                 QV = processOnlineRepository.GetQV_ByOrder(Order.OrderID);
@@ -82,15 +86,48 @@ namespace Belcorp.Encore.Application.Services
                     RV = RV * -1;
                 }
 
-                var existsorderCalculationOnline = processOnlineRepository.GetExists_OrderCalculationsOnline(Order.OrderID);
+                Indicadores_InPersonal(QV, CV, RV);
+                Indicadores_InDivision(QV, CV, RV);
+                Indicadores_InTableReports(QV, CV, RV);
+                Indicadores_InOrdercalculationsOnline(QV, CV, RV);
+                Migrate_AccountInformationByAccountId();
+            }
+        }
 
-                if (!existsorderCalculationOnline)
+        public void ProcessMLM_Lote(int loteId)
+        {
+            IRepository<MonitorLotes> monitorLotesRepository = unitOfWork_Core.GetRepository<MonitorLotes>();
+            IRepository<MonitorOrders> monitorOrdersRepository = unitOfWork_Core.GetRepository<MonitorOrders>();
+
+
+            int total = monitorOrdersRepository.Count(o => o.LoteId == loteId);
+            if (total > 0)
+            {
+                var ordenes = monitorOrdersRepository.GetPagedList(l => l.LoteId == loteId && l.Process == false, null, null, 0, total, false).Items;
+
+                foreach (var order in ordenes)
                 {
-                    IndicadoresInPersonal_Process(QV, CV, RV);
-                    IndicadoresInDivision_Process(QV, CV, RV);
-                    Indicadores_UpdateValue_AccountsInformation(QV, CV, RV);
-                    OrdercalculationsOnline_Process(QV, CV, RV);
-                    Migrate_AccountInformationByAccountId();
+                    try
+                    {
+                        ProcessMLM_Order(order.OrderId);
+                        order.Process = true;
+                        order.DateProcess = DateTime.Now;
+
+                        unitOfWork_Core.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+
+                int ordenes_pendientes = monitorLotesRepository.Count(l => l.LoteId == loteId && l.MonitorOrders.Any(o => o.Process == false));
+                if (ordenes_pendientes == 0)
+                {
+                    var lote = monitorLotesRepository.GetFirstOrDefault(l => l.LoteId == loteId, null, null, false);
+                    lote.DateProcess = DateTime.Now;
+                    lote.Process = true;
+                    unitOfWork_Core.SaveChanges();
                 }
             }
         }
@@ -142,7 +179,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos Personales
-        public void IndicadoresInPersonal_Process(decimal QV, decimal CV, decimal RV)
+        public void Indicadores_InPersonal(decimal QV, decimal CV, decimal RV)
         {
             int calculationType_PQV = CalculationTypes.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
             int calculationType_PCV = CalculationTypes.Where(c => c.Code == "PCV").FirstOrDefault().CalculationTypeID;
@@ -182,7 +219,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos Divison
-        public void IndicadoresInDivision_Process(decimal QV, decimal CV, decimal RV)
+        public void Indicadores_InDivision(decimal QV, decimal CV, decimal RV)
         {
             IndicadoresInDivision_Initialize();
             if (Order.OrderTypeID != (short)Constants.OrderType.ReturnOrder)
@@ -196,7 +233,7 @@ namespace Belcorp.Encore.Application.Services
             List<string> codigos = new List<string> { "PQV", "PRV", "PCV", "GQV", "GCV", "DQV", "DCV", "CQL", "DQVT" };
             var calculationTypesIds = CalculationTypes.Where(c => codigos.Contains(c.Code)).ToList();
 
-            var result = processOnlineRepository.GetListAccounts_Initialize(Accounts.Select(a => a.AccountID).ToList(), calculationTypesIds, PeriodId);
+            var result = processOnlineRepository.GetListAccounts_Initialize(Accounts_UpLine.Select(a => a.AccountID).ToList(), calculationTypesIds, PeriodId);
             accountKPIsRepository.Insert(result);
 
             unitOfWork_Comm.SaveChanges();
@@ -204,16 +241,15 @@ namespace Belcorp.Encore.Application.Services
 
         private void IndicadoresInDivision_UpdateValue(decimal QV, decimal CV, decimal RV)
         {
-            List<string> codigos = new List<string> { "DCV", "DQVT" };
-            var accountsIds = Accounts.Select(a => a.AccountID).ToList();
+            var listAccounts = Accounts_UpLine.Select(a => a.AccountID).ToList();
 
             int calculationType_DCV =  CalculationTypes.Where(c => c.Code == "DCV").FirstOrDefault().CalculationTypeID;
             int calculationType_DQVT = CalculationTypes.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
 
-            Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DQVT, value: QV);
-            Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DCV,  value: CV);
+            Indicadores_UpdateValue_AccountKPIs(listAccounts, calculationType_DQVT, value: QV);
+            Indicadores_UpdateValue_AccountKPIs(listAccounts, calculationType_DCV,  value: CV);
 
-            IndicadoresInDivision_Valida_Porcentaje(Accounts, QV);
+            IndicadoresInDivision_Valida_Porcentaje(Accounts_UpLine, QV);
         }
         
         public void IndicadoresInDivision_Valida_Porcentaje(List<SponsorTree> accounts, decimal QV)
@@ -253,39 +289,10 @@ namespace Belcorp.Encore.Application.Services
             }
 
         }
-
-        public void Indicadores_UpdateValue_AccountsInformation(decimal QV, decimal CV, decimal RV)
-        {
-            int calculationType_DQV = CalculationTypes.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
-
-            var result_account = accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == PeriodId, null, null, false);
-
-            result_account.PCV += CV;
-            result_account.PQV += QV;
-            result_account.DCV += CV;
-            result_account.DQVT += QV;
-            accountsInformationRepository.Update(result_account);
-
-            unitOfWork_Comm.SaveChanges();
-
-            var lista = Accounts.Select(a => a.AccountID);
-            var accountInformations = accountsInformationRepository.GetPagedList(a => lista.Contains(a.AccountID), null, null, 0, Accounts.Count, false);
-
-            foreach (var accountInformation in accountInformations.Items)
-            {
-                var result = accountKPIsRepository.GetFirstOrDefault(akp => akp.AccountID == accountInformation.AccountID && akp.PeriodID == PeriodId && akp.CalculationTypeID == calculationType_DQV, null, null, true);
-                accountInformation.DQV = result.Value;
-                accountsInformationRepository.Update(accountInformation);
-            }
-
-            unitOfWork_Comm.SaveChanges();
-        }
-
-
         #endregion
 
         #region Calculos OrdercalculationsOnline
-        public void OrdercalculationsOnline_Process(decimal QV, decimal CV, decimal RV)
+        public void Indicadores_InOrdercalculationsOnline(decimal QV, decimal CV, decimal RV)
         {
             List<string> codigos = new List<string> { "QV", "CV", "RP" };
             var calculationTypesIds = GetOrderCalculationTypesByCode(codigos);
@@ -336,6 +343,80 @@ namespace Belcorp.Encore.Application.Services
         }
         #endregion
 
+        #region Actualizar Reportes
+        public void Indicadores_InTableReports(decimal QV, decimal CV, decimal RV)
+        {
+            int calculationType_DQV = CalculationTypes.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
+
+            var accountInformation_Current = accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == PeriodId, null, null, false);
+
+            accountInformation_Current.PCV += CV;
+            accountInformation_Current.PQV += QV;
+            accountsInformationRepository.Update(accountInformation_Current);
+
+            unitOfWork_Comm.SaveChanges();
+
+            var listAccounts = Accounts_UpLine.Select(a => a.AccountID);
+            var accountInformations = accountsInformationRepository.GetPagedList(a => a.PeriodID == PeriodId && listAccounts.Contains(a.AccountID), null, null, 0, Accounts_UpLine.Count, false);
+
+            IRepository<AccountKPIsDetails> accountKPIsDetailsRepository = unitOfWork_Comm.GetRepository<AccountKPIsDetails>();
+            var listKpisCode = new List<string>(new[] { "DQV", "GQV", "DCV", "GCV" });
+
+            foreach (var accountInformation_Up in accountInformations.Items)
+            {
+                var result_accountKPIs = accountKPIsRepository.GetFirstOrDefault(akp => akp.AccountID == accountInformation_Up.AccountID && akp.PeriodID == PeriodId && akp.CalculationTypeID == calculationType_DQV, null, null, true);
+
+                accountInformation_Up.DQV = result_accountKPIs.Value;
+                accountInformation_Up.DCV += CV;
+                accountInformation_Up.DQVT += QV;
+                accountsInformationRepository.Update(accountInformation_Up);
+
+                unitOfWork_Comm.SaveChanges();
+
+                foreach (var kpiCode in listKpisCode)
+                {
+                    var accountKPIsDetails = accountKPIsDetailsRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId &&
+                                                                                                        a.SponsorID == accountInformation_Up.AccountID &&
+                                                                                                        a.DownlineID == accountInformation_Current.AccountID &&
+                                                                                                        a.KPICode == kpiCode,
+                                                                                                    null, null, false
+                                                                                                  );
+                    if (accountKPIsDetails == null)
+                    {
+                        accountKPIsDetailsRepository.Insert(
+                                new AccountKPIsDetails
+                                {
+                                    PeriodID = PeriodId,
+                                    SponsorID = accountInformation_Up.AccountID,
+                                    SponsorName = accountInformation_Up.AccountName,
+                                    DownlineID = accountInformation_Current.AccountID,
+                                    DownlineName = accountInformation_Current.AccountName,
+                                    KPICode = kpiCode,
+                                    Value = ((kpiCode == "DQV" || kpiCode == "GQV") ? QV : CV),
+                                    Percentage = 1,
+                                    DownlinePaidAsTitle = null,
+                                    TreeLevel = accountInformation_Up.LEVEL
+                                }
+                            );
+                    }
+                    else
+                    {
+
+                        accountKPIsDetails.Value = accountKPIsDetails.Value + ((kpiCode == "DQV" || kpiCode == "GQV") ? QV : CV);
+                        accountKPIsDetails.Percentage = 1;
+                        accountKPIsDetails.DownlinePaidAsTitle = null;
+                        accountKPIsDetails.TreeLevel = accountInformation_Current.LEVEL;
+                        accountKPIsDetails.DateModified = DateTime.Now;
+                    }
+
+                    unitOfWork_Comm.SaveChanges();
+                }
+            }
+        }
+
+        #endregion
+
+        #region Actualizar Mongo
         public void Migrate_AccountInformationByAccountId()
         {
             IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
@@ -395,43 +476,6 @@ namespace Belcorp.Encore.Application.Services
                 }
             }
         }
-
-        public void ProcessMLM_Lote(int loteId)
-        {
-            IRepository<MonitorLotes> monitorLotesRepository = unitOfWork_Core.GetRepository<MonitorLotes>();
-            IRepository<MonitorOrders> monitorOrdersRepository = unitOfWork_Core.GetRepository<MonitorOrders>();
-
-            
-            int total = monitorOrdersRepository.Count(o => o.LoteId == loteId);
-            if (total > 0)
-            {
-                var ordenes = monitorOrdersRepository.GetPagedList(l => l.LoteId == loteId && l.Process == false, null, null, 0, total, false).Items;
-
-                foreach (var order in ordenes)
-                {
-                    try
-                    {
-                        ProcessMLM_Order(order.OrderId);
-                        order.Process = true;
-                        order.DateProcess = DateTime.Now;
-
-                        unitOfWork_Core.SaveChanges();
-                    }
-                    catch (Exception ex)
-                    {
-
-                    }
-                }
-
-                int ordenes_pendientes = monitorLotesRepository.Count(l => l.LoteId == loteId && l.MonitorOrders.Any(o => o.Process == false));
-                if (ordenes_pendientes == 0)
-                {
-                    var lote = monitorLotesRepository.GetFirstOrDefault(l => l.LoteId == loteId, null, null, false);
-                    lote.DateProcess = DateTime.Now;
-                    lote.Process = true;
-                    unitOfWork_Core.SaveChanges();
-                }
-            }
-        }
+        #endregion
     }
 }

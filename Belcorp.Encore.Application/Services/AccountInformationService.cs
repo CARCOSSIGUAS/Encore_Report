@@ -53,8 +53,8 @@ namespace Belcorp.Encore.Application
                 var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
 
                 var result = from accountsInfo in accountsInformation
-                             join titlesInfo in titles on Int32.Parse(accountsInfo.CareerTitle) equals titlesInfo.TitleID
-                             join titlesInfo2 in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo2.TitleID
+                             join titlesInfo_Career in titles on Int32.Parse(accountsInfo.CareerTitle) equals titlesInfo_Career.TitleID
+                             join titlesInfo_Paid in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
                              select new AccountsInformation_Mongo
                              {
                                  CountryID = 0,
@@ -77,8 +77,8 @@ namespace Belcorp.Encore.Application
 
                                  CareerTitle = accountsInfo.CareerTitle,
                                  PaidAsCurrentMonth = accountsInfo.PaidAsCurrentMonth,
-                                 CareerTitle_Des = titlesInfo.Name,
-                                 PaidAsCurrentMonth_Des = titlesInfo2.Name,
+                                 CareerTitle_Des = titlesInfo_Career.Name,
+                                 PaidAsCurrentMonth_Des = titlesInfo_Paid.Name,
 
                                  JoinDate = accountsInfo.JoinDate,
                                  Generation = accountsInfo.Generation,
