@@ -11,6 +11,8 @@ using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Commissions;
 using Belcorp.Encore.Entities.Entities.Mongo;
+using Microsoft.Extensions.Options;
+using Belcorp.Encore.Data;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -36,12 +38,13 @@ namespace Belcorp.Encore.Application.Services
             IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, 
             IProcessOnlineRepository _processOnlineRepository, 
             IAccountKPIsRepository _accountKPIsRepository, 
-            IAccountInformationRepository _accountsInformationRepository
+            IAccountInformationRepository _accountsInformationRepository,
+            IOptions<Settings> settings
         )
         {
             unitOfWork_Core = _unitOfWork_Core;
             unitOfWork_Comm = _unitOfWork_Comm;
-            encoreMongo_Context = new EncoreMongo_Context();
+            encoreMongo_Context = new EncoreMongo_Context(settings);
 
             processOnlineRepository = _processOnlineRepository;
             accountKPIsRepository = _accountKPIsRepository;
@@ -99,7 +102,6 @@ namespace Belcorp.Encore.Application.Services
             IRepository<MonitorLotes> monitorLotesRepository = unitOfWork_Core.GetRepository<MonitorLotes>();
             IRepository<MonitorOrders> monitorOrdersRepository = unitOfWork_Core.GetRepository<MonitorOrders>();
 
-
             int total = monitorOrdersRepository.Count(o => o.LoteId == loteId);
             if (total > 0)
             {
@@ -117,7 +119,6 @@ namespace Belcorp.Encore.Application.Services
                     }
                     catch (Exception ex)
                     {
-
                     }
                 }
 
@@ -282,6 +283,18 @@ namespace Belcorp.Encore.Application.Services
                         DQV_Result = processOnlineRepository.GetQV_ByAccount_PorcentRuler(currentAccountID, PeriodId, calculationTypesIds, porcentForRuler);
 
                         Indicadores_UpdateValue_AccountKPIs(new List<int> { currentAccountID }, calculationType_DQV, value: DQV_Result);
+
+                        var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == currentAccountID && a.PeriodID == PeriodId && a.CalculationTypeID == calculationType_DQV, null, null, false);
+
+                        if(result != null)
+                        {
+                            result.Value = DQV_Result;
+                            result.DateModified = DateTime.Now;
+                            accountKPIsRepository.Update(result);
+                        }
+
+                        unitOfWork_Comm.SaveChanges();
+
                     }
                     else
                         Indicadores_UpdateValue_AccountKPIs(new List<int> { currentAccountID }, calculationType_DQV, value: QV);
@@ -395,7 +408,8 @@ namespace Belcorp.Encore.Application.Services
                                     Value = ((kpiCode == "DQV" || kpiCode == "GQV") ? QV : CV),
                                     Percentage = 1,
                                     DownlinePaidAsTitle = null,
-                                    TreeLevel = accountInformation_Up.LEVEL
+                                    TreeLevel = accountInformation_Up.LEVEL,
+                                    DateModified = DateTime.Now
                                 }
                             );
                     }

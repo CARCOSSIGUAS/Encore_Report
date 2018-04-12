@@ -2,7 +2,6 @@
 using Belcorp.Encore.Entities;
 using Belcorp.Encore.Entities.Entities;
 using Belcorp.Encore.Entities.Entities.Mongo;
-using Belcorp.Encore.Entities.Entities.MetaData_Mongo;
 using Belcorp.Encore.Services.Report.ViewModel;
 using Microsoft.EntityFrameworkCore;
 using System;

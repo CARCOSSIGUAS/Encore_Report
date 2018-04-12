@@ -1,8 +1,10 @@
-﻿using Belcorp.Encore.Data.Contexts;
+﻿using Belcorp.Encore.Data;
+using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
@@ -18,11 +20,17 @@ namespace Belcorp.Encore.Application.Services
         private readonly IAccountsRepository accountsRepository; 
         private readonly EncoreMongo_Context encoreMongo_Context;
 
-        public AccountsService(IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, IAccountsRepository _accountsRepository)
+        public AccountsService
+        (
+            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, 
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
+            IAccountsRepository _accountsRepository, 
+            IOptions<Settings> settings
+        )
         {
             unitOfWork_Core = _unitOfWork_Core;
             unitOfWork_Comm = _unitOfWork_Comm;
-            encoreMongo_Context = new EncoreMongo_Context();
+            encoreMongo_Context = new EncoreMongo_Context(settings);
             accountsRepository = _accountsRepository;
         }
 

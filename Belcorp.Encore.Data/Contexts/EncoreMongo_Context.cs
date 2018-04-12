@@ -4,17 +4,19 @@ using System.Text;
 using Belcorp.Encore.Entities;
 using Belcorp.Encore.Entities.Entities;
 using Belcorp.Encore.Entities.Entities.Mongo;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace Belcorp.Encore.Data.Contexts
 {
     public class EncoreMongo_Context
     {
-        public IMongoDatabase Database;
-        public EncoreMongo_Context()
+        public IMongoDatabase Database = null;
+        public EncoreMongo_Context(IOptions<Settings> settings)
         {
-            var client = new MongoClient("mongodb://localhost:27017");
-            Database = client.GetDatabase("Encore");
+            var client = new MongoClient(settings.Value.ConnectionString);
+            if (client != null)
+                Database = client.GetDatabase(settings.Value.Database);
         }
 
         #region Collections

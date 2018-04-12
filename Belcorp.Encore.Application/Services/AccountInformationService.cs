@@ -19,6 +19,8 @@ using Belcorp.Encore.Application.ViewModel;
 
 using System.Threading.Tasks;
 using Belcorp.Encore.Entities.Entities.DTO;
+using Microsoft.Extensions.Options;
+using Belcorp.Encore.Data;
 
 namespace Belcorp.Encore.Application
 {
@@ -30,12 +32,18 @@ namespace Belcorp.Encore.Application
         private readonly EncoreMongo_Context encoreMongo_Context;
         private readonly IAccountInformationRepository accountInformationRepository;
 
-        public AccountInformationService(IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, IAccountInformationRepository _accountInformationRepository)
+        public AccountInformationService
+        (
+            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, 
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
+            IAccountInformationRepository _accountInformationRepository, 
+            IOptions<Settings> settings
+        )
         {
             unitOfWork_Comm = _unitOfWork_Comm;
             unitOfWork_Core = _unitOfWork_Core;
             accountInformationRepository = _accountInformationRepository;
-            encoreMongo_Context = new EncoreMongo_Context();
+            encoreMongo_Context = new EncoreMongo_Context(settings);
         }
 
         public void Migrate_AccountInformationByPeriod(int periodId)
