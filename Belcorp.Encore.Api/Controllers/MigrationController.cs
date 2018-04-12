@@ -26,6 +26,7 @@ namespace Belcorp.Encore.Api.Controllers
         }
 
         [HttpGet("[action]/{PeriodId}")]
+        [AutomaticRetry(Attempts = 0)]
         public ActionResult AccountsInformation(int periodId)
         {
             BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(periodId));
@@ -33,6 +34,7 @@ namespace Belcorp.Encore.Api.Controllers
         }
 
         [HttpGet("[action]")]
+        [AutomaticRetry(Attempts = 0)]
         public ActionResult Accounts()
         {
             BackgroundJob.Enqueue(() => accountsService.Migrate_Accounts());

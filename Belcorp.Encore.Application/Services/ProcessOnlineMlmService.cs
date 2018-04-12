@@ -272,32 +272,27 @@ namespace Belcorp.Encore.Application.Services
                 porcentForRuler = int.Parse(ruleType.RequirementRules.Value1);
                 titleForRuler = int.Parse(ruleType.RequirementRules.Value2);
 
-                foreach (var account in accounts)
+                var list_AccountIDsNoApplied = accounts.Where(a => a.CurrentPAT < titleForRuler).Select(a => a.AccountID).ToList();
+                Indicadores_UpdateValue_AccountKPIs(list_AccountIDsNoApplied, calculationType_DQV, value: QV);
+
+                foreach (var account in accounts.Where(a => a.CurrentPAT >= titleForRuler))
                 {
-                    currentAccountID  = account.AccountID;
+                    currentAccountID = account.AccountID;
                     currentAccountTitle = account.CurrentPAT;
 
-                    if (currentAccountTitle >= titleForRuler)
+                    DQV_Result = 0;
+                    DQV_Result = processOnlineRepository.GetQV_ByAccount_PorcentRuler(currentAccountID, PeriodId, calculationTypesIds, porcentForRuler);
+
+                    var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == currentAccountID && a.PeriodID == PeriodId && a.CalculationTypeID == calculationType_DQV, null, null, false);
+
+                    if (result != null)
                     {
-                        DQV_Result = 0;
-                        DQV_Result = processOnlineRepository.GetQV_ByAccount_PorcentRuler(currentAccountID, PeriodId, calculationTypesIds, porcentForRuler);
-
-                        Indicadores_UpdateValue_AccountKPIs(new List<int> { currentAccountID }, calculationType_DQV, value: DQV_Result);
-
-                        var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == currentAccountID && a.PeriodID == PeriodId && a.CalculationTypeID == calculationType_DQV, null, null, false);
-
-                        if(result != null)
-                        {
-                            result.Value = DQV_Result;
-                            result.DateModified = DateTime.Now;
-                            accountKPIsRepository.Update(result);
-                        }
-
-                        unitOfWork_Comm.SaveChanges();
-
+                        result.Value = DQV_Result;
+                        result.DateModified = DateTime.Now;
+                        accountKPIsRepository.Update(result);
                     }
-                    else
-                        Indicadores_UpdateValue_AccountKPIs(new List<int> { currentAccountID }, calculationType_DQV, value: QV);
+
+                    unitOfWork_Comm.SaveChanges();
                 }
             }
 
@@ -444,11 +439,12 @@ namespace Belcorp.Encore.Application.Services
                          join titlesInfo_Paid in titles on Int32.Parse(ai.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
                          select new AccountsInformation_Mongo
                          {
-                             CountryID = 0,
                              AccountsInformationID = ai.AccountsInformationID,
 
                              PeriodID = ai.PeriodID,
                              AccountID = ai.AccountID,
+                             CountryID = 0,
+
                              AccountNumber = ai.AccountNumber,
                              AccountName = ai.AccountName,
                              SponsorID = ai.SponsorID,
@@ -478,11 +474,10 @@ namespace Belcorp.Encore.Application.Services
 
             foreach (var item in result)
             {
-                var item_Mongo = encoreMongo_Context.AccountsInformationProvider.Find(ai => ai.CountryID == 0 && ai.PeriodID == PeriodId && ai.AccountID == item.AccountID).FirstOrDefault();
+                var item_Mongo = encoreMongo_Context.AccountsInformationProvider.Find(ai => ai.AccountsInformationID == item.AccountsInformationID).FirstOrDefault();
                 if (item_Mongo != null)
                 {
-                    item.Id = item_Mongo.Id;
-                    encoreMongo_Context.AccountsInformationProvider.ReplaceOne(ai => ai.CountryID == 0 && ai.PeriodID == PeriodId && ai.AccountID == item.AccountID, item, new UpdateOptions { IsUpsert = true });
+                    encoreMongo_Context.AccountsInformationProvider.ReplaceOne(ai => ai.AccountsInformationID == item.AccountsInformationID, item, new UpdateOptions { IsUpsert = true });
                 }
                 else
                 {

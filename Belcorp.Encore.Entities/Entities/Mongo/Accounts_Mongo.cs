@@ -9,12 +9,10 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
 {
     public class Accounts_Mongo
     {
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
-
-        public int CountryID { get; set; }
+        [BsonId]
         public int AccountID { get; set; }
 
+        public int CountryID { get; set; }
         public string AccountNumber { get; set; }
         public int AccountTypeID { get; set; }
         public string FirstName { get; set; }

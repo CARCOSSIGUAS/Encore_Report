@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Services.Report.InstancesProvider2;
 using Microsoft.AspNetCore.Builder;
@@ -32,7 +33,13 @@ namespace Belcorp.Encore.Services.Report
 			.AddDbContext<EncoreCore_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Core")))
 			.AddUnitOfWork<EncoreCommissions_Context, EncoreCore_Context>();
 
-			services.RegisterServices();
+            services.Configure<Settings>(options =>
+            {
+                options.ConnectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
+                options.Database = Configuration.GetSection("Encore_Mongo:Database").Value;
+            });
+
+            services.RegisterServices();
 
 			services.AddMvc();
 
