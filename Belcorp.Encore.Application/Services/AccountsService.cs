@@ -1,8 +1,10 @@
-﻿using Belcorp.Encore.Data.Contexts;
+﻿using Belcorp.Encore.Data;
+using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
@@ -18,11 +20,17 @@ namespace Belcorp.Encore.Application.Services
         private readonly IAccountsRepository accountsRepository; 
         private readonly EncoreMongo_Context encoreMongo_Context;
 
-        public AccountsService(IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, IAccountsRepository _accountsRepository)
+        public AccountsService
+        (
+            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, 
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
+            IAccountsRepository _accountsRepository, 
+            IOptions<Settings> settings
+        )
         {
             unitOfWork_Core = _unitOfWork_Core;
             unitOfWork_Comm = _unitOfWork_Comm;
-            encoreMongo_Context = new EncoreMongo_Context();
+            encoreMongo_Context = new EncoreMongo_Context(settings);
             accountsRepository = _accountsRepository;
         }
 
@@ -37,12 +45,11 @@ namespace Belcorp.Encore.Application.Services
             {
                 var accounts = accountsRepository.GetPagedList(null, null, a => a.Include(p => p.AccountPhones), i, 10000, true).Items;
 
-                List<Accounts_Mongo> accounts_aux = new List<Accounts_Mongo>();
+                List<Accounts_Mongo> accounts_Mongo = new List<Accounts_Mongo>();
                 foreach (var account in accounts)
                 {
-                    Accounts_Mongo accounts_Mongo = new Accounts_Mongo()
+                    Accounts_Mongo account_Mongo = new Accounts_Mongo()
                     {
-
                         CountryID = 0,
                         AccountID = account.AccountID,
 
@@ -67,16 +74,16 @@ namespace Belcorp.Encore.Application.Services
 
                     };
 
-                    accounts_aux.Add(accounts_Mongo);
+                    accounts_Mongo.Add(account_Mongo);
                 }
 
-                encoreMongo_Context.AccountsProvider.InsertMany(accounts_aux);
+                encoreMongo_Context.AccountsProvider.InsertMany(accounts_Mongo);
             }
         }
 
         public async Task<List<Accounts_Mongo>> GetListAccounts(int accountId)
         {
-            var result = await encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).Project(Builders<Accounts_Mongo>.Projection.Exclude("_id")).As<Accounts_Mongo>().ToListAsync();
+            var result = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountId).Project(Builders<Accounts_Mongo>.Projection.Exclude("_id")).As<Accounts_Mongo>().ToListAsync();
             return result;
         }
     }

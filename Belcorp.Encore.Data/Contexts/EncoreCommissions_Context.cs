@@ -46,6 +46,7 @@ namespace Belcorp.Encore.Data.Contexts
         public DbSet<RequirementRules> RequirementRules { get; set; }
 
         public DbSet<Periods> Periods { get; set; }
-
+        public DbSet<AccountKPIsDetails> AccountKPIsDetails { get; set; }
+        
     }
 }

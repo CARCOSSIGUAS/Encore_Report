@@ -1,4 +1,5 @@
 ﻿using Belcorp.Encore.Application.Interfaces;
+using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities;
@@ -6,6 +7,7 @@ using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -26,10 +28,16 @@ namespace Belcorp.Encore.Application.Services
 
         private readonly IAccountsService accountsService;
 
-        public MonitorService(IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, IMonitorRepository _monitorMongoRepository, IAccountsService _accountsService)
+        public MonitorService
+        (
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
+            IMonitorRepository _monitorMongoRepository, 
+            IAccountsService _accountsService, 
+            IOptions<Settings> settings
+        )
         {
             unitOfWork_Core = _unitOfWork_Core;
-            encoreMongo_Context = new EncoreMongo_Context();
+            encoreMongo_Context = new EncoreMongo_Context(settings);
             monitorMongoRepository = _monitorMongoRepository;
             accountsService = _accountsService;
         }
@@ -142,13 +150,13 @@ namespace Belcorp.Encore.Application.Services
 
             UpdateDefinition<Accounts_Mongo> updatesAttributes = null;
 
-            //Existe en Encore y no existe en Mongo
+            //No existe en Encore y si existe en Mongo
             if (phone == null && phone_Mongo != null)
             {
                 updatesAttributes = Builders<Accounts_Mongo>.Update.PullFilter(a => a.AccountPhones, builder => builder.AccountPhoneID == detail.RowDetalleId);
                 encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
             }
-            //No existe en Encore y existe en Mongo
+            //Si existe en Encore y no existe en Mongo
             else if (phone != null && phone_Mongo == null)
             {
                 if (account_Mongo.AccountPhones == null)
@@ -162,7 +170,7 @@ namespace Belcorp.Encore.Application.Services
 
                 encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true } );
             }
-            //Existe en Encore y existe en Mongo
+            //Si existe en Encore y si existe en Mongo
             else if (phone != null && phone_Mongo != null)
             {
                 updatesAttributes = Builders<Accounts_Mongo>.Update.Set(a => a.AccountPhones[-1].IsDefault, phone.IsDefault)
