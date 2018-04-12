@@ -49,7 +49,11 @@ namespace Belcorp.Encore.Services.Report
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
+			app.UseCors(builder =>
+						builder.WithOrigins("http://localhost:3000")
+						.AllowAnyHeader());
+
+			if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }

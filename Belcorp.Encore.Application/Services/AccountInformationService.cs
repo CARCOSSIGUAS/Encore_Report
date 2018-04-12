@@ -148,123 +148,129 @@ namespace Belcorp.Encore.Application
 
             List<ReportPerformance_DetailModel> reportPerformanceDetailModel = new List<ReportPerformance_DetailModel>();
 
-            var detailWA = (from ai in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
-                            join
-                            a in encoreMongo_Context.AccountsProvider.AsQueryable() on
-                            ai.SponsorID equals a.AccountID
-                            where (ai.PeriodID == periodId && (ai.SponsorID == accountId))
-                            select new
-                            {
-                                ai.PeriodID,
-                                ai.AccountID,
-                                ai.AccountNumber,
-                                ai.AccountName,
-                                ai.SponsorID,
-                                ai.SponsorName,
-                                ai.Address,
-                                ai.PostalCode,
-                                ai.City,
-                                ai.STATE,
-                                ai.Region,
-                                ai.NewStatus,
-                                ai.TimeLimitToBeDemote,
-                                ai.CareerTitle,
-                                ai.PaidAsCurrentMonth,
-                                ai.PaidAsLastMonth,
-                                ai.VolumeForCareerTitle,
-                                ai.Activity,
-                                ai.NineMonthsPQV,
-                                ai.PQV,
-                                ai.PCV,
-                                ai.GQV,
-                                ai.GCV,
-                                ai.DQVT,
-                                ai.DCV,
-                                ai.DQV,
-                                ai.JoinDate,
-                                ai.Generation,
-                                ai.LEVEL,
-                                ai.SortPath,
-                                ai.LeftBower,
-                                ai.RightBower,
-                                ai.RequirementNewGeneration,
-                                ai.TimeLimitForNewGeneration,
-                                ai.Title1Legs,
-                                ai.Title2Legs,
-                                ai.Title3Legs,
-                                ai.Title4Legs,
-                                ai.Title5Legs,
-                                ai.Title6Legs,
-                                ai.Title7Legs,
-                                ai.Title8Legs,
-                                ai.Title9Legs,
-                                ai.Title10Legs,
-                                ai.Title11Legs,
-                                ai.Title12Legs,
-                                ai.Title13Legs,
-                                ai.Title14Legs,
-                                ai.EmailAddress,
-                                ai.CQL,
-                                ai.LastOrderDate,
-                                ai.IsCommissionQualified,
-                                ai.BirthdayUTC,
-                                ai.UplineLeaderM3,
-                                ai.UplineLeaderM3Name,
-                                ai.UplineLeaderL1,
-                                ai.UplineLeaderL1Name,
-                                ai.TotalDownline,
-                                ai.CreditAvailable,
-                                ai.DebtsToExpire,
-                                ai.ExpiredDebts,
-                                ai.GenerationM3,
-                                ai.ActiveDownline,
-                                ai.TitleMaintainance,
-                                ai.SalesAverage,
-                                ai.NewQualification,
-                                ai.NewEnrollments,
-                                ai.NineMonthsGQV,
-                                ai.NineMonthsDQV,
-                                ai.ConsultActive,
-                                a
-                            });
+			var carlitosArcos = encoreMongo_Context.AccountsInformationProvider.Find(x => x.AccountID == accountId);
+
+
+			//         var detailWA = (from ai in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
+			//                         join
+			//                         a in encoreMongo_Context.AccountsProvider.AsQueryable() on
+			//                         ai.SponsorID equals a.AccountID
+			//                         where (ai.PeriodID == periodId && (ai.SponsorID == accountId))
+			//                         select new
+			//                         {
+			//					ai.CountryID,
+			//                             ai.PeriodID,
+			//                             ai.AccountID,
+			//                             ai.AccountNumber,
+			//                             ai.AccountName,
+			//                             ai.SponsorID,
+			//                             ai.SponsorName,
+			//                             ai.Address,
+			//                             ai.PostalCode,
+			//                             ai.City,
+			//                             ai.STATE,
+			//                             ai.Region,
+			//                             ai.NewStatus,
+			//                             ai.TimeLimitToBeDemote,
+			//                             ai.CareerTitle,
+			//                             ai.PaidAsCurrentMonth,
+			//                             ai.PaidAsLastMonth,
+			//                             ai.VolumeForCareerTitle,
+			//                             ai.Activity,
+			//                             ai.NineMonthsPQV,
+			//                             ai.PQV,
+			//                             ai.PCV,
+			//                             ai.GQV,
+			//                             ai.GCV,
+			//                             ai.DQVT,
+			//                             ai.DCV,
+			//                             ai.DQV,
+			//                             ai.JoinDate,
+			//                             ai.Generation,
+			//                             ai.LEVEL,
+			//                             ai.SortPath,
+			//                             ai.LeftBower,
+			//                             ai.RightBower,
+			//                             ai.RequirementNewGeneration,
+			//                             ai.TimeLimitForNewGeneration,
+			//                             ai.Title1Legs,
+			//                             ai.Title2Legs,
+			//                             ai.Title3Legs,
+			//                             ai.Title4Legs,
+			//                             ai.Title5Legs,
+			//                             ai.Title6Legs,
+			//                             ai.Title7Legs,
+			//                             ai.Title8Legs,
+			//                             ai.Title9Legs,
+			//                             ai.Title10Legs,
+			//                             ai.Title11Legs,
+			//                             ai.Title12Legs,
+			//                             ai.Title13Legs,
+			//                             ai.Title14Legs,
+			//                             ai.EmailAddress,
+			//                             ai.CQL,
+			//                             ai.LastOrderDate,
+			//                             ai.IsCommissionQualified,
+			//                             ai.BirthdayUTC,
+			//                             ai.UplineLeaderM3,
+			//                             ai.UplineLeaderM3Name,
+			//                             ai.UplineLeaderL1,
+			//                             ai.UplineLeaderL1Name,
+			//                             ai.TotalDownline,
+			//                             ai.CreditAvailable,
+			//                             ai.DebtsToExpire,
+			//                             ai.ExpiredDebts,
+			//                             ai.GenerationM3,
+			//                             ai.ActiveDownline,
+			//                             ai.TitleMaintainance,
+			//                             ai.SalesAverage,
+			//                             ai.NewQualification,
+			//                             ai.NewEnrollments,
+			//                             ai.NineMonthsGQV,
+			//                             ai.NineMonthsDQV,
+			//                             ai.ConsultActive,
+			//                             a
+			//                         });
 
 
 
-			var detailWTA = await detailWA.AsQueryable().ToAsyncEnumerable().ToList();
+			//var detailWTA = detailWA.AsQueryable().ToList();
 
-            Parallel.ForEach(detailWTA, detailItem =>
-            {
-                reportPerformanceDetailModel.Add(new ReportPerformance_DetailModel
-                {
-                    Nombre = detailItem.AccountName,
-                    Codigo = detailItem.AccountNumber,
-                    Cumpleanio = detailItem.BirthdayUTC,
-                    Estado = detailItem.STATE,
-                    Nivel = detailItem.LEVEL,
-                    Generacion = detailItem.Generation,
-                    Status = detailItem.Activity,
-                    VentaPersonal = detailItem.PQV,
-                    VOT = detailItem.DQV,
-                    VOQ = detailItem.DQVT,
-                    TitCarrera = detailItem.CareerTitle,
-                    Permanencia = "",
-                    TitPago = detailItem.PaidAsCurrentMonth,
-                    CodPatrocinador = detailItem.SponsorID,
-                    NombrePatrocinador = detailItem.SponsorName,
-                    EmailPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.EmailAddress : "",
-                    TelefonoPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
-                    CodLider = detailItem.UplineLeaderM3, //Falta Calc
-                    NombreLider = detailItem.UplineLeaderM3Name,
-                    EmailLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.EmailAddress : "",
-                    TelefonoLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
-                    ConsultoresActivos = 0,
-                    CantidadEmpresariosGeneracion = 0,
-                    BrazosActivos = ""
-                });
+			//         Parallel.ForEach(detailWTA, detailItem =>
+			//         {
+			//             reportPerformanceDetailModel.Add(new ReportPerformance_DetailModel
+			//             {
+			//                 Nombre = detailItem.AccountName,
+			//                 Codigo = detailItem.AccountNumber,
+			//                 Cumpleanio = detailItem.BirthdayUTC,
+			//                 Estado = detailItem.STATE,
+			//                 Nivel = detailItem.LEVEL,
+			//                 Generacion = detailItem.Generation,
+			//                 Status = detailItem.Activity,
+			//                 VentaPersonal = detailItem.PQV,
+			//                 VOT = detailItem.DQV,
+			//                 VOQ = detailItem.DQVT,
+			//                 TitCarrera = detailItem.CareerTitle,
+			//                 Permanencia = "",
+			//                 TitPago = detailItem.PaidAsCurrentMonth,
+			//                 CodPatrocinador = detailItem.SponsorID,
+			//                 NombrePatrocinador = detailItem.SponsorName,
+			//                 EmailPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.EmailAddress : "",
+			//                 TelefonoPatrocinador = (detailItem.a.AccountID == detailItem.SponsorID) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
+			//                 CodLider = detailItem.UplineLeaderM3, //Falta Calc
+			//                 NombreLider = detailItem.UplineLeaderM3Name,
+			//                 EmailLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.EmailAddress : "",
+			//                 TelefonoLider = (detailItem.a.AccountID == detailItem.UplineLeaderM3) ? detailItem.a.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(z => z.PhoneNumber).FirstOrDefault() : "",
+			//                 ConsultoresActivos = 0,
+			//                 CantidadEmpresariosGeneracion = 0,
+			//                 BrazosActivos = ""
+			//             });
 
-			});
+			//});
 
-			return reportPerformanceDetailModel;
+			//return reportPerformanceDetailModel;
+
+			return null;
 
         }
 
