@@ -231,7 +231,7 @@ namespace Belcorp.Encore.Application
 
 
 
-            var detailWTA = detailWA.AsQueryable().ToList();
+            var detailWTA = await detailWA.AsQueryable().ToAsyncEnumerable().ToList();
 
             Parallel.ForEach(detailWTA, detailItem =>
             {
@@ -269,7 +269,7 @@ namespace Belcorp.Encore.Application
         }
 
 
-		public AccountsInformationExtended GetPerformance_HeaderFront(int accountId,int period)
+		public AccountsInformationExtended GetPerformance_HeaderFront(int accountId,int periodId)
         {
 			try
 			{
@@ -278,7 +278,7 @@ namespace Belcorp.Encore.Application
 
 
 				var headerByAccountInformation = from headerInitial in header
-												 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c=>c.AccountID==accountId && c.PeriodID==period).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
+												 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c=>c.AccountID==accountId && c.PeriodID== periodId).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
 												 select new AccountsInformationExtended { LeftBower=reportAccountInitial.LeftBower, RigthBower=reportAccountInitial.RightBower , accounts_Mongo= headerInitial };
 												 
 
