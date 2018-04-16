@@ -29,6 +29,10 @@ namespace Belcorp.Encore.Data.Contexts
 
             builder.Entity<RequirementRules>()
                 .HasKey(c => new { c.RuleRequirementID, c.RuleTypeID });
+
+            builder.Entity<PersonalIndicatorLog>()
+                .HasMany(p => p.PersonalIndicatorDetailLog);
+
         }
 
         public DbSet<AccountsInformation> AccountsInformation { get; set; }
@@ -47,6 +51,9 @@ namespace Belcorp.Encore.Data.Contexts
 
         public DbSet<Periods> Periods { get; set; }
         public DbSet<AccountKPIsDetails> AccountKPIsDetails { get; set; }
-        
+
+        public DbSet<PersonalIndicatorLog> PersonalIndicatorLog { get; set; }
+        public DbSet<PersonalIndicatorDetailLog> PersonalIndicatorDetailLog { get; set; }
+
     }
 }
