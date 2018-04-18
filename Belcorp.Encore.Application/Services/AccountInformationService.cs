@@ -122,6 +122,8 @@ namespace Belcorp.Encore.Application
 			//Usuario Logeado
 			var sponsorSearch = GetPerformance_HeaderFront(filtrosDTO.CodConsultoraSearched, filtrosDTO.Period);
 
+
+
 			var sponsorFilter = encoreMongo_Context.AccountsInformationProvider.AsQueryable().Where(q =>
 													 q.LeftBower >=filtrosDTO.LeftBower && q.RightBower <= filtrosDTO.RigthBower && q.PeriodID == filtrosDTO.Period &&  (q.PaidAsLastMonth.Contains(filtrosDTO.TituloPago ?? "") || string.IsNullOrEmpty(q.PaidAsLastMonth))
 													 && (q.LeftBower<= sponsorSearch.LeftBower && q.RightBower <= sponsorSearch.RigthBower)
@@ -269,29 +271,60 @@ namespace Belcorp.Encore.Application
         }
 
 
-		public AccountsInformationExtended GetPerformance_HeaderFront(int accountId,int periodId)
-        {
+		public AccountsInformationExtended GetPerformance_HeaderFront(int accountId, int periodId)
+		{
 			try
 			{
 				var header = encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).ToList();
 
-
+				IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
+				var datetimeNow = DateTime.Now;
+				var period = periodsRepository.GetFirstOrDefault(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1, null, null, true);
 
 				var headerByAccountInformation = from headerInitial in header
-												 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c=>c.AccountID==accountId && c.PeriodID== periodId).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
-												 select new AccountsInformationExtended { LeftBower=reportAccountInitial.LeftBower, RigthBower=reportAccountInitial.RightBower , accounts_Mongo= headerInitial };
-												 
+												 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == periodId).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
+												 select new AccountsInformationExtended
+												 {
+													 LeftBower = reportAccountInitial.LeftBower,
+													 RigthBower = reportAccountInitial.RightBower,
+													 accounts_Mongo = headerInitial,
+													 periodStartDateUTC = period == null ? null : period.StartDateUTC,
+													 periodEndDateUTC = period == null ? null : period.EndDateUTC,
+													 periodDescription = period == null ? "" : period.Description
+												 };
 
-				//var headerByAccountInformation = encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == period).ToList();
-
-				
 				return headerByAccountInformation.FirstOrDefault();
-				
-            }
-            catch (Exception ex)
-            {
-                throw new Exception { };
-            }
-        }
+
+			}
+			catch (Exception ex)
+			{
+				throw new Exception { };
+			}
+		}
+
+		//public AccountsInformationExtended GetPerformance_HeaderFront(int accountId,int periodId)
+		//      {
+		//	try
+		//	{
+		//		var header = encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).ToList();
+
+
+
+		//		var headerByAccountInformation = from headerInitial in header
+		//										 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c=>c.AccountID==accountId && c.PeriodID== periodId).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
+		//										 select new AccountsInformationExtended { LeftBower=reportAccountInitial.LeftBower, RigthBower=reportAccountInitial.RightBower , accounts_Mongo= headerInitial };
+
+
+		//		//var headerByAccountInformation = encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == period).ToList();
+
+
+		//		return headerByAccountInformation.FirstOrDefault();
+
+		//          }
+		//          catch (Exception ex)
+		//          {
+		//              throw new Exception { };
+		//          }
+		//      }
 	}
 }

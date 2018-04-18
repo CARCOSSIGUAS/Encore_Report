@@ -13,5 +13,11 @@ namespace Belcorp.Encore.Entities.Entities.DTO
 
 		public int? LeftBower { get; set; }
 
+		public DateTime? periodStartDateUTC { get; set; }
+
+		public DateTime? periodEndDateUTC { get; set; }
+
+		public string periodDescription { get; set; }
+
 	}
 }
