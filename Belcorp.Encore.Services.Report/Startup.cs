@@ -50,13 +50,13 @@ namespace Belcorp.Encore.Services.Report
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
 			app.UseCors(builder =>
-						builder.WithOrigins("http://localhost:3000")
-						.AllowAnyHeader());
+						builder.WithOrigins("http://localhost:3000", "http://10.12.9.41")
+                        .AllowAnyHeader());
 
 			if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-            }
+            }   
 
             app.UseMvc();
         }
