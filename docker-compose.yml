@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  belcorp.encore.api:
+    image: belcorp.encore.api
+    build:
+      context: .
+      dockerfile: Belcorp.Encore.Api/Dockerfile

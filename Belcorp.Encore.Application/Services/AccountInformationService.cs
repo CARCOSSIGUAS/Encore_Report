@@ -281,17 +281,18 @@ namespace Belcorp.Encore.Application
 				var datetimeNow = DateTime.Now;
 				var period = periodsRepository.GetFirstOrDefault(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1, null, null, true);
 
-				var headerByAccountInformation = from headerInitial in header
-												 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == periodId).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
-												 select new AccountsInformationExtended
-												 {
-													 LeftBower = reportAccountInitial.LeftBower,
-													 RigthBower = reportAccountInitial.RightBower,
-													 accounts_Mongo = headerInitial,
-													 periodStartDateUTC = period == null ? null : period.StartDateUTC,
-													 periodEndDateUTC = period == null ? null : period.EndDateUTC,
-													 periodDescription = period == null ? "" : period.Description
-												 };
+                var headerByAccountInformation = from headerInitial in header
+                                                 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == periodId).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
+                                                 select new AccountsInformationExtended
+                                                 {
+                                                     LeftBower = reportAccountInitial.LeftBower,
+                                                     RigthBower = reportAccountInitial.RightBower,
+                                                     accounts_Mongo = headerInitial,
+                                                     periodStartDateUTC = period == null ? null : period.StartDateUTC,
+                                                     periodEndDateUTC = period == null ? null : period.EndDateUTC,
+                                                     periodDescription = period == null ? "" : period.Description,
+                                                     cantFinalPeriodo =  Math.Round((period.EndDateUTC-DateTime.Now).Value.TotalDays)
+                                                 };
 
 				return headerByAccountInformation.FirstOrDefault();
 
