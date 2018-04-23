@@ -1,9 +1,5 @@
-﻿using Belcorp.Encore.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Belcorp.Encore.Entities.Entities.Core;
 using Microsoft.EntityFrameworkCore;
-
 
 namespace Belcorp.Encore.Data.Contexts
 {
@@ -15,8 +11,30 @@ namespace Belcorp.Encore.Data.Contexts
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<Accounts>()
+                .HasMany(p => p.AccountPhones);
+
+            builder.Entity<Monitor>()
+                .HasMany(p => p.MonitorDetails);
+
+            builder.Entity<MonitorLotes>()
+                .HasMany(p => p.MonitorOrders);
+
         }
 
-        
+        public DbSet<Orders> Orders { get; set; }
+        public DbSet<OrderCustomers> OrderCustomers { get; set; }
+        public DbSet<OrderItems> OrderItems { get; set; }
+        public DbSet<OrderItemPrices> OrderItemPrices { get; set; }
+
+        public DbSet<Accounts> Accounts { get; set; }
+        public DbSet<AccountPhones> AccountPhones { get; set; }
+
+        public DbSet<Monitor> Monitor { get; set; }
+        public DbSet<MonitorDetails> MonitorDetails { get; set; }
+
+        public DbSet<MonitorLotes> MonitorLotes { get; set; }
+        public DbSet<MonitorOrders> MonitorOrders { get; set; }
+
     }
 }

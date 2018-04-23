@@ -2,6 +2,7 @@
 namespace Belcorp.Encore.Console.InstanceProviders
 {
     using Belcorp.Encore.Application;
+    using Belcorp.Encore.Application.Services;
     using Belcorp.Encore.Repositories;
 
     using Microsoft.Extensions.DependencyInjection;
