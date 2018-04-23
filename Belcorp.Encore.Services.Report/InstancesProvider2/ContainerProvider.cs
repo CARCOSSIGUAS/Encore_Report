@@ -41,7 +41,9 @@ namespace Belcorp.Encore.Services.Report.InstancesProvider2
 			services.AddScoped<IMonitorMongoService, MonitorService>();
 			services.AddScoped<IMonitorRepository, MonitorRepository>();
 
-		}
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+        }
 
 	}
 }

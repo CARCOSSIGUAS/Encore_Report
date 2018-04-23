@@ -1,4 +1,5 @@
-﻿using Belcorp.Encore.Entities.Entities.Mongo;
+﻿using Belcorp.Encore.Entities.Entities.Core;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,5 +11,6 @@ namespace Belcorp.Encore.Application.Services
     {
         void Migrate_Accounts();
         Task<List<Accounts_Mongo>> GetListAccounts(int accountId);
+        Task<Accounts> GetAccountFromSingleSignOnToken(string token, TimeSpan? expiration = null);
     }
 }

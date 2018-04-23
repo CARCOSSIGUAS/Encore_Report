@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="6.2.2" />
+    <PackageReference Include="NetSteps.SSO.Common" Version="1.1.5" />
+    <PackageReference Include="NetSteps.SSO.Service" Version="1.1.5" />
   </ItemGroup>
 
   <ItemGroup>
