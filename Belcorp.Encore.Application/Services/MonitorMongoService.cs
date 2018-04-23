@@ -3,6 +3,7 @@ using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities;
+using Belcorp.Encore.Entities.Entities.Commissions;
 using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Repositories.Interfaces;
@@ -31,12 +32,14 @@ namespace Belcorp.Encore.Application.Services
         public MonitorService
         (
             IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
+            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
             IMonitorRepository _monitorMongoRepository, 
             IAccountsService _accountsService, 
             IOptions<Settings> settings
         )
         {
             unitOfWork_Core = _unitOfWork_Core;
+            unitOfWork_Comm = _unitOfWork_Comm;
             encoreMongo_Context = new EncoreMongo_Context(settings);
             monitorMongoRepository = _monitorMongoRepository;
             accountsService = _accountsService;
@@ -55,6 +58,9 @@ namespace Belcorp.Encore.Application.Services
                         case (int)Constants.MonitorTables.Accounts:
                             Migrate_AccountsById(item);
                             break;
+                        case (int)Constants.MonitorTables.Periods:
+                            Migrate_PeriodsbyId(item);
+                            break;
                         default:
                             break;
                     }
@@ -66,9 +72,10 @@ namespace Belcorp.Encore.Application.Services
             }
         }
 
+        #region Accounts
         public void Migrate_AccountsById(Monitor monitor)
         {
-            IRepository<Accounts> accountsRepository = unitOfWork_Core.GetRepository<Accounts>();
+            IRepository<Entities.Entities.Core.Accounts> accountsRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
 
             var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, a => a.Include(p => p.AccountPhones), true);
             var account_Mongo = encoreMongo_Context.AccountsProvider.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
@@ -140,7 +147,7 @@ namespace Belcorp.Encore.Application.Services
             }
         }
 
-        private void Migrate_Phones(Accounts account, MonitorDetails detail)
+        private void Migrate_Phones(Entities.Entities.Core.Accounts account, MonitorDetails detail)
         {
             IRepository<AccountPhones> accountPhonesRepository = unitOfWork_Core.GetRepository<AccountPhones>();
             var account_Mongo = encoreMongo_Context.AccountsProvider.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
@@ -181,5 +188,61 @@ namespace Belcorp.Encore.Application.Services
                 encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
             }
         }
+        #endregion
+
+        #region Periods
+        private void Migrate_PeriodsbyId(Monitor monitor)
+        {
+            IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
+
+            var period = periodsRepository.GetFirstOrDefault(p => p.PeriodID == monitor.RowId, null, null, true);
+            var period_Mongo = encoreMongo_Context.PeriodsProvider.Find(p => p.CountryID == 0 && p.PeriodID == period.PeriodID).FirstOrDefault();
+
+            Periods_Mongo registro = new Periods_Mongo()
+            {
+                PeriodID = period.PeriodID,
+                CountryID = 0,
+
+                StartDate = period.StartDate,
+                EndDate = period.EndDate,
+                ClosedDate = period.ClosedDate,
+                PlanID = period.PlanID,
+                EarningsViewable = period.EarningsViewable,
+                BackOfficeDisplayStartDate = period.BackOfficeDisplayStartDate,
+                DisbursementsProcessed = period.DisbursementsProcessed,
+                Description = period.Description,
+                StartDateUTC = period.StartDateUTC,
+                EndDateUTC = period.EndDateUTC,
+                LockDate = period.LockDate
+            };
+
+            if (period == null)
+            {
+                encoreMongo_Context.PeriodsProvider.DeleteOne(p => p.CountryID == 0 && p.PeriodID == monitor.RowId);
+            }
+            else if (period_Mongo == null)
+            {
+                encoreMongo_Context.PeriodsProvider.InsertOne(registro);
+            }
+            else
+            {
+                var updatesAttributes = Builders<Periods_Mongo>.Update
+                .Set(p => p.StartDate, period.StartDate)
+                .Set(p => p.EndDate, period.EndDate)
+                .Set(p => p.ClosedDate, period.ClosedDate)
+                .Set(p => p.PlanID, period.PlanID)
+                .Set(p => p.EarningsViewable, period.EarningsViewable)
+                .Set(p => p.BackOfficeDisplayStartDate, period.BackOfficeDisplayStartDate)
+                .Set(p => p.DisbursementsProcessed, period.DisbursementsProcessed)
+                .Set(p => p.Description, period.Description)
+                .Set(p => p.StartDateUTC, period.StartDateUTC)
+                .Set(p => p.EndDateUTC, period.EndDateUTC)
+                .Set(p => p.LockDate, period.LockDate);
+
+                encoreMongo_Context.PeriodsProvider.UpdateOne(p => p.CountryID == 0 && p.PeriodID == period.PeriodID, updatesAttributes);
+            }
+
+        }
+        #endregion
     }
 }

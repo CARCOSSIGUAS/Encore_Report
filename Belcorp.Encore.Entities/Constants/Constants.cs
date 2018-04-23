@@ -70,7 +70,8 @@ namespace Belcorp.Encore.Entities.Constants
         {
             NotSet = 0,
             Accounts = 1,
-            AccountsPhones = 2
+            AccountsPhones = 2,
+            Periods = 3
         }
     }
 }

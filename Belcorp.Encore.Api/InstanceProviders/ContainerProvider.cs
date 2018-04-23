@@ -3,6 +3,7 @@
     using Belcorp.Encore.Application;
 	using Belcorp.Encore.Application.Interfaces;
 	using Belcorp.Encore.Application.Services;
+    using Belcorp.Encore.Application.Services.Interfaces;
     using Belcorp.Encore.Repositories;
 	using Belcorp.Encore.Repositories.Interfaces;
 	using Belcorp.Encore.Repositories.Repositories;
@@ -36,6 +37,7 @@
             services.AddScoped<IMonitorMongoService, MonitorService>();
             services.AddScoped<IMonitorRepository, MonitorRepository>();
 
+            services.AddScoped<IPeriodsService, PeriodsService>();
         }
     }
 }

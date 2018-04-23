@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Belcorp.Encore.Application.Interfaces;
 using Belcorp.Encore.Application.Services;
+using Belcorp.Encore.Application.Services.Interfaces;
 using Hangfire;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,12 +17,20 @@ namespace Belcorp.Encore.Api.Controllers
     {
         private readonly IAccountInformationService accountInformationService;
         private readonly IAccountsService accountsService;
+        private readonly IPeriodsService periodsService;
         private readonly IMonitorMongoService monitorMongoService;
 
-        public MigrationController(IAccountInformationService _accountInformationService, IAccountsService _accountsService, IMonitorMongoService _monitorMongoService)
+        public MigrationController
+        (
+            IAccountInformationService _accountInformationService,
+            IAccountsService _accountsService,
+            IPeriodsService _periodsService,
+            IMonitorMongoService _monitorMongoService
+        )
         {
             accountInformationService = _accountInformationService;
             accountsService = _accountsService;
+            periodsService = _periodsService;
             monitorMongoService = _monitorMongoService;
         }
 
@@ -38,6 +47,14 @@ namespace Belcorp.Encore.Api.Controllers
         public ActionResult Accounts()
         {
             BackgroundJob.Enqueue(() => accountsService.Migrate_Accounts());
+            return Json(new { Status = "Processing Background" });
+        }
+
+        [HttpGet("[action]")]
+        [AutomaticRetry(Attempts = 0)]
+        public ActionResult Periods()
+        {
+            BackgroundJob.Enqueue(() => periodsService.Migrate_Periods());
             return Json(new { Status = "Processing Background" });
         }
     }
