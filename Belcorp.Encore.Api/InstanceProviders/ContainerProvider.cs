@@ -37,6 +37,7 @@
             services.AddScoped<IMonitorMongoService, MonitorService>();
             services.AddScoped<IMonitorRepository, MonitorRepository>();
 
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IPeriodsService, PeriodsService>();
         }
     }
