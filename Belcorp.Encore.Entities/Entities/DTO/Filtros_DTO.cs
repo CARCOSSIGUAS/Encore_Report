@@ -25,5 +25,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
 		public int LeftBower { get; set; }
 		public int RigthBower { get; set; }
 	
-	}
+        public int CodigoPatrocinador { get; set; }
+        public string NombrePatrocinador { get; set; }
+    }
 }
