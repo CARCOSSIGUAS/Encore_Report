@@ -30,7 +30,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public DateTime? TerminatedDateUTC { get; set; }
         public DateTime? ActivationDateUTC { get; set; }
         public int? ActivationPeriodID { get; set; }
-
+        
         public List<AccountPhones> AccountPhones = new List<AccountPhones>();
         
     }
