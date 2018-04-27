@@ -73,5 +73,11 @@ namespace Belcorp.Encore.Entities.Constants
             AccountsPhones = 2,
             Periods = 3
         }
+
+        public enum ResourceUriType
+        {
+            PreviousPage,
+            NextPage
+        }
     }
 }

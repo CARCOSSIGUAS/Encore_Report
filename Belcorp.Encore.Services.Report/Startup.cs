@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
-using Belcorp.Encore.Services.Report.InstancesProvider2;
+using Belcorp.Encore.Services.Report.InstancesProvider;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;

@@ -504,7 +504,6 @@ namespace Belcorp.Encore.Application.Services
 
                              PeriodID = ai.PeriodID,
                              AccountID = ai.AccountID,
-                             CountryID = 0,
 
                              AccountNumber = ai.AccountNumber,
                              AccountName = ai.AccountName,

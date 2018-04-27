@@ -46,15 +46,23 @@ namespace Belcorp.Encore.Application
             encoreMongo_Context = new EncoreMongo_Context(settings);
         }
 
-        public void Migrate_AccountInformationByPeriod(int periodId)
+        public void Migrate_AccountInformationByPeriod(int ? periodId = null)
         {
+            if (periodId == null)
+            {
+                IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
+                var date = DateTime.Now;
+                var result = periodsRepository.GetFirstOrDefault(p => date >= p.StartDateUTC && date <= p.EndDateUTC && p.PlanID == 1, null, null, true);
+                periodId = result.PeriodID;
+            }
+
             var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
             int ii = total.TotalPages;
 
             IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
             var titles = titlesRepository.GetAll().ToList();
 
-            encoreMongo_Context.AccountsInformationProvider.DeleteMany(p => p.PeriodID == periodId && p.CountryID == 0);
+            encoreMongo_Context.AccountsInformationProvider.DeleteMany(p => p.PeriodID == periodId);
 
             for (int i = 0; i < ii; i++)
             {
@@ -65,9 +73,7 @@ namespace Belcorp.Encore.Application
                              join titlesInfo_Paid in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
                              select new AccountsInformation_Mongo
                              {
-                                 CountryID = 0,
                                  AccountsInformationID = accountsInfo.AccountsInformationID,
-
                                  PeriodID = accountsInfo.PeriodID,
                                  AccountID = accountsInfo.AccountID,
                                  AccountNumber = accountsInfo.AccountNumber,
@@ -78,23 +84,69 @@ namespace Belcorp.Encore.Application
                                  PostalCode = accountsInfo.PostalCode,
                                  City = accountsInfo.City,
                                  STATE = accountsInfo.STATE,
-
-                                 PQV = accountsInfo.PQV,
-                                 DQV = accountsInfo.DQV,
-                                 DQVT = accountsInfo.DQVT,
-
+                                 Region = accountsInfo.Region,
+                                 NewStatus = accountsInfo.NewStatus,
+                                 TimeLimitToBeDemote = accountsInfo.TimeLimitToBeDemote,
                                  CareerTitle = accountsInfo.CareerTitle,
                                  PaidAsCurrentMonth = accountsInfo.PaidAsCurrentMonth,
-                                 CareerTitle_Des = titlesInfo_Career.Name,
-                                 PaidAsCurrentMonth_Des = titlesInfo_Paid.Name,
-
+                                 PaidAsLastMonth = accountsInfo.PaidAsLastMonth,
+                                 VolumeForCareerTitle = accountsInfo.VolumeForCareerTitle,
+                                 Activity = accountsInfo.Activity,
+                                 NineMonthsPQV = accountsInfo.NineMonthsPQV,
+                                 PQV = accountsInfo.PQV,
+                                 PCV = accountsInfo.PCV,
+                                 GQV = accountsInfo.GQV,
+                                 GCV = accountsInfo.GCV,
+                                 DQVT = accountsInfo.DQVT,
+                                 DCV = accountsInfo.DCV,
+                                 DQV = accountsInfo.DQV,
                                  JoinDate = accountsInfo.JoinDate,
                                  Generation = accountsInfo.Generation,
                                  LEVEL = accountsInfo.LEVEL,
                                  SortPath = accountsInfo.SortPath,
                                  LeftBower = accountsInfo.LeftBower,
                                  RightBower = accountsInfo.RightBower,
-                                 Activity = accountsInfo.Activity
+                                 RequirementNewGeneration = accountsInfo.RequirementNewGeneration,
+                                 TimeLimitForNewGeneration = accountsInfo.TimeLimitForNewGeneration,
+                                 Title1Legs = accountsInfo.Title1Legs,
+                                 Title2Legs = accountsInfo.Title2Legs,
+                                 Title3Legs = accountsInfo.Title3Legs,
+                                 Title4Legs = accountsInfo.Title4Legs,
+                                 Title5Legs = accountsInfo.Title5Legs,
+                                 Title6Legs = accountsInfo.Title6Legs,
+                                 Title7Legs = accountsInfo.Title7Legs,
+                                 Title8Legs = accountsInfo.Title8Legs,
+                                 Title9Legs = accountsInfo.Title9Legs,
+                                 Title10Legs = accountsInfo.Title10Legs,
+                                 Title11Legs = accountsInfo.Title11Legs,
+                                 Title12Legs = accountsInfo.Title12Legs,
+                                 Title13Legs = accountsInfo.Title13Legs,
+                                 Title14Legs = accountsInfo.Title14Legs,
+                                 EmailAddress = accountsInfo.EmailAddress,
+                                 CQL = accountsInfo.CQL,
+                                 LastOrderDate = accountsInfo.LastOrderDate,
+                                 IsCommissionQualified = accountsInfo.IsCommissionQualified,
+                                 BirthdayUTC = accountsInfo.BirthdayUTC,
+                                 UplineLeaderM3 = accountsInfo.UplineLeaderM3,
+                                 UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name,
+                                 UplineLeaderL1 = accountsInfo.UplineLeaderL1,
+                                 UplineLeaderL1Name = accountsInfo.UplineLeaderL1Name,
+                                 TotalDownline = accountsInfo.TotalDownline,
+                                 CreditAvailable = accountsInfo.CreditAvailable,
+                                 DebtsToExpire = accountsInfo.DebtsToExpire,
+                                 ExpiredDebts = accountsInfo.ExpiredDebts,
+                                 GenerationM3 = accountsInfo.GenerationM3,
+                                 ActiveDownline = accountsInfo.ActiveDownline,
+                                 TitleMaintainance = accountsInfo.TitleMaintainance,
+                                 SalesAverage = accountsInfo.SalesAverage,
+                                 NewQualification = accountsInfo.NewQualification,
+                                 NewEnrollments = accountsInfo.NewEnrollments,
+                                 NineMonthsGQV = accountsInfo.NineMonthsGQV,
+                                 NineMonthsDQV = accountsInfo.NineMonthsDQV,
+                                 ConsultActive = accountsInfo.ConsultActive,
+
+                                 CareerTitle_Des = titlesInfo_Career.Name,
+                                 PaidAsCurrentMonth_Des = titlesInfo_Paid.Name
                              };
 
                 encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
@@ -201,7 +253,6 @@ namespace Belcorp.Encore.Application
                             where (ai.PeriodID == periodId && (ai.SponsorID == accountId))
                             select new
                             {
-                                ai.CountryID,
                                 ai.PeriodID,
                                 ai.AccountID,
                                 ai.AccountNumber,
@@ -377,5 +428,6 @@ namespace Belcorp.Encore.Application
         //              throw new Exception { };
         //          }
         //      }
+
     }
 }

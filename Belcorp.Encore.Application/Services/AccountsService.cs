@@ -8,8 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using NetSteps.Encore.Core.IoC;
-using NetSteps.SSO.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

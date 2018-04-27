@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Belcorp.Encore.Services.Report.InstancesProvider2
+namespace Belcorp.Encore.Services.Report.InstancesProvider
 {
     public static class ContainerProvider
     {
