@@ -6,11 +6,12 @@ using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Entities.Entities.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 
 namespace Belcorp.Encore.Services.Report.Controllers
 {
 	[Produces("application/json")]
-	[Route("api/Report")]
+	[Route("api/report")]
 	public class ReportController : Controller
 	{
 		private readonly IAccountInformationService accountInformationService;
@@ -55,15 +56,6 @@ namespace Belcorp.Encore.Services.Report.Controllers
 			return Json(header);
 		}
 
-		[HttpPost("[action]")]
-		public JsonResult Mundo(int periodo)
-		{
-			var header = "Hola";
-
-			return Json(header);
-		}
-
-
 		[HttpGet("[action]")]
 		public IActionResult GetAccountsFilterPaginated(Filtros_DTO filtrosDTO)
 		{
@@ -91,5 +83,35 @@ namespace Belcorp.Encore.Services.Report.Controllers
 			var header = accountInformationService.GetPerformance_AccountInformation(accountId, periodId);
 			return Json(header);
 		}
-	}
+
+        [HttpGet("exportexcel")]
+        public async Task<IActionResult> Exportexcel()
+        {
+            const string XlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            var result = await accountsService.GetListAccounts(1697);
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Excel");
+                worksheet.Cells["A1"].LoadFromCollection(result, PrintHeaders: true);
+
+                int noOfProperties = result.GetType().GetGenericArguments()[0].GetProperties().Length;
+
+                using (ExcelRange r = worksheet.Cells[1, 1, 1, noOfProperties])
+                {
+                    r.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                    r.Style.Font.Bold = true;
+                    r.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                }
+
+                for (var col = 1; col < noOfProperties + 1; col++)
+                {
+                    worksheet.Column(col).AutoFit();
+                }
+
+                return File(package.GetAsByteArray(), XlsxContentType, "result_excel.xlsx");
+            }
+        }
+    }
 }
+

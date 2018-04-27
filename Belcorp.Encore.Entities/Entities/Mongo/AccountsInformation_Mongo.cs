@@ -10,7 +10,6 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         [BsonId]
         public int AccountsInformationID { get; set; }
 
-        public int CountryID { get; set; }
         public int PeriodID { get; set; }
         public int AccountID { get; set; }
         public string AccountNumber { get; set; }

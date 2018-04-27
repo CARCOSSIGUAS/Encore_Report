@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Belcorp.Encore.Api.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Migration")]
+    [Route("api/migration")]
     public class MigrationController : Controller
     {
         private readonly IAccountInformationService accountInformationService;
@@ -34,7 +34,7 @@ namespace Belcorp.Encore.Api.Controllers
             monitorMongoService = _monitorMongoService;
         }
 
-        [HttpGet("[action]/{PeriodId}")]
+        [HttpGet("accountsInformation/{periodId}")]
         [AutomaticRetry(Attempts = 0)]
         public ActionResult AccountsInformation(int periodId)
         {
@@ -42,7 +42,7 @@ namespace Belcorp.Encore.Api.Controllers
             return Json(new { Status = "Processing Background" } );
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("accounts")]
         [AutomaticRetry(Attempts = 0)]
         public ActionResult Accounts()
         {
@@ -50,7 +50,7 @@ namespace Belcorp.Encore.Api.Controllers
             return Json(new { Status = "Processing Background" });
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("periods")]
         [AutomaticRetry(Attempts = 0)]
         public ActionResult Periods()
         {

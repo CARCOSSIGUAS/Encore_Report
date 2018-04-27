@@ -44,7 +44,6 @@ namespace Belcorp.Encore.Application.Services
                     Periods_Mongo registro = new Periods_Mongo()
                     {
                         PeriodID = period.PeriodID,
-                        CountryID = 0,
 
                         StartDate = period.StartDate,
                         EndDate = period.EndDate,

@@ -6,8 +6,6 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="6.2.2" />
-    <PackageReference Include="NetSteps.SSO.Common" Version="1.1.5" />
-    <PackageReference Include="NetSteps.SSO.Service" Version="1.1.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,6 +13,12 @@
     <ProjectReference Include="..\Belcorp.Encore.Entities\Belcorp.Encore.Entities.csproj" />
     <ProjectReference Include="..\Belcorp.Encore.Repositories\Belcorp.Encore.Repositories.csproj" />
     <ProjectReference Include="..\Microsoft.EntityFrameworkCore.UnitOfWork\Microsoft.EntityFrameworkCore.UnitOfWork.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions">
+      <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.hosting.abstractions\2.0.1\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

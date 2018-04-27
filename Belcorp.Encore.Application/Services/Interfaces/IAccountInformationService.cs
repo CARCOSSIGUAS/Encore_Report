@@ -15,7 +15,7 @@ namespace Belcorp.Encore.Application.Services
     public interface IAccountInformationService
     {
 
-        void Migrate_AccountInformationByPeriod(int periodId);
+        void Migrate_AccountInformationByPeriod(int ? periodId);
 
         Task<IEnumerable<ReportPerformance_HeaderModel>> GetPerformance_Header(int accountId, int periodId);
 

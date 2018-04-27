@@ -196,12 +196,11 @@ namespace Belcorp.Encore.Application.Services
             IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
 
             var period = periodsRepository.GetFirstOrDefault(p => p.PeriodID == monitor.RowId, null, null, true);
-            var period_Mongo = encoreMongo_Context.PeriodsProvider.Find(p => p.CountryID == 0 && p.PeriodID == period.PeriodID).FirstOrDefault();
+            var period_Mongo = encoreMongo_Context.PeriodsProvider.Find(p => p.PeriodID == period.PeriodID).FirstOrDefault();
 
             Periods_Mongo registro = new Periods_Mongo()
             {
                 PeriodID = period.PeriodID,
-                CountryID = 0,
 
                 StartDate = period.StartDate,
                 EndDate = period.EndDate,
@@ -218,7 +217,7 @@ namespace Belcorp.Encore.Application.Services
 
             if (period == null)
             {
-                encoreMongo_Context.PeriodsProvider.DeleteOne(p => p.CountryID == 0 && p.PeriodID == monitor.RowId);
+                encoreMongo_Context.PeriodsProvider.DeleteOne(p => p.PeriodID == monitor.RowId);
             }
             else if (period_Mongo == null)
             {
@@ -239,7 +238,7 @@ namespace Belcorp.Encore.Application.Services
                 .Set(p => p.EndDateUTC, period.EndDateUTC)
                 .Set(p => p.LockDate, period.LockDate);
 
-                encoreMongo_Context.PeriodsProvider.UpdateOne(p => p.CountryID == 0 && p.PeriodID == period.PeriodID, updatesAttributes);
+                encoreMongo_Context.PeriodsProvider.UpdateOne(p => p.PeriodID == period.PeriodID, updatesAttributes);
             }
 
         }
