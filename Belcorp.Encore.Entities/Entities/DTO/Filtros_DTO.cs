@@ -18,7 +18,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
 		public string Estado { get; set; }	
 		public DateTime DataCadastro { get; set; }
 		public decimal VentaPersonal { get; set; }
-		public int Nivel { get; set; }
+		public string Nivel { get; set; }
 		public int Generation { get; set; }
 		public decimal VOT { get; set; }
 		public decimal VOQ { get; set; }

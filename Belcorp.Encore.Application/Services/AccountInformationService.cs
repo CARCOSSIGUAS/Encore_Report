@@ -119,6 +119,20 @@ namespace Belcorp.Encore.Application
 
         public AccountsExtended GetAccounts(Filtros_DTO filtrosDTO)
         {
+            var ultimo = filtrosDTO.Nivel != null ? filtrosDTO.Nivel.LastIndexOf(","):-1;
+            filtrosDTO.Nivel = filtrosDTO.Nivel != null && ultimo != -1 ? filtrosDTO.Nivel.Remove(ultimo) : null;
+            var listaNivel = filtrosDTO.Nivel != null ? filtrosDTO.Nivel.Split(",").ToList() : new List<string>();
+
+            ultimo = filtrosDTO.TituloCarrera != null ? filtrosDTO.TituloCarrera.LastIndexOf(",") : -1;
+            filtrosDTO.TituloCarrera = filtrosDTO.TituloCarrera != null && ultimo != -1 ? filtrosDTO.TituloCarrera.Remove(ultimo) : null;
+            var listaTitulo = filtrosDTO.TituloCarrera != null ? filtrosDTO.TituloCarrera.Split(",").ToList() : new List<string>();
+
+            ultimo = filtrosDTO.Estado != null ? filtrosDTO.Estado.LastIndexOf(",") : -1;
+            filtrosDTO.Estado = filtrosDTO.Estado != null && ultimo != -1 ? filtrosDTO.Estado.Remove(ultimo) : null;
+            var listaEstado = filtrosDTO.Estado != null ? filtrosDTO.Estado.Split(",").ToList() : new List<string>();
+
+
+
             var accountLogged = encoreMongo_Context.AccountsInformationProvider.Find(q => q.AccountID == filtrosDTO.CodConsultoraLogged && q.PeriodID == filtrosDTO.Period, null).FirstOrDefault();
             var sponsorSearch = encoreMongo_Context.AccountsInformationProvider.Find(q => q.AccountID == filtrosDTO.CodConsultoraSearched && q.PeriodID == filtrosDTO.Period, null).FirstOrDefault();
             sponsorSearch = sponsorSearch ?? new AccountsInformation_Mongo();
@@ -137,7 +151,10 @@ namespace Belcorp.Encore.Application
                                               (consulted.RightBower <= sponsorSearch.RightBower || sponsorSearch.RightBower == null) &&
                                               (consulted.AccountName.ToUpper().Contains(filtrosDTO.NombreConsultora != null ? filtrosDTO.NombreConsultora.ToUpper() : ""))&&
                                               (consulted.SponsorID == filtrosDTO.CodigoPatrocinador || filtrosDTO.CodigoPatrocinador == 0) &&
-                                              (consulted.SponsorName.ToUpper().Contains(filtrosDTO.NombrePatrocinador != null ? filtrosDTO.NombrePatrocinador.ToUpper() : ""))
+                                              (consulted.SponsorName.ToUpper().Contains(filtrosDTO.NombrePatrocinador != null ? filtrosDTO.NombrePatrocinador.ToUpper() : ""))&&
+                                              (listaNivel.Any(q => consulted.LEVEL == int.Parse(q)) || listaNivel.Count == 0)&&
+                                              (listaTitulo.Any(q => consulted.CareerTitle == q) || listaTitulo.Count == 0) &&
+                                              (listaEstado.Any(q => consulted.NewStatus == q) || listaTitulo.Count == 0)
                                         select consulted;
 
 
