@@ -19,6 +19,9 @@ namespace Belcorp.Encore.Entities.Entities.DTO
 
 		public string periodDescription { get; set; }
 
-        public double cantFinalPeriodo { get; set; }
+        public string cantFinalPeriodo { get; set; }
+
+        public string CareerTitle { get; set; }
+        public string CareerTitle_Des { get; set; }
     }
 }

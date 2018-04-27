@@ -171,26 +171,53 @@ namespace Belcorp.Encore.Application
 
         public AccountsExtended GetAccounts(Filtros_DTO filtrosDTO)
         {
-            //Usuario Logeado
-            var sponsorSearch = GetPerformance_HeaderFront(filtrosDTO.CodConsultoraSearched, filtrosDTO.Period);
-
-            if (sponsorSearch != null)
+            var accountLogged = encoreMongo_Context.AccountsInformationProvider.Find(q => q.AccountID == filtrosDTO.CodConsultoraLogged && q.PeriodID == filtrosDTO.Period, null).FirstOrDefault();
+            var sponsorSearch = encoreMongo_Context.AccountsInformationProvider.Find(q => q.AccountID == filtrosDTO.CodConsultoraSearched && q.PeriodID == filtrosDTO.Period, null).FirstOrDefault();
+            sponsorSearch = sponsorSearch ?? new AccountsInformation_Mongo();
+            if (accountLogged != null)
             {
-                var sponsorFilter = encoreMongo_Context.AccountsInformationProvider.AsQueryable().Where(q =>
-                                                     q.LeftBower >= filtrosDTO.LeftBower && q.RightBower <= filtrosDTO.RigthBower
-                                                     && (q.LeftBower <= sponsorSearch.LeftBower && q.RightBower <= sponsorSearch.RigthBower)
-                                                     && q.PeriodID == filtrosDTO.Period
-                                                     && q.AccountID == filtrosDTO.CodConsultoraSearched || (q.AccountID == 0) || (filtrosDTO.CodConsultoraSearched == 0)
-                                                     && q.AccountName.Contains(filtrosDTO.NombreConsultora ?? "") || string.IsNullOrEmpty(q.AccountName)
-                                                     && q.SponsorID == filtrosDTO.CodigoPatrocinador || (q.SponsorID == 0) || (filtrosDTO.CodigoPatrocinador == 0)
-                                                     && q.SponsorName.Contains(filtrosDTO.NombrePatrocinador ?? "") || string.IsNullOrEmpty(q.SponsorName)
-                                                    ).ToList();
+                try
+                {
+                    var elements = encoreMongo_Context.AccountsInformationProvider.Find(c => c.PeriodID == filtrosDTO.Period && c.LeftBower >= accountLogged.LeftBower && c.RightBower <= accountLogged.RightBower).ToList();
+                    var sponsorFilter = from reportAccountLogged in elements
+                                        join reportAccountConsulted in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
+                                        on reportAccountLogged.AccountsInformationID equals reportAccountConsulted.AccountsInformationID into joined
+                                        from consulted in joined.DefaultIfEmpty()
+                                        where (consulted != null) &&
+                                              (reportAccountLogged.PeriodID == filtrosDTO.Period) && 
+                                              (consulted.LeftBower >= sponsorSearch.LeftBower || sponsorSearch.LeftBower == null) && 
+                                              (consulted.RightBower <= sponsorSearch.RightBower || sponsorSearch.RightBower == null) &&
+                                              (consulted.AccountName.ToUpper().Contains(filtrosDTO.NombreConsultora != null ? filtrosDTO.NombreConsultora.ToUpper() : ""))&&
+                                              (consulted.SponsorID == filtrosDTO.CodigoPatrocinador || filtrosDTO.CodigoPatrocinador == 0) &&
+                                              (consulted.SponsorName.ToUpper().Contains(filtrosDTO.NombrePatrocinador != null ? filtrosDTO.NombrePatrocinador.ToUpper() : ""))
+                                        select consulted;
 
-                var devolverData = sponsorFilter.Skip(filtrosDTO.NumeroPagina).Take(filtrosDTO.NumeroRegistros).ToList();
 
-                var totalPages = sponsorFilter.Count() / (filtrosDTO.NumeroRegistros);
+                    var detailWTA = sponsorFilter.ToList();
+                    var cantidadRegistros = detailWTA.Count;
 
-                return new AccountsExtended { numPage = totalPages, accountsInformationDTO = devolverData };
+                    var devolverData = detailWTA.Skip((filtrosDTO.NumeroPagina >= cantidadRegistros) ? 0: filtrosDTO.NumeroPagina).Take(filtrosDTO.NumeroRegistros).ToList();
+
+                    var totalPages = (filtrosDTO.NumeroRegistros >= cantidadRegistros) ?  1: cantidadRegistros / (filtrosDTO.NumeroRegistros);
+
+                    return new AccountsExtended { numPage = totalPages, accountsInformationDTO = devolverData };
+                }
+                catch (Exception ex)
+                {
+
+                    return new AccountsExtended
+                    {
+                        numPage = 0,
+                        accountsInformationDTO = new List<AccountsInformation_Mongo>{
+                        new AccountsInformation_Mongo
+                        {
+                            AccountName=ex.Message
+                        }
+                    }
+                    };
+                }
+
+
 
             }
 
@@ -328,25 +355,31 @@ namespace Belcorp.Encore.Application
             {
                 var header = encoreMongo_Context.AccountsProvider.Find(q => q.AccountID == accountId, null).ToList();
 
-                IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
-                var datetimeNow = DateTime.Now;
-                var period = periodsRepository.GetFirstOrDefault(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1, null, null, true);
+                if (header != null)
+                {
+                    IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
+                    var datetimeNow = DateTime.Now;
+                    var period = periodsRepository.GetFirstOrDefault(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1, null, null, true);
 
-                var headerByAccountInformation = from headerInitial in header
-                                                 join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == periodId).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
-                                                 select new AccountsInformationExtended
-                                                 {
-                                                     LeftBower = reportAccountInitial.LeftBower,
-                                                     RigthBower = reportAccountInitial.RightBower,
-                                                     accounts_Mongo = headerInitial,
-                                                     periodStartDateUTC = period == null ? null : period.StartDateUTC,
-                                                     periodEndDateUTC = period == null ? null : period.EndDateUTC,
-                                                     periodDescription = period == null ? "" : period.Description,
-                                                     cantFinalPeriodo = Math.Round((period.EndDateUTC - DateTime.Now).Value.TotalDays)
-                                                 };
+                    var headerByAccountInformation = from headerInitial in header
+                                                     join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == periodId).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
+                                                     select new AccountsInformationExtended
+                                                     {
+                                                         LeftBower = reportAccountInitial.LeftBower,
+                                                         RigthBower = reportAccountInitial.RightBower,
+                                                         accounts_Mongo = headerInitial,
+                                                         CareerTitle = reportAccountInitial.CareerTitle,
+                                                         CareerTitle_Des = reportAccountInitial.CareerTitle_Des,
+                                                         periodStartDateUTC = period == null ? null : period.StartDateUTC,
+                                                         periodEndDateUTC = period == null ? null : period.EndDateUTC,
+                                                         periodDescription = period == null ? "" : period.Description,
+                                                         cantFinalPeriodo = Math.Round((period.EndDateUTC - DateTime.Now).Value.TotalDays) == 0 ? "HOY" : Math.Round((period.EndDateUTC - DateTime.Now).Value.TotalDays) > 5 ? period.EndDateUTC.Value.ToString("dd/MM/yyyy") : Math.Round((period.EndDateUTC - DateTime.Now).Value.TotalDays).ToString() + " días"
+                                                     };
 
-                return headerByAccountInformation.FirstOrDefault();
+                    return headerByAccountInformation.FirstOrDefault();
+                }
 
+                return null;
             }
             catch (Exception ex)
             {
