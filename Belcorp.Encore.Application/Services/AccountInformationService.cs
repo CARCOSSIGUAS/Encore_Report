@@ -206,7 +206,7 @@ namespace Belcorp.Encore.Application
                                               (consulted.SponsorName.ToUpper().Contains(filtrosDTO.NombrePatrocinador != null ? filtrosDTO.NombrePatrocinador.ToUpper() : ""))&&
                                               (listaNivel.Any(q => consulted.LEVEL == int.Parse(q)) || listaNivel.Count == 0)&&
                                               (listaTitulo.Any(q => consulted.CareerTitle == q) || listaTitulo.Count == 0) &&
-                                              (listaEstado.Any(q => consulted.NewStatus == q) || listaTitulo.Count == 0)
+                                              (listaEstado.Any(q => consulted.NewStatus == q) || listaEstado.Count == 0)
                                         select consulted;
 
 
