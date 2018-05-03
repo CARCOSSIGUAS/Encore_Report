@@ -39,51 +39,6 @@ namespace Belcorp.Encore.Application.Services
             authenticationService = _authenticationService;
         }
 
-        public void Migrate_Accounts()
-        {
-            IRepository<Accounts> accountsRepository = unitOfWork_Core.GetRepository<Accounts>();
-            encoreMongo_Context.AccountsProvider.DeleteMany(new BsonDocument { });
-            var total = accountsRepository.GetPagedList(null, null, null, 0, 10000, true);
-            int ii = total.TotalPages;
-
-            for (int i = 0; i < ii; i++)
-            {
-                var accounts = accountsRepository.GetPagedList(null, null, a => a.Include(p => p.AccountPhones), i, 10000, true).Items;
-
-                List<Accounts_Mongo> accounts_Mongo = new List<Accounts_Mongo>();
-                foreach (var account in accounts)
-                {
-                    Accounts_Mongo account_Mongo = new Accounts_Mongo();
-
-                    account_Mongo.CountryID = 0;
-                    account_Mongo.AccountID = account.AccountID;
-
-                    account_Mongo.AccountNumber = account.AccountNumber;
-                    account_Mongo.AccountTypeID = account.AccountTypeID;
-                    account_Mongo.FirstName = account.FirstName;
-                    account_Mongo.MiddleName = account.MiddleName;
-                    account_Mongo.LastName = account.LastName;
-                    account_Mongo.EmailAddress = account.EmailAddress;
-                    account_Mongo.SponsorID = account.SponsorID;
-                    account_Mongo.EnrollerID = account.EnrollerID;
-                    account_Mongo.EnrollmentDateUTC = account.EnrollmentDateUTC;
-                    account_Mongo.IsEntity = account.IsEntity;
-                    account_Mongo.AccountStatusChangeReasonID = account.AccountStatusChangeReasonID;
-                    account_Mongo.AccountStatusID = account.AccountStatusID;
-                    account_Mongo.EntityName = account.EntityName;
-
-                    account_Mongo.BirthdayUTC = account.BirthdayUTC;
-                    account_Mongo.TerminatedDateUTC = account.TerminatedDateUTC;
-
-                    account_Mongo.AccountPhones = account.AccountPhones;
-
-                    accounts_Mongo.Add(account_Mongo);
-                }
-
-                encoreMongo_Context.AccountsProvider.InsertMany(accounts_Mongo);
-            }
-        }
-
         public async Task<List<Accounts_Mongo>> GetListAccounts(int accountId)
         {
             var result = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountId).Project(Builders<Accounts_Mongo>.Projection.Exclude("_id")).As<Accounts_Mongo>().ToListAsync();

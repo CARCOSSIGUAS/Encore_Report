@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Belcorp.Encore.Services.Report.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Security")]
+    [Route("api/security")]
     public class SecurityController : Controller
     {
         private readonly IAccountsService accountsService;
@@ -21,7 +21,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
             accountsService = _accountsService;
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("singlesignon")]
         public async Task<IActionResult> SingleSignOn(string token)
         {
             var result = await accountsService.GetAccountFromSingleSignOnToken(token);

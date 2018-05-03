@@ -39,6 +39,8 @@
 
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IPeriodsService, PeriodsService>();
+
+            services.AddScoped<IMigrateService, MigrateService>();
         }
     }
 }
