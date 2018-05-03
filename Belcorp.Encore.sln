@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3-Infrastructure", "3-Infrastructure", "{731FF2BD-B46E-4E43-9240-9474C17282E8}"
 EndProject
@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Belcorp.Encore.Repositories
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Belcorp.Encore.Api", "Belcorp.Encore.Api\Belcorp.Encore.Api.csproj", "{C47E4903-FFB6-4560-A915-532AC590561F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Belcorp.Encore.Services.Report", "Belcorp.Encore.Services.Report\Belcorp.Encore.Services.Report.csproj", "{38C13DA5-C4EA-408C-803A-27281A1EDEBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Belcorp.Encore.Services.Report", "Belcorp.Encore.Services.Report\Belcorp.Encore.Services.Report.csproj", "{38C13DA5-C4EA-408C-803A-27281A1EDEBC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -7,6 +7,9 @@ using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Services.Report.InstancesProvider;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,11 +42,17 @@ namespace Belcorp.Encore.Services.Report
                 options.Database = Configuration.GetSection("Encore_Mongo:Database").Value;
             });
 
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
+            services.AddScoped<IUrlHelper>(implementationFactory =>
+            {
+                var actionContext = implementationFactory.GetService<IActionContextAccessor>()
+                .ActionContext;
+                return new UrlHelper(actionContext);
+            });
+
             services.RegisterServices();
-
 			services.AddMvc();
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

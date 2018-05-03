@@ -9,7 +9,6 @@ namespace Belcorp.Encore.Application.Services
 {
     public interface IAccountsService
     {
-        void Migrate_Accounts();
         Task<List<Accounts_Mongo>> GetListAccounts(int accountId);
         Task<Accounts> GetAccountFromSingleSignOnToken(string token, TimeSpan? expiration = null);
     }
