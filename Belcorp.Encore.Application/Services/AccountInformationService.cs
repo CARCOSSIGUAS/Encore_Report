@@ -296,16 +296,16 @@ namespace Belcorp.Encore.Application
                                          accountsSponsored.LeftBower >= accountRoot.LeftBower &&
                                          accountsSponsored.RightBower <= accountRoot.RightBower &&
 
-                                         (accountsSponsored.PQV >= reportAccountsSponsoredsSearch.PQVFrom && accountsSponsored.PQV <= reportAccountsSponsoredsSearch.PQVTo) &&
-                                         (accountsSponsored.DQV >= reportAccountsSponsoredsSearch.DQVFrom && accountsSponsored.PQV <= reportAccountsSponsoredsSearch.DQVTo) &&
-                                         (accountsSponsored.JoinDate >= reportAccountsSponsoredsSearch.joinDateFrom && accountsSponsored.JoinDate <= reportAccountsSponsoredsSearch.joinDateTo) &&
+                                         //(accountsSponsored.PQV >= reportAccountsSponsoredsSearch.PQVFrom && accountsSponsored.PQV <= reportAccountsSponsoredsSearch.PQVTo) &&
+                                         //(accountsSponsored.DQV >= reportAccountsSponsoredsSearch.DQVFrom && accountsSponsored.PQV <= reportAccountsSponsoredsSearch.DQVTo) &&
+                                         //(accountsSponsored.JoinDate >= reportAccountsSponsoredsSearch.joinDateFrom && accountsSponsored.JoinDate <= reportAccountsSponsoredsSearch.joinDateTo) &&
 
                                          (listLevelIds.Contains((int)accountsSponsored.LEVEL) || listLevelIds.Count == 0) &&
                                          (listCareerTitleIds.Contains(accountsSponsored.CareerTitle) || listCareerTitleIds.Count == 0) &&
                                          (listAccountStatusIds.Contains(accountsSponsored.Activity) || listAccountStatusIds.Count == 0)
                                          select accountsSponsored;
 
-            if (reportAccountsSponsoredsSearch.AccountNumberSearch != 0)
+            if (reportAccountsSponsoredsSearch.AccountNumberSearch.HasValue && reportAccountsSponsoredsSearch.AccountNumberSearch != 0)
             {
                 accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountID == reportAccountsSponsoredsSearch.AccountNumberSearch);
             }
@@ -314,7 +314,7 @@ namespace Belcorp.Encore.Application
                 accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountName.Contains(reportAccountsSponsoredsSearch.AccountNameSearch));
             }
 
-            if (reportAccountsSponsoredsSearch.SponsorNumberSearch != null && reportAccountsSponsoredsSearch.SponsorNumberSearch > 0)
+            if (reportAccountsSponsoredsSearch.SponsorNumberSearch.HasValue && reportAccountsSponsoredsSearch.SponsorNumberSearch > 0)
             {
                 var accountSponsor = encoreMongo_Context.AccountsInformationProvider.Find(a => 
                                             a.AccountID == reportAccountsSponsoredsSearch.SponsorNumberSearch && 
