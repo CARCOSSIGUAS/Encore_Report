@@ -12,9 +12,10 @@ namespace Belcorp.Encore.Entities.Entities.Search
             SponsorNumberSearch = 0;
             SponsorNameSearch = "";
 
+            LevelIds = "";
+            GenerationIds = "";
             CareerTitleIds = "";
             AccountStatusIds = "";
-            LevelIds = "";
 
             PQVFrom = 0;
             PQVTo = decimal.MaxValue;
@@ -35,9 +36,10 @@ namespace Belcorp.Encore.Entities.Entities.Search
         public int? SponsorNumberSearch { get; set; }
         public string SponsorNameSearch { get; set; }
 
+        public string LevelIds { get; set; }
+        public string GenerationIds { get; set; }
         public string CareerTitleIds { get; set; }
         public string AccountStatusIds { get; set; }
-        public string LevelIds { get; set; }
 
         public DateTime joinDateFrom { get; set; }
         public DateTime joinDateTo { get; set; }
@@ -47,5 +49,7 @@ namespace Belcorp.Encore.Entities.Entities.Search
 
         public decimal DQVFrom { get; set; }
         public decimal DQVTo { get; set; }
+
+        public string OrderBy { get; set; }
     }
 }

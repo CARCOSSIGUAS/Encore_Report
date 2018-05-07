@@ -46,7 +46,7 @@ namespace Belcorp.Encore.Application.Services
         }
 
 
-        public async Task<Accounts> GetAccountFromSingleSignOnToken(string token, TimeSpan? expiration = null)
+        public async Task<Accounts_Mongo> GetAccountFromSingleSignOnToken(string token, TimeSpan? expiration = null)
         {
             try
             {
@@ -59,8 +59,7 @@ namespace Belcorp.Encore.Application.Services
 
                 int accountID = isNumeric == true && (expiration == null || ssoModel.TimeStamp.Add(expiration.Value) >= DateTime.Now) ? n : 0;
 
-                IRepository<Accounts> accountsRepository = unitOfWork_Core.GetRepository<Accounts>();
-                var result = await accountsRepository.GetFirstOrDefaultAsync(a => a.AccountID == accountID, null, null, true);
+                var result = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountID).FirstOrDefaultAsync();
                 return result;
             }
             catch (Exception ex)

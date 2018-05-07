@@ -287,8 +287,11 @@ namespace Belcorp.Encore.Application
                 return null;
             }
             var listLevelIds = GetIdsFromString(reportAccountsSponsoredsSearch.LevelIds).Select(s => int.Parse(s)).ToList();
+            var listGenerationIds = GetIdsFromString(reportAccountsSponsoredsSearch.GenerationIds).Select(s => int.Parse(s)).ToList();
+
             var listCareerTitleIds = GetIdsFromString(reportAccountsSponsoredsSearch.CareerTitleIds);
             var listAccountStatusIds = GetIdsFromString(reportAccountsSponsoredsSearch.AccountStatusIds);
+            
 
             var accountsThreeCompleted = from accountsSponsored in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
                                          where
@@ -296,11 +299,12 @@ namespace Belcorp.Encore.Application
                                          accountsSponsored.LeftBower >= accountRoot.LeftBower &&
                                          accountsSponsored.RightBower <= accountRoot.RightBower &&
 
-                                         //(accountsSponsored.PQV >= reportAccountsSponsoredsSearch.PQVFrom && accountsSponsored.PQV <= reportAccountsSponsoredsSearch.PQVTo) &&
-                                         //(accountsSponsored.DQV >= reportAccountsSponsoredsSearch.DQVFrom && accountsSponsored.PQV <= reportAccountsSponsoredsSearch.DQVTo) &&
+                                         (accountsSponsored.PQV >= reportAccountsSponsoredsSearch.PQVFrom && accountsSponsored.PQV <= reportAccountsSponsoredsSearch.PQVTo) &&
+                                         (accountsSponsored.DQV >= reportAccountsSponsoredsSearch.DQVFrom && accountsSponsored.DQV <= reportAccountsSponsoredsSearch.DQVTo) &&
                                          //(accountsSponsored.JoinDate >= reportAccountsSponsoredsSearch.joinDateFrom && accountsSponsored.JoinDate <= reportAccountsSponsoredsSearch.joinDateTo) &&
 
                                          (listLevelIds.Contains((int)accountsSponsored.LEVEL) || listLevelIds.Count == 0) &&
+                                         (listGenerationIds.Contains((int)accountsSponsored.Generation) || listGenerationIds.Count == 0) &&
                                          (listCareerTitleIds.Contains(accountsSponsored.CareerTitle) || listCareerTitleIds.Count == 0) &&
                                          (listAccountStatusIds.Contains(accountsSponsored.Activity) || listAccountStatusIds.Count == 0)
                                          select accountsSponsored;
@@ -311,7 +315,7 @@ namespace Belcorp.Encore.Application
             }
             if (!String.IsNullOrEmpty(reportAccountsSponsoredsSearch.AccountNameSearch))
             {
-                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountName.Contains(reportAccountsSponsoredsSearch.AccountNameSearch));
+                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountName.ToUpper().Contains(reportAccountsSponsoredsSearch.AccountNameSearch.ToUpper()));
             }
 
             if (reportAccountsSponsoredsSearch.SponsorNumberSearch.HasValue && reportAccountsSponsoredsSearch.SponsorNumberSearch > 0)
@@ -329,8 +333,10 @@ namespace Belcorp.Encore.Application
 
             if (!String.IsNullOrEmpty(reportAccountsSponsoredsSearch.SponsorNameSearch))
             {
-                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.SponsorName.Contains(reportAccountsSponsoredsSearch.SponsorNameSearch));
+                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.SponsorName.ToUpper().Contains(reportAccountsSponsoredsSearch.SponsorNameSearch.ToUpper()));
             }
+
+            accountsThreeCompleted = accountsThreeCompleted.OrderBy(a => a.LEVEL);
 
             return new PagedList<AccountsInformation_Mongo>(accountsThreeCompleted, reportAccountsSponsoredsSearch.PageNumber, reportAccountsSponsoredsSearch.PageSize);
         }
