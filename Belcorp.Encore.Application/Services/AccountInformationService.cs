@@ -264,6 +264,7 @@ namespace Belcorp.Encore.Application
                                                          periodStartDateUTC = period == null ? null : period.StartDateUTC,
                                                          periodEndDateUTC = period == null ? null : period.EndDateUTC,
                                                          periodDescription = period == null ? "" : period.Description,
+                                                         periodId = period == null ? 0 : period.PeriodID,
                                                          cantFinalPeriodo = Math.Round((period.EndDateUTC - DateTime.Now).Value.TotalDays) == 0 ? "HOY" : Math.Round((period.EndDateUTC - DateTime.Now).Value.TotalDays) > 5 ? period.EndDateUTC.Value.ToString("dd/MM/yyyy") : Math.Round((period.EndDateUTC - DateTime.Now).Value.TotalDays).ToString() + " días"
                                                      };
 
@@ -301,7 +302,7 @@ namespace Belcorp.Encore.Application
 
                                          (accountsSponsored.PQV >= reportAccountsSponsoredsSearch.PQVFrom && accountsSponsored.PQV <= reportAccountsSponsoredsSearch.PQVTo) &&
                                          (accountsSponsored.DQV >= reportAccountsSponsoredsSearch.DQVFrom && accountsSponsored.DQV <= reportAccountsSponsoredsSearch.DQVTo) &&
-                                         //(accountsSponsored.JoinDate >= reportAccountsSponsoredsSearch.joinDateFrom && accountsSponsored.JoinDate <= reportAccountsSponsoredsSearch.joinDateTo) &&
+                                         //(accountsSponsored.JoinDate >= reportAccountsSponsoredsSearch.JoinDateFrom && accountsSponsored.JoinDate <= reportAccountsSponsoredsSearch.JoinDateTo) &&
 
                                          (listLevelIds.Contains((int)accountsSponsored.LEVEL) || listLevelIds.Count == 0) &&
                                          (listGenerationIds.Contains((int)accountsSponsored.Generation) || listGenerationIds.Count == 0) &&
