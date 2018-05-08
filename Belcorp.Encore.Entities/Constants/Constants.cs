@@ -79,5 +79,12 @@ namespace Belcorp.Encore.Entities.Constants
             PreviousPage,
             NextPage
         }
+
+        public enum TitleTypes : int
+        {
+            NotSet = 0,
+            Career = 1, 
+            Paid = 2
+        }
     }
 }

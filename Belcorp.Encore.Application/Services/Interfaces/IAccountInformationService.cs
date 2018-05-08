@@ -25,7 +25,8 @@ namespace Belcorp.Encore.Application.Services
 
         AccountsExtended GetAccounts(Filtros_DTO filtrosDTO);
 
-        PagedList<AccountsInformation_Mongo> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch reportAccountsSearch);
+        PagedList<AccountsInformation_Mongo> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter);
+        Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods();
     }
 
 }

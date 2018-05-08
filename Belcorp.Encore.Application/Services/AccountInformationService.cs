@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Belcorp.Encore.Entities.Constants.Constants;
 
 namespace Belcorp.Encore.Application
 {
@@ -280,50 +281,61 @@ namespace Belcorp.Encore.Application
             }
         }
 
-        public PagedList<AccountsInformation_Mongo> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch reportAccountsSponsoredsSearch)
+        public PagedList<AccountsInformation_Mongo> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter)
         {
-            var accountRoot = encoreMongo_Context.AccountsInformationProvider.Find(a => a.AccountID == reportAccountsSponsoredsSearch.AccountId && a.PeriodID == reportAccountsSponsoredsSearch.PeriodId, null).FirstOrDefault();
+            var accountRoot = encoreMongo_Context.AccountsInformationProvider.Find(a => a.AccountID == filter.AccountId && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
             if (accountRoot == null)
             {
                 return null;
             }
-            var listLevelIds = GetIdsFromString(reportAccountsSponsoredsSearch.LevelIds).Select(s => int.Parse(s)).ToList();
-            var listGenerationIds = GetIdsFromString(reportAccountsSponsoredsSearch.GenerationIds).Select(s => int.Parse(s)).ToList();
+            var listLevelIds = GetIdsFromString(filter.LevelIds).Select(s => int.Parse(s)).ToList();
+            var listGenerationIds = GetIdsFromString(filter.GenerationIds).Select(s => int.Parse(s)).ToList();
 
-            var listCareerTitleIds = GetIdsFromString(reportAccountsSponsoredsSearch.CareerTitleIds);
-            var listAccountStatusIds = GetIdsFromString(reportAccountsSponsoredsSearch.AccountStatusIds);
+            var listTitleIds = GetIdsFromString(filter.TitleIds);
+            var listAccountStatusIds = GetIdsFromString(filter.AccountStatusIds);
             
 
             var accountsThreeCompleted = from accountsSponsored in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
                                          where
-                                         accountsSponsored.PeriodID == reportAccountsSponsoredsSearch.PeriodId &&
+                                         accountsSponsored.PeriodID == filter.PeriodId &&
                                          accountsSponsored.LeftBower >= accountRoot.LeftBower &&
                                          accountsSponsored.RightBower <= accountRoot.RightBower &&
 
-                                         (accountsSponsored.PQV >= reportAccountsSponsoredsSearch.PQVFrom && accountsSponsored.PQV <= reportAccountsSponsoredsSearch.PQVTo) &&
-                                         (accountsSponsored.DQV >= reportAccountsSponsoredsSearch.DQVFrom && accountsSponsored.DQV <= reportAccountsSponsoredsSearch.DQVTo) &&
-                                         //(accountsSponsored.JoinDate >= reportAccountsSponsoredsSearch.JoinDateFrom && accountsSponsored.JoinDate <= reportAccountsSponsoredsSearch.JoinDateTo) &&
+                                         (accountsSponsored.PQV >= filter.PQVFrom && accountsSponsored.PQV <= filter.PQVTo) &&
+                                         (accountsSponsored.DQV >= filter.DQVFrom && accountsSponsored.DQV <= filter.DQVTo) &&
+                                         (accountsSponsored.JoinDate >= filter.JoinDateFrom && accountsSponsored.JoinDate <= filter.JoinDateTo) &&
 
                                          (listLevelIds.Contains((int)accountsSponsored.LEVEL) || listLevelIds.Count == 0) &&
                                          (listGenerationIds.Contains((int)accountsSponsored.Generation) || listGenerationIds.Count == 0) &&
-                                         (listCareerTitleIds.Contains(accountsSponsored.CareerTitle) || listCareerTitleIds.Count == 0) &&
                                          (listAccountStatusIds.Contains(accountsSponsored.Activity) || listAccountStatusIds.Count == 0)
                                          select accountsSponsored;
 
-            if (reportAccountsSponsoredsSearch.AccountNumberSearch.HasValue && reportAccountsSponsoredsSearch.AccountNumberSearch != 0)
+            if (listTitleIds.Count > 0)
             {
-                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountID == reportAccountsSponsoredsSearch.AccountNumberSearch);
-            }
-            if (!String.IsNullOrEmpty(reportAccountsSponsoredsSearch.AccountNameSearch))
-            {
-                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountName.ToUpper().Contains(reportAccountsSponsoredsSearch.AccountNameSearch.ToUpper()));
+                switch (filter.TitleType) {
+                    case (int)TitleTypes.Career:
+                        accountsThreeCompleted = accountsThreeCompleted.Where(a => listTitleIds.Contains(a.CareerTitle));
+                        break;
+                    case (int)TitleTypes.Paid:
+                        accountsThreeCompleted = accountsThreeCompleted.Where(a => listTitleIds.Contains(a.PaidAsCurrentMonth));
+                        break;
+                };
             }
 
-            if (reportAccountsSponsoredsSearch.SponsorNumberSearch.HasValue && reportAccountsSponsoredsSearch.SponsorNumberSearch > 0)
+            if (filter.AccountNumberSearch.HasValue && filter.AccountNumberSearch != 0)
+            {
+                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountID == filter.AccountNumberSearch);
+            }
+            if (!String.IsNullOrEmpty(filter.AccountNameSearch))
+            {
+                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountName.ToUpper().Contains(filter.AccountNameSearch.ToUpper()));
+            }
+
+            if (filter.SponsorNumberSearch.HasValue && filter.SponsorNumberSearch > 0)
             {
                 var accountSponsor = encoreMongo_Context.AccountsInformationProvider.Find(a => 
-                                            a.AccountID == reportAccountsSponsoredsSearch.SponsorNumberSearch && 
-                                            a.PeriodID == reportAccountsSponsoredsSearch.PeriodId, null
+                                            a.AccountID == filter.SponsorNumberSearch && 
+                                            a.PeriodID == filter.PeriodId, null
                                             ).FirstOrDefault();
 
                 accountsThreeCompleted = accountsThreeCompleted.Where(a => 
@@ -332,14 +344,39 @@ namespace Belcorp.Encore.Application
                                             );
             }
 
-            if (!String.IsNullOrEmpty(reportAccountsSponsoredsSearch.SponsorNameSearch))
+            if (!String.IsNullOrEmpty(filter.SponsorNameSearch))
             {
-                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.SponsorName.ToUpper().Contains(reportAccountsSponsoredsSearch.SponsorNameSearch.ToUpper()));
+                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.SponsorName.ToUpper().Contains(filter.SponsorNameSearch.ToUpper()));
             }
 
             accountsThreeCompleted = accountsThreeCompleted.OrderBy(a => a.LEVEL);
 
-            return new PagedList<AccountsInformation_Mongo>(accountsThreeCompleted, reportAccountsSponsoredsSearch.PageNumber, reportAccountsSponsoredsSearch.PageSize);
+            return new PagedList<AccountsInformation_Mongo>(accountsThreeCompleted, filter.PageNumber, filter.PageSize);
+        }
+
+        public async Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods()
+        {
+            var date = DateTime.Now;
+            var periodCurrent = await encoreMongo_Context.PeriodsProvider.Find(p => date >= p.StartDateUTC && date <= p.EndDateUTC && p.PlanID == 1).FirstOrDefaultAsync();
+
+            if (periodCurrent != null)
+            {
+                var periods = await encoreMongo_Context.PeriodsProvider.Find(p => p.PlanID == 1 && p.PeriodID <= periodCurrent.PeriodID)
+                                                                       .Limit(12)
+                                                                       .SortByDescending(o => o.PeriodID)
+                                                                       .ToListAsync();
+                if (periods != null)
+                {
+                    List<Options_DTO> list = new List<Options_DTO>();
+                    periods.ForEach(a => 
+                        list.Add(new Options_DTO() { ID = a.PeriodID, Name = a.Description })
+                    );
+
+                    return list;
+                }
+            }
+
+            return null;
         }
 
         private List<string> GetIdsFromString(string value)

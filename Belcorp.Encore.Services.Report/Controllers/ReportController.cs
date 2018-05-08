@@ -67,24 +67,41 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("sponsoreds", Name = "GetReportAccountsSponsoreds")]
-        public IActionResult GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch reportAccountsSearch)
+        public IActionResult GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter)
         {
-            if (reportAccountsSearch == null)
+            if (filter == null)
             {
                 return BadRequest();
             }
 
-            var result = accountInformationService.GetReportAccountsSponsoreds(reportAccountsSearch);
+            var result = accountInformationService.GetReportAccountsSponsoreds(filter);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
             Response.Headers.Add("X-Pagination", result.GetHeader().ToJson());
 
             var outputModel = new ReportAccountsSponsoredsPaging
             {
                 Paging = result.GetHeader(),
-                Links = GetLinks(reportAccountsSearch, result),
+                Links = GetLinks(filter, result),
                 Items = result.List.ToList(),
             };
 
             return Ok(outputModel);
+        }
+
+        [HttpGet("periods", Name = "GetReportAccountsPeriods")]
+        public IActionResult GetReportAccountsPeriods()
+        {
+            var result = accountInformationService.GetReportAccountsPeriods();
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
         }
 
         // GET: api/Report
@@ -188,7 +205,8 @@ namespace Belcorp.Encore.Services.Report.Controllers
                             accountId = reportAccountsSponsoredsSearch.AccountId,
                             accountNumberSearch = reportAccountsSponsoredsSearch.AccountNumberSearch,
                             sponsorNumberSearch = reportAccountsSponsoredsSearch.SponsorNumberSearch,
-                            careerTitleIds = reportAccountsSponsoredsSearch.CareerTitleIds,
+                            titleTypes = reportAccountsSponsoredsSearch.TitleType,
+                            titleIds = reportAccountsSponsoredsSearch.TitleIds,
                             accountStatusIds = reportAccountsSponsoredsSearch.AccountStatusIds,
                             pageNumber = pageNumber,
                             pageSize = pageSize
