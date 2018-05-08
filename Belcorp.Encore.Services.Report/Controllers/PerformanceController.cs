@@ -41,9 +41,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
 
 		// GET: api/Performance
 		[HttpGet("[action]/{AccountId}")]
-		public JsonResult GetPerformance_HeaderFront(int accountId, int period)
+		public JsonResult GetPerformance_HeaderFront(int accountId)
 		{
-			var header = accountInformationService.GetPerformance_HeaderFront(accountId,period);
+			var header = accountInformationService.GetPerformance_HeaderFront(accountId);
 			return Json(header);			
 		}
 
