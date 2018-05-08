@@ -242,7 +242,7 @@ namespace Belcorp.Encore.Application
         }
 
 
-        public AccountsInformationExtended GetPerformance_HeaderFront(int accountId, int periodId)
+        public AccountsInformationExtended GetPerformance_HeaderFront(int accountId)
         {
             try
             {
@@ -254,7 +254,7 @@ namespace Belcorp.Encore.Application
                     var period = encoreMongo_Context.PeriodsProvider.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
 
                     var headerByAccountInformation = from headerInitial in header
-                                                     join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == periodId).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
+                                                     join reportAccountInitial in encoreMongo_Context.AccountsInformationProvider.Find(c => c.AccountID == accountId && c.PeriodID == period.PeriodID).ToList() on headerInitial.AccountID equals reportAccountInitial.AccountID
                                                      select new AccountsInformationExtended
                                                      {
                                                          LeftBower = reportAccountInitial.LeftBower,

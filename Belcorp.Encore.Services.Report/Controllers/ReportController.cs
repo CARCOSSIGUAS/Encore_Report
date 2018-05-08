@@ -106,9 +106,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
 
         // GET: api/Report
         [HttpGet("[action]")]
-        public JsonResult GetPerformance_HeaderFront(int accountId, int periodId)
+        public JsonResult GetPerformance_HeaderFront(int accountId)
         {
-            var header = accountInformationService.GetPerformance_HeaderFront(accountId, periodId);
+            var header = accountInformationService.GetPerformance_HeaderFront(accountId);
             return Json(header);
         }
         // GET: api/Report
