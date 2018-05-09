@@ -15,47 +15,48 @@ namespace Belcorp.Encore.Api.Controllers
     [Route("api/migration")]
     public class MigrationController : Controller
     {
-        private readonly IAccountInformationService accountInformationService;
+        //private readonly IAccountInformationService accountInformationService;
         private readonly IAccountsService accountsService;
-        private readonly IPeriodsService periodsService;
-        private readonly IMonitorMongoService monitorMongoService;
+        //private readonly IPeriodsService periodsService;
+        //private readonly IMonitorMongoService monitorMongoService;
 
         public MigrationController
         (
-            IAccountInformationService _accountInformationService,
-            IAccountsService _accountsService,
-            IPeriodsService _periodsService,
-            IMonitorMongoService _monitorMongoService
+            //IAccountInformationService _accountInformationService,
+            IAccountsService _accountsService
+            //IPeriodsService _periodsService,
+            //IMonitorMongoService _monitorMongoService
         )
         {
-            accountInformationService = _accountInformationService;
+            //accountInformationService = _accountInformationService;
             accountsService = _accountsService;
-            periodsService = _periodsService;
-            monitorMongoService = _monitorMongoService;
+            //periodsService = _periodsService;
+            //monitorMongoService = _monitorMongoService;
         }
 
-        [HttpGet("accountsInformation/{periodId}")]
-        [AutomaticRetry(Attempts = 0)]
-        public ActionResult AccountsInformation(int periodId)
-        {
-            BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(periodId));
-            return Json(new { Status = "Processing Background" } );
-        }
+		//[HttpGet("accountsInformation/{periodId}")]
+		//[AutomaticRetry(Attempts = 0)]
+		//public ActionResult AccountsInformation(int periodId)
+		//{
+		//    BackgroundJob.Enqueue(() => accountInformationService.Migrate_AccountInformationByPeriod(periodId));
+		//    return Json(new { Status = "Processing Background" } );
+		//}
 
-        [HttpGet("accounts")]
-        [AutomaticRetry(Attempts = 0)]
-        public ActionResult Accounts()
-        {
-            BackgroundJob.Enqueue(() => accountsService.Migrate_Accounts());
-            return Json(new { Status = "Processing Background" });
-        }
+		[HttpGet("accounts")]
+		[AutomaticRetry(Attempts = 0)]
+		public ActionResult Accounts()
+		{
+			accountsService.Migrate_Accounts();
+			//BackgroundJob.Enqueue(() => accountsService.Migrate_Accounts());
+			return Json(new { Status = "Processing Background" });
+		}
 
-        [HttpGet("periods")]
-        [AutomaticRetry(Attempts = 0)]
-        public ActionResult Periods()
-        {
-            BackgroundJob.Enqueue(() => periodsService.Migrate_Periods());
-            return Json(new { Status = "Processing Background" });
-        }
-    }
+		//[HttpGet("periods")]
+		//[AutomaticRetry(Attempts = 0)]
+		//public ActionResult Periods()
+		//{
+		//    BackgroundJob.Enqueue(() => periodsService.Migrate_Periods());
+		//    return Json(new { Status = "Processing Background" });
+		//}
+	}
 }

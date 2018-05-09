@@ -487,74 +487,74 @@ namespace Belcorp.Encore.Application.Services
         #region Actualizar Mongo
         public void Migrate_AccountInformationByAccountId(PersonalIndicatorLog parentLog)
         {
-            var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationMigrateMongoIndicator");
+            //var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationMigrateMongoIndicator");
 
-            IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
-            var titles = titlesRepository.GetAll().ToList();
+            //IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
+            //var titles = titlesRepository.GetAll().ToList();
 
-            var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
-            var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId);
+            //var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
+            //var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId);
 
-            var result = from ai in accountsInformation
-                         join titlesInfo_Career in titles on Int32.Parse(ai.CareerTitle) equals titlesInfo_Career.TitleID
-                         join titlesInfo_Paid in titles on Int32.Parse(ai.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
-                         select new AccountsInformation_Mongo
-                         {
-                             AccountsInformationID = ai.AccountsInformationID,
+            //var result = from ai in accountsInformation
+            //             join titlesInfo_Career in titles on Int32.Parse(ai.CareerTitle) equals titlesInfo_Career.TitleID
+            //             join titlesInfo_Paid in titles on Int32.Parse(ai.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
+            //             select new AccountsInformation_Mongo
+            //             {
+            //                 AccountsInformationID = ai.AccountsInformationID,
 
-                             PeriodID = ai.PeriodID,
-                             AccountID = ai.AccountID,
+            //                 PeriodID = ai.PeriodID,
+            //                 AccountID = ai.AccountID,
 
-                             AccountNumber = ai.AccountNumber,
-                             AccountName = ai.AccountName,
-                             SponsorID = ai.SponsorID,
-                             SponsorName = ai.SponsorName,
-                             Address = ai.Address,
-                             PostalCode = ai.PostalCode,
-                             City = ai.City,
-                             STATE = ai.STATE,
+            //                 AccountNumber = ai.AccountNumber,
+            //                 AccountName = ai.AccountName,
+            //                 SponsorID = ai.SponsorID,
+            //                 SponsorName = ai.SponsorName,
+            //                 Address = ai.Address,
+            //                 PostalCode = ai.PostalCode,
+            //                 City = ai.City,
+            //                 STATE = ai.STATE,
 
-                             PQV = ai.PQV,
-                             DQV = ai.DQV,
-                             DQVT = ai.DQVT,
+            //                 PQV = ai.PQV,
+            //                 DQV = ai.DQV,
+            //                 DQVT = ai.DQVT,
 
-                             CareerTitle = ai.CareerTitle,
-                             PaidAsCurrentMonth = ai.PaidAsCurrentMonth,
-                             CareerTitle_Des = titlesInfo_Career.Name,
-                             PaidAsCurrentMonth_Des = titlesInfo_Paid.Name,
+            //                 CareerTitle = ai.CareerTitle,
+            //                 PaidAsCurrentMonth = ai.PaidAsCurrentMonth,
+            //                 CareerTitle_Des = titlesInfo_Career.Name,
+            //                 PaidAsCurrentMonth_Des = titlesInfo_Paid.Name,
 
-                             JoinDate = ai.JoinDate,
-                             Generation = ai.Generation,
-                             LEVEL = ai.LEVEL,
-                             SortPath = ai.SortPath,
-                             LeftBower = ai.LeftBower,
-                             RightBower = ai.RightBower,
-                             Activity = ai.Activity
-                         };
-            try
-            {
-                if (childLog != null && childLog.EndTime == null)
-                {
-                    foreach (var item in result)
-                    {
-                        var item_Mongo = encoreMongo_Context.AccountsInformationProvider.Find(ai => ai.AccountsInformationID == item.AccountsInformationID).FirstOrDefault();
-                        if (item_Mongo != null)
-                        {
-                            encoreMongo_Context.AccountsInformationProvider.ReplaceOne(ai => ai.AccountsInformationID == item.AccountsInformationID, item, new UpdateOptions { IsUpsert = true });
-                        }
-                        else
-                        {
-                            encoreMongo_Context.AccountsInformationProvider.InsertOne(item);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                childLog.RealError = "Error";
-            }
+            //                 JoinDate = ai.JoinDate,
+            //                 Generation = ai.Generation,
+            //                 LEVEL = ai.LEVEL,
+            //                 SortPath = ai.SortPath,
+            //                 LeftBower = ai.LeftBower,
+            //                 RightBower = ai.RightBower,
+            //                 Activity = ai.Activity
+            //             };
+            //try
+            //{
+            //    if (childLog != null && childLog.EndTime == null)
+            //    {
+            //        foreach (var item in result)
+            //        {
+            //            var item_Mongo = encoreMongo_Context.AccountsInformationProvider.Find(ai => ai.AccountsInformationID == item.AccountsInformationID).FirstOrDefault();
+            //            if (item_Mongo != null)
+            //            {
+            //                encoreMongo_Context.AccountsInformationProvider.ReplaceOne(ai => ai.AccountsInformationID == item.AccountsInformationID, item, new UpdateOptions { IsUpsert = true });
+            //            }
+            //            else
+            //            {
+            //                encoreMongo_Context.AccountsInformationProvider.InsertOne(item);
+            //            }
+            //        }
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    childLog.RealError = "Error";
+            //}
 
-            PersonalIndicatorDetailLog_Update(childLog);
+            //PersonalIndicatorDetailLog_Update(childLog);
         }
         #endregion
 

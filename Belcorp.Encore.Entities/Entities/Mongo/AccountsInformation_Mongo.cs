@@ -1,5 +1,4 @@
 ﻿using Belcorp.Encore.Entities.Entities.Commissions;
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 

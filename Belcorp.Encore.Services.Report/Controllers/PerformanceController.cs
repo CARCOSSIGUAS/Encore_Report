@@ -21,38 +21,38 @@ namespace Belcorp.Encore.Services.Report.Controllers
 			accountsService = _accountsService;
 		}
 
-		// GET: api/Performance
-		[HttpGet("[action]/{AccountId}/{PeriodId}")]
-		public async Task<IActionResult> GetPerformance_Header(int accountId,int periodId)
-        {
-			var header = await accountInformationService.GetPerformance_Header(accountId, periodId);
+		//// GET: api/Performance
+		//[HttpGet("[action]/{AccountId}/{PeriodId}")]
+		//public async Task<IActionResult> GetPerformance_Header(int accountId,int periodId)
+  //      {
+		//	var header = await accountInformationService.GetPerformance_Header(accountId, periodId);
 
-			return Json(header);
-        }
+		//	return Json(header);
+  //      }
 
-		// GET: api/Performance
-		[HttpGet("[action]/{AccountId}/{PeriodId}")]
-		public async Task<IActionResult> GetPerformance_Detail(int accountId, int periodId)
-		{
-			var header = await accountInformationService.GetPerformance_Detail(accountId, periodId);
+		//// GET: api/Performance
+		//[HttpGet("[action]/{AccountId}/{PeriodId}")]
+		//public async Task<IActionResult> GetPerformance_Detail(int accountId, int periodId)
+		//{
+		//	var header = await accountInformationService.GetPerformance_Detail(accountId, periodId);
 
-			return Json(header);
-		}
+		//	return Json(header);
+		//}
 
-		// GET: api/Performance
-		[HttpGet("[action]/{AccountId}")]
-		public JsonResult GetPerformance_HeaderFront(int accountId, int period)
-		{
-			var header = accountInformationService.GetPerformance_HeaderFront(accountId,period);
-			return Json(header);			
-		}
+		//// GET: api/Performance
+		//[HttpGet("[action]/{AccountId}")]
+		//public JsonResult GetPerformance_HeaderFront(int accountId, int period)
+		//{
+		//	var header = accountInformationService.GetPerformance_HeaderFront(accountId,period);
+		//	return Json(header);			
+		//}
 
-		[HttpGet("[action]/{AccountId}/{PeriodId}")]
-		public JsonResult GetPerformance_AccountInformation(int accountId, int periodId)
-		{
-			var header = accountInformationService.GetPerformance_AccountInformation(accountId,periodId);
-			return Json(header);
-		}
+		//[HttpGet("[action]/{AccountId}/{PeriodId}")]
+		//public JsonResult GetPerformance_AccountInformation(int accountId, int periodId)
+		//{
+		//	var header = accountInformationService.GetPerformance_AccountInformation(accountId,periodId);
+		//	return Json(header);
+		//}
 
 		// GET: api/Performance/5
 		[HttpGet("{id}", Name = "Get")]

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+
 namespace Belcorp.Encore.Entities.Entities.Commissions
 {
     [Table("AccountsInformation", Schema = "Reports")]

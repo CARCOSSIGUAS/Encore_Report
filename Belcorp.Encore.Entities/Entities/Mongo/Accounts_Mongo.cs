@@ -7,10 +7,14 @@ using System.Text;
 
 namespace Belcorp.Encore.Entities.Entities.Mongo
 {
-    public class Accounts_Mongo
-    {
-        [BsonId]
-        public int AccountID { get; set; }
+	[BsonIgnoreExtraElements()]
+    public class Accounts_Mongo :BaseEntity
+    {   //
+		[BsonId]
+		[BsonRepresentation(BsonType.ObjectId)]
+		string _id { get; set; }
+
+		public int AccountID { get; set; }
 
         public string AccountNumber { get; set; }
         public int AccountTypeID { get; set; }

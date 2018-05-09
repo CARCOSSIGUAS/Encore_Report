@@ -29,40 +29,40 @@ namespace Belcorp.Encore.Application.Services
 
         public void Migrate_Periods()
         {
-            IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
-            encoreMongo_Context.PeriodsProvider.DeleteMany(new BsonDocument { });
-            var total = periodsRepository.GetPagedList(null, null, null, 0, 10000, true);
-            int ii = total.TotalPages;
+            //IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
+            //encoreMongo_Context.PeriodsProvider.DeleteMany(new BsonDocument { });
+            //var total = periodsRepository.GetPagedList(null, null, null, 0, 10000, true);
+            //int ii = total.TotalPages;
 
-            for (int i = 0; i < ii; i++)
-            {
-                var periods = periodsRepository.GetPagedList(null, null, null, i, 10000, true).Items;
+            //for (int i = 0; i < ii; i++)
+            //{
+            //    var periods = periodsRepository.GetPagedList(null, null, null, i, 10000, true).Items;
 
-                List<Periods_Mongo> periods_Mongo = new List<Periods_Mongo>();
-                foreach (var period in periods)
-                {
-                    Periods_Mongo registro = new Periods_Mongo()
-                    {
-                        PeriodID = period.PeriodID,
+            //    List<Periods_Mongo> periods_Mongo = new List<Periods_Mongo>();
+            //    foreach (var period in periods)
+            //    {
+            //        Periods_Mongo registro = new Periods_Mongo()
+            //        {
+            //            PeriodID = period.PeriodID,
 
-                        StartDate = period.StartDate,
-                        EndDate = period.EndDate,
-                        ClosedDate = period.ClosedDate,
-                        PlanID = period.PlanID,
-                        EarningsViewable = period.EarningsViewable,
-                        BackOfficeDisplayStartDate = period.BackOfficeDisplayStartDate,
-                        DisbursementsProcessed = period.DisbursementsProcessed,
-                        Description = period.Description,
-                        StartDateUTC = period.StartDateUTC,
-                        EndDateUTC = period.EndDateUTC,
-                        LockDate = period.LockDate
-                    };
+            //            StartDate = period.StartDate,
+            //            EndDate = period.EndDate,
+            //            ClosedDate = period.ClosedDate,
+            //            PlanID = period.PlanID,
+            //            EarningsViewable = period.EarningsViewable,
+            //            BackOfficeDisplayStartDate = period.BackOfficeDisplayStartDate,
+            //            DisbursementsProcessed = period.DisbursementsProcessed,
+            //            Description = period.Description,
+            //            StartDateUTC = period.StartDateUTC,
+            //            EndDateUTC = period.EndDateUTC,
+            //            LockDate = period.LockDate
+            //        };
 
-                    periods_Mongo.Add(registro);
-                }
+            //        periods_Mongo.Add(registro);
+            //    }
 
-                encoreMongo_Context.PeriodsProvider.InsertMany(periods_Mongo);
-            }
+            //    encoreMongo_Context.PeriodsProvider.InsertMany(periods_Mongo);
+            //}
         }
     }
 }

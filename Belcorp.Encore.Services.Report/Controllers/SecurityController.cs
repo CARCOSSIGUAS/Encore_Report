@@ -21,16 +21,16 @@ namespace Belcorp.Encore.Services.Report.Controllers
             accountsService = _accountsService;
         }
 
-        [HttpGet("[action]")]
-        public async Task<IActionResult> SingleSignOn(string token)
-        {
-            var result = await accountsService.GetAccountFromSingleSignOnToken(token);
-            if (result == null)
-            {
-                return NotFound();
-            }
+        //[HttpGet("[action]")]
+        //public async Task<IActionResult> SingleSignOn(string token)
+        //{
+        //    var result = await accountsService.GetAccountFromSingleSignOnToken(token);
+        //    if (result == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
     }
 }
