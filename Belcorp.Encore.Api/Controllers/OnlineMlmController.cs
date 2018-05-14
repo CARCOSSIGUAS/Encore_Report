@@ -25,15 +25,15 @@ namespace Belcorp.Encore.Api.Controllers
         [AutomaticRetry(Attempts = 0)]
         public ActionResult Orders(int orderId)
         {
-            BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLM_Order(orderId));
+            BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLMOrder(orderId));
             return Json(new { Status = "Processing Background" });
         }
 
         [HttpGet("monitorlotes/{loteId}")]
-        [AutomaticRetry(Attempts = 5)]
+        [AutomaticRetry(Attempts = 0)]
         public ActionResult MonitorLotes(int loteId)
         {
-            BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLM_Lote(loteId));
+            BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLMLote(loteId));
             return Json(new { Status = "Processing Background" });
         }
 

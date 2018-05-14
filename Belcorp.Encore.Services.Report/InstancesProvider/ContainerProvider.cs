@@ -25,9 +25,8 @@ namespace Belcorp.Encore.Services.Report.InstancesProvider
 		static void ConfigureContainer(IServiceCollection services)
 		{
 			services.AddScoped<IAccountInformationRepository, AccountInformationRepository>();
-			services.AddScoped<IAccountInformationService, AccountInformationService>();
+			services.AddScoped<IReportAccountService, ReportAccountService>();
 
-			services.AddScoped<ISponsorTreeService, SponsorTreeService>();
 			services.AddScoped<ISponsorTreeRepository, SponsorTreeRepository>();
 
 			services.AddScoped<IAccountsRepository, AccountsRepository>();
@@ -43,7 +42,10 @@ namespace Belcorp.Encore.Services.Report.InstancesProvider
 			services.AddScoped<IMonitorRepository, MonitorRepository>();
 
             services.AddScoped<IAuthenticationService, AuthenticationService>();
-            services.AddScoped<IPeriodsService, PeriodsService>();
+
+            services.AddScoped<IHomeService, HomeService>();
+            services.AddScoped<IReportAccountService, ReportAccountService>();
+            services.AddScoped<IReportPerformanceService, ReportPerformanceService>();
         }
 
 	}

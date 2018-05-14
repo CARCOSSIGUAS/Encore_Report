@@ -13,18 +13,8 @@ using Belcorp.Encore.Entities.Entities.Search.Paging;
 
 namespace Belcorp.Encore.Application.Services
 {
-    public interface IAccountInformationService
+    public interface IReportAccountService
     {
-        Task<IEnumerable<ReportPerformance_HeaderModel>> GetPerformance_Header(int accountId, int periodId);
-
-        Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId);
-
-        AccountsInformationExtended GetPerformance_HeaderFront(int accountId);
-
-        Task<AccountsInformation_Mongo> GetPerformance_AccountInformation(int accountId, int periodId);
-
-        AccountsExtended GetAccounts(Filtros_DTO filtrosDTO);
-
         PagedList<AccountsInformation_Mongo> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter);
         Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods();
     }

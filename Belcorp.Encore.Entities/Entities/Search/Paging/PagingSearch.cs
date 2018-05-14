@@ -2,7 +2,7 @@
 {
     public class PagingSearch
     {
-        const int maxPageSize = 100;
+        const int maxPageSize = int.MaxValue;
         public int PageNumber { get; set; } = 1;
 
         private int _pageSize = 10;
