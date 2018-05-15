@@ -8,6 +8,7 @@ using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -34,12 +35,12 @@ namespace Belcorp.Encore.Application.Services
             IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
             IMonitorRepository _monitorMongoRepository, 
             IAccountsService _accountsService, 
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
             unitOfWork_Core = _unitOfWork_Core;
             unitOfWork_Comm = _unitOfWork_Comm;
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
             monitorMongoRepository = _monitorMongoRepository;
             accountsService = _accountsService;
         }

@@ -24,9 +24,9 @@ namespace Belcorp.Encore.Application.Services
 		private readonly EncoreMongo_Context encoreMongo_Context;
 		//private readonly IAuthenticationService authenticationService;
 
-		public AccountsService(IOptions<Settings> settings) {
+		public AccountsService(IConfiguration configuration) {
 
-			encoreMongo_Context = new EncoreMongo_Context(settings);
+			encoreMongo_Context = new EncoreMongo_Context(configuration);
 
 		}		
 
@@ -90,11 +90,11 @@ namespace Belcorp.Encore.Application.Services
             //}
         }
 
-        public async Task<List<Accounts_Mongo>> GetListAccounts(int accountId)
+        public async Task<List<Accounts_Mongo>> GetListAccounts(int accountId, string country)
         {
 			try
 			{
-				IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.Accounts_Mongos;
+				IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.Accounts(country);
 
 				//var documento = accountsCollection.ToJson();
 

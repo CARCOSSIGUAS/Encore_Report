@@ -4,6 +4,7 @@ using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.Commissions;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using System;
@@ -20,11 +21,11 @@ namespace Belcorp.Encore.Application.Services
         public PeriodsService
         (
             IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
             unitOfWork_Comm = _unitOfWork_Comm;
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
         public void Migrate_Periods()

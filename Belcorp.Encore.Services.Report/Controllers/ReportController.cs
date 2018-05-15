@@ -34,9 +34,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<ActionResult> Accounts(int accountId)
+        public async Task<ActionResult> Accounts(int accountId, string country)
         {
-            var result = await accountsService.GetListAccounts(accountId);
+            var result = await accountsService.GetListAccounts(accountId, country);
 
             if (result == null)
             {
