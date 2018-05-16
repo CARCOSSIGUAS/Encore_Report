@@ -115,7 +115,6 @@ namespace Belcorp.Encore.Application
             }
             else
                 accountsThreeCompleted = accountsThreeCompleted.OrderBy(a => a.LEVEL);
-            
 
             return new PagedList<AccountsInformation_Mongo>(accountsThreeCompleted, filter.PageNumber, filter.PageSize);
         }

@@ -68,7 +68,7 @@ namespace Belcorp.Encore.Application.Services
                 string result = "";
                 var datetimeNow = DateTime.Now;
                 double diffDays = 0;
-                diffDays = (endDate - datetimeNow).Value.TotalDays;
+                diffDays = Math.Round((endDate - datetimeNow).Value.TotalDays);
                 switch (diffDays)
                 {
                     case Double i when i == 0:

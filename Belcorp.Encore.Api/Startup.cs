@@ -28,12 +28,11 @@ namespace Belcorp.Encore.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-
 			services.AddHangfire(config =>
             {
                 // Read DefaultConnection string from appsettings.json
                 var connectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
+                var databaseName = Configuration.GetSection("Encore_Mongo:Database_HangFire").Value;
 
                 var storageOptions = new MongoStorageOptions
                 {
@@ -43,7 +42,7 @@ namespace Belcorp.Encore.Api
                         BackupStrategy = MongoBackupStrategy.Collections
                     }
                 };
-                config.UseMongoStorage(connectionString, "Encore_HangFire", storageOptions);
+                config.UseMongoStorage(connectionString, databaseName, storageOptions);
             });
 
             services.AddMvc(setupAction =>
