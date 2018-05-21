@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Search;
 using Belcorp.Encore.Entities.Entities.Search.Paging;
+using MongoDB.Bson;
 
 namespace Belcorp.Encore.Application.Services
 {
     public interface IReportAccountService
     {
-        PagedList<AccountsInformation_Mongo> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter);
+        PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter);
         Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods();
     }
-
 }

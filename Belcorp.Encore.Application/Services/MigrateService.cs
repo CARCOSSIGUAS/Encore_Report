@@ -149,12 +149,12 @@ namespace Belcorp.Encore.Application.Services
         {
             IRepository<Entities.Entities.Core.Accounts> accountsRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
             encoreMongo_Context.AccountsProvider.DeleteMany(new BsonDocument { });
-            var total = accountsRepository.GetPagedList(null, null, null, 0, 10000, true);
+            var total = accountsRepository.GetPagedList(null, null, null, 0, 5000, true);
             int ii = total.TotalPages;
 
             for (int i = 0; i < ii; i++)
             {
-                var accounts = accountsRepository.GetPagedList(null, null, a => a.Include(p => p.AccountPhones), i, 10000, true).Items;
+                var accounts = accountsRepository.GetPagedList(null, null, a => a.Include(p => p.AccountPhones).Include(p => p.AccountAddresses).ThenInclude(p => p.Addresses), i, 5000, true).Items;
 
                 List<Accounts_Mongo> accounts_Mongo = new List<Accounts_Mongo>();
                 foreach (var account in accounts)
@@ -182,11 +182,12 @@ namespace Belcorp.Encore.Application.Services
                     account_Mongo.TerminatedDateUTC = account.TerminatedDateUTC;
 
                     account_Mongo.AccountPhones = account.AccountPhones;
+                    account_Mongo.Addresses = account.AccountAddresses.Select(a => a.Addresses).Where(a => a.AddressTypeID == 1).ToList();
 
                     accounts_Mongo.Add(account_Mongo);
                 }
 
-                encoreMongo_Context.AccountsProvider.InsertMany(accounts_Mongo);
+                encoreMongo_Context.AccountsProvider.InsertManyAsync(accounts_Mongo);
             }
         }
 

@@ -25,7 +25,6 @@ namespace Belcorp.Encore.Services.Report.Controllers
         public async Task<IActionResult> GetPerformance_Detail(int accountId, int periodId)
         {
             var header = await reportPerformanceService.GetPerformance_Detail(accountId, periodId);
-
             return Json(header);
         }
 

@@ -32,6 +32,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public int? ActivationPeriodID { get; set; }
         
         public List<AccountPhones> AccountPhones = new List<AccountPhones>();
-        
+        public List<Addresses> Addresses = new List<Addresses>();
+
     }
 }

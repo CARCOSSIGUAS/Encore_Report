@@ -1,14 +1,10 @@
-﻿using Belcorp.Encore.Application.Services;
-using Belcorp.Encore.Entities.Entities.DTO;
-using Belcorp.Encore.Entities.Entities.Mongo;
+﻿using Belcorp.Encore.Application.Extension;
+using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Entities.Entities.Search;
 using Belcorp.Encore.Entities.Entities.Search.Paging;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Belcorp.Encore.Services.Report.Controllers
 {
@@ -16,16 +12,16 @@ namespace Belcorp.Encore.Services.Report.Controllers
     [Route("api/reportaccount")]
     public class ReportAccountController : Controller
     {
-        private readonly IReportAccountService accountInformationService;
+        private readonly IReportAccountService reportAccountService;
         private IUrlHelper urlHelper;
 
         public ReportAccountController
         (
-            IReportAccountService _accountInformationService,
+            IReportAccountService _reportAccountService,
             IUrlHelper _urlHelper
         )
         {
-            accountInformationService = _accountInformationService;
+            reportAccountService = _reportAccountService;
             urlHelper = _urlHelper;
         }
 
@@ -37,7 +33,8 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return BadRequest();
             }
 
-            var result = accountInformationService.GetReportAccountsSponsoreds(filter);
+            var result = reportAccountService.GetReportAccountsSponsoreds(filter);
+
             if (result == null)
             {
                 return NotFound();
@@ -48,8 +45,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
             var outputModel = new ReportAccountsSponsoredsPaging
             {
                 Paging = result.GetHeader(),
-                Links = GetLinks(filter, result),
-                Items = result.List.ToList(),
+                Items = result.List.ToReportAccount_DTO()
             };
 
             return Ok(outputModel);
@@ -58,7 +54,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
         [HttpGet("periods", Name = "GetReportAccountsPeriods")]
         public IActionResult GetReportAccountsPeriods()
         {
-            var result = accountInformationService.GetReportAccountsPeriods();
+            var result = reportAccountService.GetReportAccountsPeriods();
             if (result == null)
             {
                 return NotFound();
@@ -76,7 +72,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 filter.PageNumber = 1;
                 filter.PageSize = int.MaxValue;
 
-                var result = accountInformationService.GetReportAccountsSponsoreds(filter);
+                var result = reportAccountService.GetReportAccountsSponsoreds(filter);
                 if (result == null)
                 {
                     return NotFound();
@@ -87,9 +83,11 @@ namespace Belcorp.Encore.Services.Report.Controllers
                     ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Accounts");
                     int totalRows = result.TotalItems;
 
-                    worksheet.Cells["A1"].LoadFromCollection(result.List, PrintHeaders: true);
+                    var excel = result.List.ToReportAccount_DTO();
 
-                    int noOfProperties = result.GetType().GetGenericArguments()[0].GetProperties().Length;
+                    worksheet.Cells["A1"].LoadFromCollection(excel, PrintHeaders: true);
+
+                    int noOfProperties = excel.GetType().GetGenericArguments()[0].GetProperties().Length;
 
                     using (ExcelRange r = worksheet.Cells[1, 1, 1, noOfProperties])
                     {
@@ -113,45 +111,6 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return Content(ex.InnerException.ToString());
             }
         }
-
-
-        #region Metodos
-        private List<LinkInfo> GetLinks(ReportAccountsSponsoredsSearch reportAccountsSponsoredsSearch, PagedList<AccountsInformation_Mongo> list)
-        {
-            var links = new List<LinkInfo>();
-
-            if (list.HasPreviousPage)
-                links.Add(CreateLink(reportAccountsSponsoredsSearch, "GetReportAccountsSponsoreds", list.PreviousPageNumber, list.PageSize, "previousPage"));
-
-            if (list.HasNextPage)
-                links.Add(CreateLink(reportAccountsSponsoredsSearch, "GetReportAccountsSponsoreds", list.NextPageNumber, list.PageSize, "nextPage"));
-
-            links.Add(CreateLink(reportAccountsSponsoredsSearch, "GetReportAccountsSponsoreds", list.PageNumber, list.PageSize, "self"));
-
-            return links;
-        }
-
-        private LinkInfo CreateLink(ReportAccountsSponsoredsSearch filter, string routeName, int pageNumber, int pageSize, string rel)
-        {
-            return new LinkInfo
-            {
-                Href = urlHelper.Link(routeName,
-                        new
-                        {
-                            periodId = filter.PeriodId,
-                            accountId = filter.AccountId,
-                            accountNumberSearch = filter.AccountNumberSearch,
-                            sponsorNumberSearch = filter.SponsorNumberSearch,
-                            titleTypes = filter.TitleType,
-                            titleIds = filter.TitleIds,
-                            accountStatusIds = filter.AccountStatusIds,
-                            pageNumber = pageNumber,
-                            pageSize = pageSize
-                        }),
-                Rel = rel
-            };
-        }
-        #endregion
     }
 }
 

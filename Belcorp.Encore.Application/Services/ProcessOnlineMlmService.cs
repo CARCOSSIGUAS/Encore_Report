@@ -520,8 +520,8 @@ namespace Belcorp.Encore.Application.Services
 
                              CareerTitle = ai.CareerTitle,
                              PaidAsCurrentMonth = ai.PaidAsCurrentMonth,
-                             CareerTitle_Des = titlesInfo_Career.Name,
-                             PaidAsCurrentMonth_Des = titlesInfo_Paid.Name,
+                             CareerTitle_Des = titlesInfo_Career.ClientName,
+                             PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
 
                              JoinDate = ai.JoinDate,
                              Generation = ai.Generation,

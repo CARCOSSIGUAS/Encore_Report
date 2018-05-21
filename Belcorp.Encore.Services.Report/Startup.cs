@@ -30,12 +30,6 @@ namespace Belcorp.Encore.Services.Report
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-			services
-			.AddDbContext<EncoreCommissions_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Commissions")))
-			.AddDbContext<EncoreCore_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Core")))
-			.AddUnitOfWork<EncoreCommissions_Context, EncoreCore_Context>();
-
             services.Configure<Settings>(options =>
             {
                 options.ConnectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;

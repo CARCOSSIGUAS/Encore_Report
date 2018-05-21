@@ -17,6 +17,14 @@ namespace Belcorp.Encore.Entities.Entities.Search.Paging
                             .ToList();
         }
 
+        public PagedList(List<T> items, int totalItems, int pageNumber, int pageSize)
+        {
+            this.TotalItems = totalItems;
+            this.PageNumber = pageNumber;
+            this.PageSize = pageSize;
+            this.List = items;
+        }   
+
         public int TotalItems { get; }
         public int PageNumber { get; }
         public int PageSize { get; }

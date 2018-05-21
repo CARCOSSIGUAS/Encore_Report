@@ -6,6 +6,7 @@ using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Entities.Entities.Search;
 using Belcorp.Encore.Entities.Entities.Search.Paging;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -27,96 +28,119 @@ namespace Belcorp.Encore.Application
             encoreMongo_Context = new EncoreMongo_Context(settings);
         }
 
-        public PagedList<AccountsInformation_Mongo> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter)
+        public PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter)
         {
             var accountRoot = encoreMongo_Context.AccountsInformationProvider.Find(a => a.AccountID == filter.AccountId && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
             if (accountRoot == null)
             {
                 return null;
             }
+
             var listLevelIds = GetIdsFromString(filter.LevelIds).Select(s => int.Parse(s)).ToList();
             var listGenerationIds = GetIdsFromString(filter.GenerationIds).Select(s => int.Parse(s)).ToList();
-
             var listTitleIds = GetIdsFromString(filter.TitleIds);
             var listAccountStatusIds = GetIdsFromString(filter.AccountStatusIds);
-            
 
-            var accountsThreeCompleted = from accountsSponsored in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
-                                         where
-                                         accountsSponsored.PeriodID == filter.PeriodId &&
-                                         accountsSponsored.LeftBower >= accountRoot.LeftBower &&
-                                         accountsSponsored.RightBower <= accountRoot.RightBower &&
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
-                                         (accountsSponsored.PQV >= filter.PQVFrom && accountsSponsored.PQV <= filter.PQVTo) &&
-                                         (accountsSponsored.DQV >= filter.DQVFrom && accountsSponsored.DQV <= filter.DQVTo) &&
-                                         (accountsSponsored.JoinDate >= filter.JoinDateFrom && accountsSponsored.JoinDate <= filter.JoinDateTo) &&
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountRoot.LeftBower);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);
 
-                                         (listLevelIds.Contains((int)accountsSponsored.LEVEL) || listLevelIds.Count == 0) &&
-                                         (listGenerationIds.Contains((int)accountsSponsored.Generation) || listGenerationIds.Count == 0) &&
-                                         (listAccountStatusIds.Contains(accountsSponsored.Activity) || listAccountStatusIds.Count == 0)
-                                         select accountsSponsored;
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Where(ai =>
+                                                                                        (ai.PQV >= filter.PQVFrom && ai.PQV <= filter.PQVTo) &&
+                                                                                        (ai.DQV >= filter.DQVFrom && ai.DQV <= filter.DQVTo) &&
+
+                                                                                        (listLevelIds.Contains((int)ai.LEVEL) || listLevelIds.Count == 0) &&
+                                                                                        (listGenerationIds.Contains((int)ai.Generation) || listGenerationIds.Count == 0)
+                                                                                 );
+            if (listAccountStatusIds.Count > 0)
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.Activity, listAccountStatusIds);
 
             if (listTitleIds.Count > 0)
             {
-                switch (filter.TitleType) {
+                switch (filter.TitleType)
+                {
                     case (int)TitleTypes.Career:
-                        accountsThreeCompleted = accountsThreeCompleted.Where(a => listTitleIds.Contains(a.CareerTitle));
+                        filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.CareerTitle, listTitleIds);
                         break;
                     case (int)TitleTypes.Paid:
-                        accountsThreeCompleted = accountsThreeCompleted.Where(a => listTitleIds.Contains(a.PaidAsCurrentMonth));
+                        filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.PaidAsCurrentMonth, listTitleIds);
                         break;
                 };
             }
 
             if (filter.AccountNumberSearch.HasValue && filter.AccountNumberSearch != 0)
             {
-                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountID == filter.AccountNumberSearch);
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, filter.AccountNumberSearch);
             }
             if (!String.IsNullOrEmpty(filter.AccountNameSearch))
             {
-                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.AccountName.ToUpper().Contains(filter.AccountNameSearch.ToUpper()));
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression(filter.AccountNameSearch, "i"));
             }
 
             if (filter.SponsorNumberSearch.HasValue && filter.SponsorNumberSearch > 0)
             {
-                var accountSponsor = encoreMongo_Context.AccountsInformationProvider.Find(a => 
-                                            a.AccountID == filter.SponsorNumberSearch && 
+                var accountSponsor = encoreMongo_Context.AccountsInformationProvider.Find(a =>
+                                            a.AccountID == filter.SponsorNumberSearch &&
                                             a.PeriodID == filter.PeriodId, null
                                             ).FirstOrDefault();
 
-                accountsThreeCompleted = accountsThreeCompleted.Where(a => 
-                                            a.LeftBower >= accountSponsor.LeftBower && 
-                                            a.RightBower <= accountSponsor.RightBower
-                                            );
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountSponsor.LeftBower);
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountSponsor.RightBower);
             }
 
             if (!String.IsNullOrEmpty(filter.SponsorNameSearch))
             {
-                accountsThreeCompleted = accountsThreeCompleted.Where(a => a.SponsorName.ToUpper().Contains(filter.SponsorNameSearch.ToUpper()));
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.SponsorName, new BsonRegularExpression(filter.SponsorNameSearch, "i"));
             }
 
+            if (filter.JoinDateFrom.HasValue)
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.JoinDate, filter.JoinDateFrom);
+            }
+
+            if (filter.JoinDateTo.HasValue)
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.JoinDate, filter.JoinDateTo);
+            }
+
+            var totalItems = (int)encoreMongo_Context.AccountsInformationProvider.Find(filterDefinition).Count();
+
+            var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.LEVEL);
             if (!String.IsNullOrEmpty(filter.OrderBy))
             {
                 switch (filter.OrderBy)
                 {
                     case "1":
-                        accountsThreeCompleted = accountsThreeCompleted.OrderByDescending(a => a.CareerTitle);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.CareerTitle);
                         break;
                     case "2":
-                        accountsThreeCompleted = accountsThreeCompleted.OrderByDescending(a => a.PaidAsCurrentMonth);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.PaidAsCurrentMonth);
                         break;
                     case "3":
-                        accountsThreeCompleted = accountsThreeCompleted.OrderByDescending(a => a.PQV);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.PQV);
                         break;
                     case "4":
-                        accountsThreeCompleted = accountsThreeCompleted.OrderByDescending(a => a.JoinDate);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.JoinDate);
                         break;
                 };
             }
-            else
-                accountsThreeCompleted = accountsThreeCompleted.OrderBy(a => a.LEVEL);
 
-            return new PagedList<AccountsInformation_Mongo>(accountsThreeCompleted, filter.PageNumber, filter.PageSize);
+            var result = encoreMongo_Context.AccountsInformationProvider
+                .Aggregate()
+                .Match(filterDefinition)
+                .Sort(orderDefinition)
+                .Skip(filter.PageSize * (filter.PageNumber - 1))
+                .Limit(filter.PageSize)
+                .Lookup("Accounts", "AccountID", "_id", "Account")
+                .Unwind("Account")
+                .Lookup("Accounts", "SponsorID", "_id", "Sponsor")
+                .Unwind("Sponsor")
+                .Project<AccountsInformation_MongoWithAccountAndSponsor>("{ _id: 0 }")
+                .ToList();
+
+            return new PagedList<AccountsInformation_MongoWithAccountAndSponsor>(result, totalItems, filter.PageNumber, filter.PageSize);
         }
 
         public async Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods()
@@ -154,5 +178,11 @@ namespace Belcorp.Encore.Application
             }
             return result;
         }
+    }
+
+    public class AccountsInformation_MongoWithAccountAndSponsor : AccountsInformation_Mongo
+    {
+        public Accounts_Mongo Account { get; set; }
+        public Accounts_Mongo Sponsor { get; set; }
     }
 }

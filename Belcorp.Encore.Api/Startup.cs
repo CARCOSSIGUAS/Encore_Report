@@ -64,7 +64,7 @@ namespace Belcorp.Encore.Api
             services.RegisterServices();
 
             #region HangFire_Jobs
-            JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:ConnectionString").Value, "Encore_HangFire");
+            JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:ConnectionString").Value, Configuration.GetSection("Encore_Mongo:Database").Value);
             var provider = services.BuildServiceProvider();
             IMigrateService migrateService = provider.GetService<IMigrateService>();
             IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();

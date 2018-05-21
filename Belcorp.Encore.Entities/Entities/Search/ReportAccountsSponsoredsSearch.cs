@@ -22,9 +22,6 @@ namespace Belcorp.Encore.Entities.Entities.Search
 
             DQVFrom = 0;
             DQVTo = decimal.MaxValue;
-
-            JoinDateFrom = DateTime.MinValue;
-            JoinDateTo = DateTime.MaxValue;
         }
 
         public int AccountId { get; set; }
@@ -44,8 +41,8 @@ namespace Belcorp.Encore.Entities.Entities.Search
 
         public string AccountStatusIds { get; set; }
 
-        public DateTime JoinDateFrom { get; set; }
-        public DateTime JoinDateTo { get; set; }
+        public DateTime ? JoinDateFrom { get; set; }
+        public DateTime ? JoinDateTo { get; set; }
 
         public decimal PQVFrom { get; set; }
         public decimal PQVTo { get; set; }
