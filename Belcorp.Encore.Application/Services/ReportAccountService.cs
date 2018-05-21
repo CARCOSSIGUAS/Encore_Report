@@ -44,6 +44,7 @@ namespace Belcorp.Encore.Application
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
+
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountRoot.LeftBower);
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);
 
@@ -127,6 +128,28 @@ namespace Belcorp.Encore.Application
                 };
             }
 
+            var projection = Builders<BsonDocument>.Projection.Include("AccountID")
+                                                              .Include("AccountNumber")
+                                                              .Include("AccountName")
+                                                              .Include("JoinDate")
+                                                              .Include("EmailAddress")
+                                                              .Include("Generation")
+                                                              .Include("LEVEL")
+                                                              .Include("Activity")
+                                                              .Include("PQV")
+                                                              .Include("PCV")
+                                                              .Include("DQVT")
+                                                              .Include("DQV")
+                                                              .Include("CareerTitle")
+                                                              .Include("CareerTitle_Des")
+                                                              .Include("PaidAsCurrentMonth")
+                                                              .Include("PaidAsCurrentMonth_Des")
+                                                              .Include("SponsorID")
+                                                              .Include("SponsorName")
+                                                              .Include("Account")
+                                                              .Include("Sponsor")
+                                                              .Exclude("_id");
+
             var result = encoreMongo_Context.AccountsInformationProvider
                 .Aggregate()
                 .Match(filterDefinition)
@@ -137,7 +160,7 @@ namespace Belcorp.Encore.Application
                 .Unwind("Account")
                 .Lookup("Accounts", "SponsorID", "_id", "Sponsor")
                 .Unwind("Sponsor")
-                .Project<AccountsInformation_MongoWithAccountAndSponsor>("{ _id: 0 }")
+                .Project<AccountsInformation_MongoWithAccountAndSponsor>(projection)
                 .ToList();
 
             return new PagedList<AccountsInformation_MongoWithAccountAndSponsor>(result, totalItems, filter.PageNumber, filter.PageSize);
