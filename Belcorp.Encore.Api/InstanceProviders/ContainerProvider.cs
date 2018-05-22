@@ -20,9 +20,8 @@
         static void ConfigureContainer(IServiceCollection services)
         {
             services.AddScoped<IAccountInformationRepository, AccountInformationRepository>();
-            services.AddScoped<IAccountInformationService, AccountInformationService>();
+            services.AddScoped<IReportAccountService, ReportAccountService>();
 
-            services.AddScoped<ISponsorTreeService, SponsorTreeService>();
             services.AddScoped<ISponsorTreeRepository, SponsorTreeRepository>();
 
             services.AddScoped<IAccountsRepository, AccountsRepository>();
@@ -37,7 +36,9 @@
             services.AddScoped<IMonitorMongoService, MonitorService>();
             services.AddScoped<IMonitorRepository, MonitorRepository>();
 
-            services.AddScoped<IPeriodsService, PeriodsService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+            services.AddScoped<IMigrateService, MigrateService>();
         }
     }
 }

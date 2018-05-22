@@ -14,8 +14,20 @@ namespace Belcorp.Encore.Data.Contexts
             builder.Entity<Accounts>()
                 .HasMany(p => p.AccountPhones);
 
+            builder.Entity<Accounts>()
+                .HasMany(p => p.AccountAddresses);
+
+            builder.Entity<AccountAddresses>()
+                .HasOne(p => p.Addresses);
+
+            builder.Entity<AccountAddresses>()
+                .HasKey(p => new { p.AccountID, p.AddressID });
+
             builder.Entity<Monitor>()
                 .HasMany(p => p.MonitorDetails);
+
+            builder.Entity<MonitorLotes>()
+                .HasMany(p => p.MonitorOrders);
 
             builder.Entity<MonitorLotes>()
                 .HasMany(p => p.MonitorOrders);

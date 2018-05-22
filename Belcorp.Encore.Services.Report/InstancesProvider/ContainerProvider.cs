@@ -1,6 +1,7 @@
 ﻿using Belcorp.Encore.Application;
 using Belcorp.Encore.Application.Interfaces;
 using Belcorp.Encore.Application.Services;
+using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Repositories;
 using Belcorp.Encore.Repositories.Interfaces;
 using Belcorp.Encore.Repositories.Repositories;
@@ -10,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Belcorp.Encore.Services.Report.InstancesProvider2
+namespace Belcorp.Encore.Services.Report.InstancesProvider
 {
     public static class ContainerProvider
     {
@@ -24,9 +25,8 @@ namespace Belcorp.Encore.Services.Report.InstancesProvider2
 		static void ConfigureContainer(IServiceCollection services)
 		{
 			services.AddScoped<IAccountInformationRepository, AccountInformationRepository>();
-			services.AddScoped<IAccountInformationService, AccountInformationService>();
+			services.AddScoped<IReportAccountService, ReportAccountService>();
 
-			services.AddScoped<ISponsorTreeService, SponsorTreeService>();
 			services.AddScoped<ISponsorTreeRepository, SponsorTreeRepository>();
 
 			services.AddScoped<IAccountsRepository, AccountsRepository>();
@@ -41,7 +41,12 @@ namespace Belcorp.Encore.Services.Report.InstancesProvider2
 			services.AddScoped<IMonitorMongoService, MonitorService>();
 			services.AddScoped<IMonitorRepository, MonitorRepository>();
 
-		}
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+            services.AddScoped<IHomeService, HomeService>();
+            services.AddScoped<IReportAccountService, ReportAccountService>();
+            services.AddScoped<IReportPerformanceService, ReportPerformanceService>();
+        }
 
 	}
 }

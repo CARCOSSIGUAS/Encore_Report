@@ -52,7 +52,7 @@ namespace Belcorp.Encore.Application.Services
             CalculationTypes = GetCalculationTypesByCode();
         }
 
-        public void ProcessMLM_Order(int _orderId)
+        public void ProcessMLMOrder(int _orderId)
         {
             IRepository<Orders> ordersRepository = unitOfWork_Core.GetRepository<Orders>();
             Order = ordersRepository.GetFirstOrDefault(o => o.OrderID == _orderId, null, null, true);
@@ -101,7 +101,7 @@ namespace Belcorp.Encore.Application.Services
             }
         }
 
-        public void ProcessMLM_Lote(int loteId)
+        public void ProcessMLMLote(int loteId)
         {
             IRepository<MonitorLotes> monitorLotesRepository = unitOfWork_Core.GetRepository<MonitorLotes>();
             IRepository<MonitorOrders> monitorOrdersRepository = unitOfWork_Core.GetRepository<MonitorOrders>();
@@ -115,7 +115,7 @@ namespace Belcorp.Encore.Application.Services
                 {
                     try
                     {
-                        ProcessMLM_Order(order.OrderId);
+                        ProcessMLMOrder(order.OrderId);
                         order.Process = true;
                         order.DateProcess = DateTime.Now;
 
@@ -504,7 +504,6 @@ namespace Belcorp.Encore.Application.Services
 
                              PeriodID = ai.PeriodID,
                              AccountID = ai.AccountID,
-                             CountryID = 0,
 
                              AccountNumber = ai.AccountNumber,
                              AccountName = ai.AccountName,
@@ -521,8 +520,8 @@ namespace Belcorp.Encore.Application.Services
 
                              CareerTitle = ai.CareerTitle,
                              PaidAsCurrentMonth = ai.PaidAsCurrentMonth,
-                             CareerTitle_Des = titlesInfo_Career.Name,
-                             PaidAsCurrentMonth_Des = titlesInfo_Paid.Name,
+                             CareerTitle_Des = titlesInfo_Career.ClientName,
+                             PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
 
                              JoinDate = ai.JoinDate,
                              Generation = ai.Generation,

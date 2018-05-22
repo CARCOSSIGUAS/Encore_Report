@@ -12,7 +12,6 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         [BsonId]
         public int AccountID { get; set; }
 
-        public int CountryID { get; set; }
         public string AccountNumber { get; set; }
         public int AccountTypeID { get; set; }
         public string FirstName { get; set; }
@@ -23,6 +22,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public int? EnrollerID { get; set; }
         public DateTime? EnrollmentDateUTC { get; set; }
         public bool IsEntity { get; set; }
+        public int CountryID { get; set; }
         public int? AccountStatusChangeReasonID { get; set; }
         public int? AccountStatusID { get; set; }
         public string EntityName { get; set; }
@@ -30,8 +30,9 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public DateTime? TerminatedDateUTC { get; set; }
         public DateTime? ActivationDateUTC { get; set; }
         public int? ActivationPeriodID { get; set; }
-
-        public List<AccountPhones> AccountPhones = new List<AccountPhones>();
         
+        public List<AccountPhones> AccountPhones = new List<AccountPhones>();
+        public List<Addresses> Addresses = new List<Addresses>();
+
     }
 }

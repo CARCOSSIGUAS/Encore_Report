@@ -2,6 +2,7 @@
 using Belcorp.Encore.Application;
 using Belcorp.Encore.Application.Interfaces;
 using Belcorp.Encore.Application.Services;
+using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities;
@@ -27,12 +28,11 @@ namespace Belcorp.Encore.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-
 			services.AddHangfire(config =>
             {
                 // Read DefaultConnection string from appsettings.json
                 var connectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
+                var databaseName = Configuration.GetSection("Encore_Mongo:Database_HangFire").Value;
 
                 var storageOptions = new MongoStorageOptions
                 {
@@ -42,7 +42,7 @@ namespace Belcorp.Encore.Api
                         BackupStrategy = MongoBackupStrategy.Collections
                     }
                 };
-                config.UseMongoStorage(connectionString, "Encore_HangFire", storageOptions);
+                config.UseMongoStorage(connectionString, databaseName, storageOptions);
             });
 
             services.AddMvc(setupAction =>
@@ -64,14 +64,14 @@ namespace Belcorp.Encore.Api
             services.RegisterServices();
 
             #region HangFire_Jobs
-            JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:ConnectionString").Value, "Encore_HangFire");
+            JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:ConnectionString").Value, Configuration.GetSection("Encore_Mongo:Database").Value);
             var provider = services.BuildServiceProvider();
-            IAccountInformationService accountInformationService = provider.GetService<IAccountInformationService>();
+            IMigrateService migrateService = provider.GetService<IMigrateService>();
             IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();
             IProcessOnlineMlmService processOnlineMlmService = provider.GetService<IProcessOnlineMlmService>();
 
-            //Todos los dias a las 00:00
-            //RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => accountInformationService(), "0 0 * * *");
+            //Todos los dias a las 03:00
+            RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => migrateService.MigrateAccountInformationByPeriod(null), "0 3 * * *");
 
             //Todos los dias, cada 10 minutos
             RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(), Cron.MinuteInterval(10));

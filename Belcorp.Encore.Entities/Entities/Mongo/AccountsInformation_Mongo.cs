@@ -10,7 +10,6 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         [BsonId]
         public int AccountsInformationID { get; set; }
 
-        public int CountryID { get; set; }
         public int PeriodID { get; set; }
         public int AccountID { get; set; }
         public string AccountNumber { get; set; }
@@ -27,16 +26,35 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string CareerTitle { get; set; }
         public string PaidAsCurrentMonth { get; set; }
         public string PaidAsLastMonth { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? VolumeForCareerTitle { get; set; }
         public string Activity { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? NineMonthsPQV { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? PQV { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? PCV { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? GQV { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? GCV { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? DQVT { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? DCV { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? DQV { get; set; }
+
         public DateTime? JoinDate { get; set; }
         public int? Generation { get; set; }
         public int? LEVEL { get; set; }

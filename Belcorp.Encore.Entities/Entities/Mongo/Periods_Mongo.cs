@@ -10,7 +10,6 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         [BsonId]
         public int PeriodID { get; set; }
 
-        public int CountryID { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public DateTime? ClosedDate { get; set; }
