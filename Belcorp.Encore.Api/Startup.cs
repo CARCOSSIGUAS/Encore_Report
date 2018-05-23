@@ -55,11 +55,13 @@ namespace Belcorp.Encore.Api
             .AddDbContext<EncoreCore_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Core")))
             .AddUnitOfWork<EncoreCommissions_Context, EncoreCore_Context>();
 
+            #region Mongo
             services.Configure<Settings>(options =>
             {
                 options.ConnectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
-                options.Database = Configuration.GetSection("Encore_Mongo:Database_HangFire").Value;
+                options.Database = Configuration.GetSection("Encore_Mongo:Database").Value;
             });
+            #endregion
 
             services.RegisterServices();
 
