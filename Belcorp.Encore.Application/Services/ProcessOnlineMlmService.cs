@@ -84,9 +84,9 @@ namespace Belcorp.Encore.Application.Services
 
                 if (Order.OrderTypeID == (short)Constants.OrderType.ReturnOrder)
                 {
-                    QV = QV * -1;
-                    CV = CV * -1;
-                    RV = RV * -1;
+                    QV = QV > 0 ? QV * -1 : QV;
+                    CV = CV > 0 ? CV * -1 : CV;
+                    RV = RV > 0 ? RV * -1 : RV;
                 }
 
                 var parentLog = PersonalIndicatorLog_Insert();
