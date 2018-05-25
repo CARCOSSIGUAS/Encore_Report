@@ -495,6 +495,9 @@ namespace Belcorp.Encore.Application.Services
             var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
             var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId);
 
+            IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
+            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses), true);
+
             var result = from ai in accountsInformation
                          join titlesInfo_Career in titles on Int32.Parse(ai.CareerTitle) equals titlesInfo_Career.TitleID
                          join titlesInfo_Paid in titles on Int32.Parse(ai.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
@@ -529,7 +532,7 @@ namespace Belcorp.Encore.Application.Services
                              SortPath = ai.SortPath,
                              LeftBower = ai.LeftBower,
                              RightBower = ai.RightBower,
-                             Activity = ai.Activity
+                             Activity = (Order.AccountID == ai.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : ai.Activity
                          };
             try
             {
