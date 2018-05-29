@@ -228,5 +228,38 @@ namespace Belcorp.Encore.Application.Services
                 encoreMongo_Context.PeriodsProvider.InsertMany(periods_Mongo);
             }
         }
+
+        public void MigrateTermTranslations()
+        {
+            IRepository<TermTranslationsMongo> termTranslationsRepository = unitOfWork_Comm.GetRepository<TermTranslationsMongo>();
+            encoreMongo_Context.TermTranslationsProvider.DeleteMany(new BsonDocument { });
+
+            var total = termTranslationsRepository.GetPagedList(null, null, null, 0, 10000, true);
+            int ii = total.TotalPages;
+
+            for (int i = 0; i < ii; i++)
+            {
+                var termTranslations = termTranslationsRepository.GetPagedList(null, null, t => t.Include(l => l.Languages), i, 10000, true).Items;
+
+                List<TermTranslations_Mongo> termTranslations_Mongo = new List<TermTranslations_Mongo>();
+                foreach (var termTranslation in termTranslations)
+                {
+                    TermTranslations_Mongo registro = new TermTranslations_Mongo()
+                    {
+                        TermTranslationID = termTranslation.TermTranslationID,
+                        LanguageID = termTranslation.LanguageID,
+                        Active = termTranslation.Active,
+                        LastUpdatedUTC = termTranslation.LastUpdatedUTC,
+                        Term = termTranslation.Term,
+                        TermName = termTranslation.TermName,
+                        LanguageCode = termTranslation.Languages.LanguageCode.ToLower()
+                    };
+
+                    termTranslations_Mongo.Add(registro);
+                }
+
+                encoreMongo_Context.TermTranslationsProvider.InsertMany(termTranslations_Mongo);
+            }
+        }
     }
 }

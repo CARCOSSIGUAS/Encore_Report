@@ -9,5 +9,6 @@ namespace Belcorp.Encore.Application.Services.Interfaces
         void MigrateAccountInformationByPeriod(int? periodId);
         void MigrateAccounts();
         void MigratePeriods();
+        void MigrateTermTranslations();
     }
 }
