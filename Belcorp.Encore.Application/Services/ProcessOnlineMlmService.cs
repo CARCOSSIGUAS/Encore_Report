@@ -84,9 +84,9 @@ namespace Belcorp.Encore.Application.Services
 
                 if (Order.OrderTypeID == (short)Constants.OrderType.ReturnOrder)
                 {
-                    QV = QV * -1;
-                    CV = CV * -1;
-                    RV = RV * -1;
+                    QV = QV > 0 ? QV * -1 : QV;
+                    CV = CV > 0 ? CV * -1 : CV;
+                    RV = RV > 0 ? RV * -1 : RV;
                 }
 
                 var parentLog = PersonalIndicatorLog_Insert();
@@ -495,6 +495,9 @@ namespace Belcorp.Encore.Application.Services
             var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
             var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId);
 
+            IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
+            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses), true);
+
             var result = from ai in accountsInformation
                          join titlesInfo_Career in titles on Int32.Parse(ai.CareerTitle) equals titlesInfo_Career.TitleID
                          join titlesInfo_Paid in titles on Int32.Parse(ai.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
@@ -529,7 +532,7 @@ namespace Belcorp.Encore.Application.Services
                              SortPath = ai.SortPath,
                              LeftBower = ai.LeftBower,
                              RightBower = ai.RightBower,
-                             Activity = ai.Activity
+                             Activity = (Order.AccountID == ai.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : ai.Activity
                          };
             try
             {

@@ -13,8 +13,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
 
         public string AccountNumber { get; set; }
         public string AccountName { get; set; }
-        public DateTime? JoinDate { get; set; }
-        public string JoinDateToString { get; set; }
+        public string JoinDate { get; set; }
 
         public string EmailAddress { get; set; }
 
@@ -28,10 +27,8 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public decimal? DQV { get; set; }
 
         public string CareerTitle { get; set; }
-        public string CareerTitle_Des { get; set; }
 
         public string PaidAsCurrentMonth { get; set; }
-        public string PaidAsCurrentMonth_Des { get; set; }
 
         public string MainAddress { get; set; }
         public string Phones { get; set; }

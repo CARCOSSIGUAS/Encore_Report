@@ -32,8 +32,12 @@ namespace Belcorp.Encore.Data.Contexts
             builder.Entity<MonitorLotes>()
                 .HasMany(p => p.MonitorOrders);
 
+            builder.Entity<Activities>()
+               .HasOne(p => p.ActivityStatuses);
+
             builder.Entity<TermTranslationsMongo>()
                 .HasOne(p => p.Languages);
+
         }
 
         public DbSet<Orders> Orders { get; set; }
@@ -43,6 +47,7 @@ namespace Belcorp.Encore.Data.Contexts
 
         public DbSet<Accounts> Accounts { get; set; }
         public DbSet<AccountPhones> AccountPhones { get; set; }
+        
 
         public DbSet<Monitor> Monitor { get; set; }
         public DbSet<MonitorDetails> MonitorDetails { get; set; }
@@ -50,7 +55,13 @@ namespace Belcorp.Encore.Data.Contexts
         public DbSet<MonitorLotes> MonitorLotes { get; set; }
         public DbSet<MonitorOrders> MonitorOrders { get; set; }
 
+
+        public DbSet<Activities> Activities { get; set; }
+        public DbSet<ActivityStatuses> ActivityStatuses { get; set; }
+
+
         public DbSet<Languages> Languages { get; set; }
         public DbSet<TermTranslationsMongo> TermTranslationsMongo { get; set; }
+
     }
 }
