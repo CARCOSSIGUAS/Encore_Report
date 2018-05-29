@@ -18,6 +18,5 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string Term { get; set; }
         public DateTime ? LastUpdatedUTC { get; set; }
         public bool Active { get; set; }
-        public string LanguageCode { get; set; }
     }
 }
