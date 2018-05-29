@@ -13,6 +13,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
 
         public int TermTranslationID { get; set; }
         public int LanguageID { get; set; }
+        public string LanguageCode { get; set; }
         public string TermName { get; set; }
         public string Term { get; set; }
         public DateTime ? LastUpdatedUTC { get; set; }
