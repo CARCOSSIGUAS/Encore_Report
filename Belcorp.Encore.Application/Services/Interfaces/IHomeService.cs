@@ -8,7 +8,7 @@ namespace Belcorp.Encore.Application.Services.Interfaces
 {
     public interface IHomeService
     {
-        Task<AccountHomeHeader_DTO> GetHeader(int accountId);
-        Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId);
+        Task<AccountHomeHeader_DTO> GetHeader(int accountId, string country);
+        Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, string country);
     }
 }

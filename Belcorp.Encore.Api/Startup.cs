@@ -28,7 +28,9 @@ namespace Belcorp.Encore.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-			services.AddHangfire(config =>
+            services.AddSingleton<IConfiguration>(Configuration);
+
+            services.AddHangfire(config =>
             {
                 // Read DefaultConnection string from appsettings.json
                 var connectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
@@ -56,11 +58,11 @@ namespace Belcorp.Encore.Api
             .AddUnitOfWork<EncoreCommissions_Context, EncoreCore_Context>();
 
             #region Mongo
-            services.Configure<Settings>(options =>
-            {
-                options.ConnectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
-                options.Database = Configuration.GetSection("Encore_Mongo:Database").Value;
-            });
+            //services.Configure<Settings>(options =>
+            //{
+            //    options.ConnectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
+            //    options.Database = Configuration.GetSection("Encore_Mongo:Database").Value;
+            //});
             #endregion
 
             services.RegisterServices();
@@ -72,12 +74,12 @@ namespace Belcorp.Encore.Api
             IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();
             IProcessOnlineMlmService processOnlineMlmService = provider.GetService<IProcessOnlineMlmService>();
 
+
             //Todos los dias a las 03:00
-            RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => migrateService.MigrateAccountInformationByPeriod(null), "0 3 * * *");
+            RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => migrateService.MigrateAccountInformationByPeriod(Configuration.GetSection("Encore:Country").Value, null), Configuration.GetSection("Encore:ScheduleTask").Value);
 
             //Todos los dias, cada 10 minutos
-            RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(), Cron.MinuteInterval(10));
-
+            RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(Configuration.GetSection("Encore:Country").Value), Cron.MinuteInterval(int.Parse(Configuration.GetSection("Encore:ScheduleTaskDaily").Value)));
             #endregion
 
             services.AddMvc();

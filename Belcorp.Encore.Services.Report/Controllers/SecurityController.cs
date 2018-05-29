@@ -22,9 +22,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("singlesignon")]
-        public async Task<IActionResult> SingleSignOn(string token)
+        public async Task<IActionResult> SingleSignOn(string token, string country)
         {
-            var result = await accountsService.GetAccountFromSingleSignOnToken(token);
+            var result = await accountsService.GetAccountFromSingleSignOnToken(token, country);
             if (result == null)
             {
                 return NotFound();

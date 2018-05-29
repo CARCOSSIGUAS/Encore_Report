@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Belcorp.Encore.Application.Services;
-using Belcorp.Encore.Application.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
+﻿using Belcorp.Encore.Application.Services.Interfaces;
+using Belcorp.Encore.Services.Report.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Belcorp.Encore.Services.Report.Controllers
 {
     [Produces("application/json")]
     [Route("api/home")]
+    [FilterActionProxy]
     public class HomeController : Controller
     {
         private readonly IHomeService homeService;
@@ -21,9 +17,10 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("header/{accountId}", Name = "GetHeader")]
-        public IActionResult GetHeader(int accountId)
+        public IActionResult GetHeader(int accountId, string country = null)
         {
-            var result = homeService.GetHeader(accountId);
+            var contextCountry = country;
+            var result = homeService.GetHeader(accountId, country);
             if (result == null)
             {
                 return NotFound();
@@ -33,9 +30,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("performanceindicator", Name = "GetPerformanceIndicator")]
-        public IActionResult GetPerformanceIndicator(int accountId)
+        public IActionResult GetPerformanceIndicator(int accountId, string country = null)
         {
-            var result = homeService.GetPerformanceIndicator(accountId);
+            var result = homeService.GetPerformanceIndicator(accountId, country);
             if (result == null)
             {
                 return NotFound();

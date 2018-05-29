@@ -2,6 +2,8 @@
 using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.DTO;
+using Belcorp.Encore.Entities.Entities.Mongo;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
@@ -16,23 +18,27 @@ namespace Belcorp.Encore.Application.Services
     {
         private readonly EncoreMongo_Context encoreMongo_Context;
 
-        public HomeService (IOptions<Settings> settings)
+        public HomeService (IConfiguration configuration)
         {
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
-        public async Task<AccountHomeHeader_DTO> GetHeader(int accountId)
+        public async Task<AccountHomeHeader_DTO> GetHeader(int accountId, string country)
         {
             try
             {
-                var account = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountId, null).FirstOrDefaultAsync();
+                IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
+                IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
+                IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
+                var account = await accountCollection.Find(a => a.AccountID == accountId, null).FirstOrDefaultAsync();
 
                 if (account != null)
                 {
                     var datetimeNow = DateTime.Now;
-                    var period = encoreMongo_Context.PeriodsProvider.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
+                    var period = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
 
-                    var result = encoreMongo_Context.AccountsInformationProvider.Find(ai => ai.AccountID == account.AccountID &&
+                    var result = accountInformationCollection.Find(ai => ai.AccountID == account.AccountID &&
                                                                                             ai.PeriodID == period.PeriodID
                                                                                      )
                                                                                 .ToList()
@@ -88,12 +94,15 @@ namespace Belcorp.Encore.Application.Services
             return "";
         }
 
-        public async Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId)
+        public async Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, string country)
         {
             var datetimeNow = DateTime.Now;
-            var period = encoreMongo_Context.PeriodsProvider.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
+            IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
-            var result = await encoreMongo_Context.AccountsInformationProvider.Find(ai => ai.AccountID == accountId &&
+            var period = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
+
+            var result = await accountInformationCollection.Find(ai => ai.AccountID == accountId &&
                                                                                           ai.PeriodID == period.PeriodID
                                                                                    ).ToListAsync();
 

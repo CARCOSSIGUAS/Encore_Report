@@ -5,6 +5,7 @@ using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Entities.Entities.Search;
 using Belcorp.Encore.Entities.Entities.Search.Paging;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -22,15 +23,17 @@ namespace Belcorp.Encore.Application
 
         public ReportAccountService
         (
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
-        public PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter)
+        public PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string  country)
         {
-            var accountRoot = encoreMongo_Context.AccountsInformationProvider.Find(a => a.AccountID == filter.AccountId && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
+            var accountRoot = accountInformationCollection.Find(a => a.AccountID == filter.AccountId && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
             if (accountRoot == null)
             {
                 return null;
@@ -82,7 +85,7 @@ namespace Belcorp.Encore.Application
 
             if (filter.SponsorNumberSearch.HasValue && filter.SponsorNumberSearch > 0)
             {
-                var accountSponsor = encoreMongo_Context.AccountsInformationProvider.Find(a =>
+                var accountSponsor = accountInformationCollection.Find(a =>
                                             a.AccountID == filter.SponsorNumberSearch &&
                                             a.PeriodID == filter.PeriodId, null
                                             ).FirstOrDefault();
@@ -106,7 +109,7 @@ namespace Belcorp.Encore.Application
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.JoinDate, filter.JoinDateTo);
             }
 
-            var totalItems = (int)encoreMongo_Context.AccountsInformationProvider.Find(filterDefinition).Count();
+            var totalItems = (int)accountInformationCollection.Find(filterDefinition).Count();
 
             var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.LEVEL);
             if (!String.IsNullOrEmpty(filter.OrderBy))
@@ -150,7 +153,7 @@ namespace Belcorp.Encore.Application
                                                               .Include("Sponsor")
                                                               .Exclude("_id");
 
-            var result = encoreMongo_Context.AccountsInformationProvider
+            var result = accountInformationCollection
                 .Aggregate()
                 .Match(filterDefinition)
                 .Sort(orderDefinition)
@@ -166,14 +169,17 @@ namespace Belcorp.Encore.Application
             return new PagedList<AccountsInformation_MongoWithAccountAndSponsor>(result, totalItems, filter.PageNumber, filter.PageSize);
         }
 
-        public async Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods()
+        public async Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods(string country)
         {
             var date = DateTime.Now;
-            var periodCurrent = await encoreMongo_Context.PeriodsProvider.Find(p => date >= p.StartDateUTC && date <= p.EndDateUTC && p.PlanID == 1).FirstOrDefaultAsync();
+            IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
+
+
+            var periodCurrent = await periodsCollection.Find(p => date >= p.StartDateUTC && date <= p.EndDateUTC && p.PlanID == 1).FirstOrDefaultAsync();
 
             if (periodCurrent != null)
             {
-                var periods = await encoreMongo_Context.PeriodsProvider.Find(p => p.PlanID == 1 && p.PeriodID <= periodCurrent.PeriodID)
+                var periods = await periodsCollection.Find(p => p.PlanID == 1 && p.PeriodID <= periodCurrent.PeriodID)
                                                                        .Limit(12)
                                                                        .SortByDescending(o => o.PeriodID)
                                                                        .ToListAsync();
