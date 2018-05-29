@@ -55,16 +55,18 @@ namespace Belcorp.Encore.Api
             .AddDbContext<EncoreCore_Context>(opt => opt.UseSqlServer(Configuration.GetConnectionString("Encore_Core")))
             .AddUnitOfWork<EncoreCommissions_Context, EncoreCore_Context>();
 
+            #region Mongo
             services.Configure<Settings>(options =>
             {
                 options.ConnectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
                 options.Database = Configuration.GetSection("Encore_Mongo:Database").Value;
             });
+            #endregion
 
             services.RegisterServices();
 
             #region HangFire_Jobs
-            JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:ConnectionString").Value, Configuration.GetSection("Encore_Mongo:Database").Value);
+            JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:ConnectionString").Value, Configuration.GetSection("Encore_Mongo:Database_HangFire").Value);
             var provider = services.BuildServiceProvider();
             IMigrateService migrateService = provider.GetService<IMigrateService>();
             IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();
