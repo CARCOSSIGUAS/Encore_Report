@@ -53,7 +53,7 @@ namespace Belcorp.Encore.Services.Report
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
 			app.UseCors(builder =>
-						builder.WithOrigins("http://localhost:3000", "http://10.12.9.41", "http://10.12.9.83:3392", "http://relatoriosqas.lbel.com.br")
+						builder.WithOrigins("http://localhost:3000", "http://10.12.9.41", "http://10.12.9.83:3392", "http://relatoriosqas.lbel.com.br", "http://relatorios.lbel.com.br")
                         .AllowAnyHeader());
 
 			if (env.IsDevelopment())
