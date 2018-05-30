@@ -23,7 +23,7 @@ namespace Belcorp.Encore.Data.Contexts
         public IMongoCollection<AccountsInformation_Mongo> AccountsInformationProvider => Database.GetCollection<AccountsInformation_Mongo>("AccountsInformation");
         public IMongoCollection<Accounts_Mongo> AccountsProvider => Database.GetCollection<Accounts_Mongo>("Accounts");
         public IMongoCollection<Periods_Mongo> PeriodsProvider => Database.GetCollection<Periods_Mongo>("Periods");
-        public IMongoCollection<TermTranslations_Mongo> TermTranslationsProvider => Database.GetCollection<TermTranslations_Mongo>("TermTranslationsMongo");
+        public IMongoCollection<TermTranslations_Mongo> TermTranslationsProvider => Database.GetCollection<TermTranslations_Mongo>("TermTranslations");
         #endregion
     }
 }

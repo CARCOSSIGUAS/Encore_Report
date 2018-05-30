@@ -252,7 +252,7 @@ namespace Belcorp.Encore.Application.Services
         {
             IRepository<TermTranslationsMongo> termTranslationsRepository = unitOfWork_Core.GetRepository<TermTranslationsMongo>();
 
-            var termTranslations = termTranslationsRepository.GetFirstOrDefault(t => t.TermTranslationID == monitor.RowId, null, null, true);
+            var termTranslations = termTranslationsRepository.GetFirstOrDefault(t => t.TermTranslationID == monitor.RowId, null, t => t.Include(l => l.Languages), true);
             var termTranslations_Mongo = encoreMongo_Context.TermTranslationsProvider.Find(t => t.TermTranslationID == termTranslations.TermTranslationID).FirstOrDefault();
 
             TermTranslations_Mongo registro = new TermTranslations_Mongo()
