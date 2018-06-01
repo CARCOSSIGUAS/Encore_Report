@@ -36,8 +36,8 @@ namespace Belcorp.Encore.Application
                 return null;
             }
 
-            var listLevelIds = GetIdsFromString(filter.LevelIds).Select(s => int.Parse(s)).ToList();
-            var listGenerationIds = GetIdsFromString(filter.GenerationIds).Select(s => int.Parse(s)).ToList();
+            var listLevelIds = GetIdsFromString(filter.LevelIds).Select(s => int.Parse(s) + accountRoot.LEVEL).ToList();
+            var listGenerationIds = GetIdsFromString(filter.GenerationIds).Select(s => int.Parse(s) + accountRoot.Generation).ToList();
             var listTitleIds = GetIdsFromString(filter.TitleIds);
             var listAccountStatusIds = GetIdsFromString(filter.AccountStatusIds);
 
@@ -45,16 +45,27 @@ namespace Belcorp.Encore.Application
 
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
 
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountRoot.LeftBower);
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);
+            if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountRoot.LeftBower);
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);
+            }
+            else
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountRoot.AccountID);
+            }
 
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Where(ai =>
                                                                                         (ai.PQV >= filter.PQVFrom && ai.PQV <= filter.PQVTo) &&
-                                                                                        (ai.DQV >= filter.DQVFrom && ai.DQV <= filter.DQVTo) &&
+                                                                                        (ai.DQV >= filter.DQVFrom && ai.DQV <= filter.DQVTo)
 
-                                                                                        (listLevelIds.Contains((int)ai.LEVEL) || listLevelIds.Count == 0) &&
-                                                                                        (listGenerationIds.Contains((int)ai.Generation) || listGenerationIds.Count == 0)
                                                                                  );
+            if (listLevelIds.Count > 0)
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.LEVEL, listLevelIds);
+
+            if (listGenerationIds.Count > 0)
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.Generation, listGenerationIds);
+
             if (listAccountStatusIds.Count > 0)
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.Activity, listAccountStatusIds);
 
@@ -108,22 +119,23 @@ namespace Belcorp.Encore.Application
 
             var totalItems = (int)encoreMongo_Context.AccountsInformationProvider.Find(filterDefinition).Count();
 
-            var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.LEVEL);
+            var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ((int)ai.LEVEL)).Ascending(ai => ai.AccountName);
+
             if (!String.IsNullOrEmpty(filter.OrderBy))
             {
                 switch (filter.OrderBy)
                 {
                     case "1":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.CareerTitle);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.CareerTitle).Ascending(ai => ai.AccountName);
                         break;
                     case "2":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.PaidAsCurrentMonth);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.PaidAsCurrentMonth).Ascending(ai => ai.AccountName);
                         break;
                     case "3":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.PQV);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.PQV).Ascending(ai => ai.AccountName);
                         break;
                     case "4":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.JoinDate);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.JoinDate).Ascending(ai => ai.AccountName);
                         break;
                 };
             }
@@ -162,6 +174,12 @@ namespace Belcorp.Encore.Application
                 .Unwind("Sponsor")
                 .Project<AccountsInformation_MongoWithAccountAndSponsor>(projection)
                 .ToList();
+
+            result.ForEach(a =>
+            {
+                a.LEVEL = a.LEVEL - accountRoot.LEVEL;
+                a.Generation = a.Generation - accountRoot.Generation;
+            });
 
             return new PagedList<AccountsInformation_MongoWithAccountAndSponsor>(result, totalItems, filter.PageNumber, filter.PageSize);
         }
