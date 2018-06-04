@@ -13,6 +13,7 @@ using Belcorp.Encore.Entities.Entities.Commissions;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Microsoft.Extensions.Options;
 using Belcorp.Encore.Data;
+using Belcorp.Encore.Application.Services.Interfaces;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -22,7 +23,7 @@ namespace Belcorp.Encore.Application.Services
         private readonly IUnitOfWork<EncoreCommissions_Context> unitOfWork_Comm;
         private readonly EncoreMongo_Context encoreMongo_Context;
 
-
+        private readonly IMigrateService migrateService;
         private readonly IProcessOnlineRepository processOnlineRepository;
         private readonly IAccountKPIsRepository accountKPIsRepository;
         private readonly IAccountInformationRepository accountsInformationRepository;
@@ -34,8 +35,9 @@ namespace Belcorp.Encore.Application.Services
 
         public ProcessOnlineMlmService
         (
-            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
-            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, 
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core,
+            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
+            IMigrateService _migrateService,
             IProcessOnlineRepository _processOnlineRepository, 
             IAccountKPIsRepository _accountKPIsRepository, 
             IAccountInformationRepository _accountsInformationRepository,
@@ -493,92 +495,12 @@ namespace Belcorp.Encore.Application.Services
             var titles = titlesRepository.GetAll().ToList();
 
             var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
-            var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId);
+            var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId).ToList();
 
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
             var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses), true);
 
-            var result = from ai in accountsInformation
-                         join titlesInfo_Career in titles on Int32.Parse(ai.CareerTitle) equals titlesInfo_Career.TitleID
-                         join titlesInfo_Paid in titles on Int32.Parse(ai.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
-                         select new AccountsInformation_Mongo
-                         {
-                             AccountsInformationID = ai.AccountsInformationID,
-                             PeriodID = ai.PeriodID,
-                             AccountID = ai.AccountID,
-                             AccountNumber = ai.AccountNumber,
-                             AccountName = String.IsNullOrEmpty(ai.AccountName) ? "" : ai.AccountName.ToUpper(),
-                             SponsorID = ai.SponsorID,
-                             SponsorName = String.IsNullOrEmpty(ai.SponsorName) ? "" : ai.SponsorName.ToUpper(),
-                             Address = ai.Address,
-                             PostalCode = ai.PostalCode,
-                             City = ai.City,
-                             STATE = ai.STATE,
-                             Region = ai.Region,
-                             NewStatus = ai.NewStatus,
-                             TimeLimitToBeDemote = ai.TimeLimitToBeDemote,
-                             CareerTitle = ai.CareerTitle,
-                             PaidAsCurrentMonth = ai.PaidAsCurrentMonth,
-                             PaidAsLastMonth = ai.PaidAsLastMonth,
-                             VolumeForCareerTitle = ai.VolumeForCareerTitle,
-                             
-                             NineMonthsPQV = ai.NineMonthsPQV,
-                             PQV = ai.PQV,
-                             PCV = ai.PCV,
-                             GQV = ai.GQV,
-                             GCV = ai.GCV,
-                             DQVT = ai.DQVT,
-                             DCV = ai.DCV,
-                             DQV = ai.DQV,
-                             JoinDate = ai.JoinDate,
-                             Generation = ai.Generation,
-                             LEVEL = ai.LEVEL,
-                             SortPath = ai.SortPath,
-                             LeftBower = ai.LeftBower,
-                             RightBower = ai.RightBower,
-                             RequirementNewGeneration = ai.RequirementNewGeneration,
-                             TimeLimitForNewGeneration = ai.TimeLimitForNewGeneration,
-                             Title1Legs = ai.Title1Legs,
-                             Title2Legs = ai.Title2Legs,
-                             Title3Legs = ai.Title3Legs,
-                             Title4Legs = ai.Title4Legs,
-                             Title5Legs = ai.Title5Legs,
-                             Title6Legs = ai.Title6Legs,
-                             Title7Legs = ai.Title7Legs,
-                             Title8Legs = ai.Title8Legs,
-                             Title9Legs = ai.Title9Legs,
-                             Title10Legs = ai.Title10Legs,
-                             Title11Legs = ai.Title11Legs,
-                             Title12Legs = ai.Title12Legs,
-                             Title13Legs = ai.Title13Legs,
-                             Title14Legs = ai.Title14Legs,
-                             EmailAddress = ai.EmailAddress,
-                             CQL = ai.CQL,
-                             LastOrderDate = ai.LastOrderDate,
-                             IsCommissionQualified = ai.IsCommissionQualified,
-                             BirthdayUTC = ai.BirthdayUTC,
-                             UplineLeaderM3 = ai.UplineLeaderM3,
-                             UplineLeaderM3Name = ai.UplineLeaderM3Name,
-                             UplineLeaderL1 = ai.UplineLeaderL1,
-                             UplineLeaderL1Name = ai.UplineLeaderL1Name,
-                             TotalDownline = ai.TotalDownline,
-                             CreditAvailable = ai.CreditAvailable,
-                             DebtsToExpire = ai.DebtsToExpire,
-                             ExpiredDebts = ai.ExpiredDebts,
-                             GenerationM3 = ai.GenerationM3,
-                             ActiveDownline = ai.ActiveDownline,
-                             TitleMaintainance = ai.TitleMaintainance,
-                             SalesAverage = ai.SalesAverage,
-                             NewQualification = ai.NewQualification,
-                             NewEnrollments = ai.NewEnrollments,
-                             NineMonthsGQV = ai.NineMonthsGQV,
-                             NineMonthsDQV = ai.NineMonthsDQV,
-                             ConsultActive = ai.ConsultActive,
-
-                             CareerTitle_Des = titlesInfo_Career.ClientName,
-                             PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
-                             Activity = (Order.AccountID == ai.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : ai.Activity
-                         };
+            IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformation, activity);
             try
             {
                 if (childLog != null && childLog.EndTime == null)

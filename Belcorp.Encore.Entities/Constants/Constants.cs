@@ -86,5 +86,14 @@ namespace Belcorp.Encore.Entities.Constants
             Career = 1, 
             Paid = 2
         }
+
+        public enum AccountStatus : short
+        {
+            NotSet = 0,
+            Active = 1,
+            Terminated = 2,
+            BegunEnrollment = 3,
+            Imported = 4,
+        }
     }
 }

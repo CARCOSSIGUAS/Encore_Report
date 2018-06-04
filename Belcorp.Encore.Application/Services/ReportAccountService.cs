@@ -1,6 +1,7 @@
 using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
+using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Entities.Entities.Search;
@@ -43,7 +44,11 @@ namespace Belcorp.Encore.Application
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
+
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Ne(ai => ai.AccountName, "TempName TempName");
 
             if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
             {
@@ -140,39 +145,26 @@ namespace Belcorp.Encore.Application
                 };
             }
 
-            var projection = Builders<BsonDocument>.Projection.Include("AccountID")
-                                                              .Include("AccountNumber")
-                                                              .Include("AccountName")
-                                                              .Include("JoinDate")
-                                                              .Include("EmailAddress")
-                                                              .Include("Generation")
-                                                              .Include("LEVEL")
-                                                              .Include("Activity")
-                                                              .Include("PQV")
-                                                              .Include("PCV")
-                                                              .Include("DQVT")
-                                                              .Include("DQV")
-                                                              .Include("CareerTitle")
-                                                              .Include("CareerTitle_Des")
-                                                              .Include("PaidAsCurrentMonth")
-                                                              .Include("PaidAsCurrentMonth_Des")
-                                                              .Include("SponsorID")
-                                                              .Include("SponsorName")
-                                                              .Include("Account")
-                                                              .Include("Sponsor")
-                                                              .Exclude("_id");
-
             var result = encoreMongo_Context.AccountsInformationProvider
                 .Aggregate()
                 .Match(filterDefinition)
                 .Sort(orderDefinition)
                 .Skip(filter.PageSize * (filter.PageNumber - 1))
                 .Limit(filter.PageSize)
-                .Lookup("Accounts", "AccountID", "_id", "Account")
-                .Unwind("Account")
-                .Lookup("Accounts", "SponsorID", "_id", "Sponsor")
-                .Unwind("Sponsor")
-                .Project<AccountsInformation_MongoWithAccountAndSponsor>(projection)
+                .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                    encoreMongo_Context.AccountsProvider,
+                    ai => ai.AccountID,
+                    a => a.AccountID,
+                    r => r.Account
+                )
+                .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true } )
+                .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                    encoreMongo_Context.AccountsProvider,
+                    ai => ai.SponsorID,
+                    s => s.AccountID,
+                    r => r.Sponsor
+                )
+                .Unwind(a => a.Sponsor, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .ToList();
 
             result.ForEach(a =>
