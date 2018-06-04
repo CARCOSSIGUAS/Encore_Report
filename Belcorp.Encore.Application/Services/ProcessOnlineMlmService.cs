@@ -48,6 +48,7 @@ namespace Belcorp.Encore.Application.Services
             unitOfWork_Comm = _unitOfWork_Comm;
             encoreMongo_Context = new EncoreMongo_Context(settings);
 
+            migrateService = _migrateService;
             processOnlineRepository = _processOnlineRepository;
             accountKPIsRepository = _accountKPIsRepository;
             accountsInformationRepository = _accountsInformationRepository;
