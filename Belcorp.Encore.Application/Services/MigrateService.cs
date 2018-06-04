@@ -231,7 +231,7 @@ namespace Belcorp.Encore.Application.Services
 
         public void MigrateTermTranslations()
         {
-            IRepository<TermTranslationsMongo> termTranslationsRepository = unitOfWork_Comm.GetRepository<TermTranslationsMongo>();
+            IRepository<TermTranslationsMongo> termTranslationsRepository = unitOfWork_Core.GetRepository<TermTranslationsMongo>();
             encoreMongo_Context.TermTranslationsProvider.DeleteMany(new BsonDocument { });
 
             var total = termTranslationsRepository.GetPagedList(null, null, null, 0, 10000, true);
