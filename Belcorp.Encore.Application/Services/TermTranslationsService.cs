@@ -31,10 +31,13 @@ namespace Belcorp.Encore.Application.Services
             authenticationService = _authenticationService;
         }
 
-        public List<TermTranslations_Mongo> GetLanguageTerm(int LanguageID, string TermName)
+        public string GetLanguageTerm(string LanguageCode, string TermName)
         {
-            var result = encoreMongo_Context.TermTranslationsProvider.Find(a => a.LanguageID == LanguageID && a.TermName == TermName).ToList();
-            return result;
+            var result = encoreMongo_Context.TermTranslationsProvider.Find(a => a.LanguageCode == LanguageCode && a.TermName == TermName).FirstOrDefault();
+            var item="";
+            if (result == null)
+                item = result.Term;
+            return item;
         }
 
         public Dictionary<string, IDictionary<string, IDictionary<string, string>>> GetLanguage(int LanguageID)
@@ -46,8 +49,6 @@ namespace Belcorp.Encore.Application.Services
             var projection = Builders<term_DTo>.Projection.Include("TermName").Include("Term");
             var lng = encoreMongo_Context.TermTranslationsProvider.Find(filter)
                 .ToList();
-
-
             var languageType = lng.GroupBy(x=>x.LanguageCode).Select(x=>x.Key)
               .ToList();
 
@@ -59,7 +60,6 @@ namespace Belcorp.Encore.Application.Services
                 termTranslations_DTO.Add(item, new Dictionary<string, IDictionary<string, string>> { { "translations", result } });
             }  
             
-      
             return termTranslations_DTO;
         }
     }

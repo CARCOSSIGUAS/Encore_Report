@@ -10,6 +10,7 @@ namespace Belcorp.Encore.Application.Services.Interfaces
 {
     public interface ITermTranslationsService
     {
+        string GetLanguageTerm(string LanguageCode, string TermName);
         Dictionary<string, IDictionary<string, IDictionary<string, string>>> GetLanguage(int LanguageID);
     }
 }
