@@ -71,7 +71,8 @@ namespace Belcorp.Encore.Entities.Constants
             NotSet = 0,
             Accounts = 1,
             AccountsPhones = 2,
-            Periods = 3
+            Periods = 3,
+            TermTranslations = 4
         }
 
         public enum ResourceUriType

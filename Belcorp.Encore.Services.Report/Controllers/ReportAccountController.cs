@@ -1,5 +1,6 @@
 ﻿using Belcorp.Encore.Application.Extension;
 using Belcorp.Encore.Application.Services;
+using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Entities.Entities.Search;
 using Belcorp.Encore.Entities.Entities.Search.Paging;
 using Microsoft.AspNetCore.Mvc;
@@ -13,16 +14,19 @@ namespace Belcorp.Encore.Services.Report.Controllers
     public class ReportAccountController : Controller
     {
         private readonly IReportAccountService reportAccountService;
+        private readonly ITermTranslationsService termTranslationsService;
         private IUrlHelper urlHelper;
 
         public ReportAccountController
         (
             IReportAccountService _reportAccountService,
-            IUrlHelper _urlHelper
+            IUrlHelper _urlHelper,
+            ITermTranslationsService _termTranslationsService
         )
         {
             reportAccountService = _reportAccountService;
             urlHelper = _urlHelper;
+            termTranslationsService = _termTranslationsService;
         }
 
         [HttpGet("sponsoreds", Name = "GetReportAccountsSponsoreds")]
@@ -64,7 +68,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("exportexcel")]
-        public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter)
+        public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter, int LanguageID)
         {
             try
             {
@@ -82,11 +86,42 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 {
                     ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Accounts");
                     int totalRows = result.TotalItems;
-
-                    var excel = result.List.ToReportAccount_DTO();
-
-                    worksheet.Cells["A1"].LoadFromCollection(excel, PrintHeaders: true);
-
+                    
+                    var excel = result.List.ToExcel_DTO();
+                   
+                    worksheet.Cells["A1"].Value = termTranslationsService.GetLanguageTerm("en", "AccountID");
+                    worksheet.Cells["B1"].Value = termTranslationsService.GetLanguageTerm("en", "AccountNumber");
+                    worksheet.Cells["C1"].Value = termTranslationsService.GetLanguageTerm("en", "AccountName");
+                    worksheet.Cells["D1"].Value = termTranslationsService.GetLanguageTerm("en", "JoinDateToString");
+                    worksheet.Cells["E1"].Value = termTranslationsService.GetLanguageTerm("en", "EmailAddress");
+                    worksheet.Cells["F1"].Value = termTranslationsService.GetLanguageTerm("en", "Generation");
+                    worksheet.Cells["G1"].Value = termTranslationsService.GetLanguageTerm("en", "LEVEL");
+                    worksheet.Cells["H1"].Value = termTranslationsService.GetLanguageTerm("en", "Activity");
+                    worksheet.Cells["I1"].Value = termTranslationsService.GetLanguageTerm("en", "PQV");
+                    worksheet.Cells["J1"].Value = termTranslationsService.GetLanguageTerm("en", "PCV");
+                    worksheet.Cells["K1"].Value = termTranslationsService.GetLanguageTerm("en", "DQV");
+                    worksheet.Cells["L1"].Value = termTranslationsService.GetLanguageTerm("en", "DQVT");
+                    worksheet.Cells["M1"].Value = termTranslationsService.GetLanguageTerm("en", "CareerTitle");
+                    worksheet.Cells["N1"].Value = termTranslationsService.GetLanguageTerm("en", "PaidAsCurrentMonth");
+                    worksheet.Cells["O1"].Value = termTranslationsService.GetLanguageTerm("en", "MainAddress");
+                    worksheet.Cells["P1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 1));
+                    worksheet.Cells["Q1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 2));
+                    worksheet.Cells["R1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 3));
+                    worksheet.Cells["S1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 4));
+                    worksheet.Cells["T1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 5));
+                    worksheet.Cells["U1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 6));
+                    worksheet.Cells["V1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 7));
+                    worksheet.Cells["W1"].Value = termTranslationsService.GetLanguageTerm("en", "SponsorID");
+                    worksheet.Cells["X1"].Value = termTranslationsService.GetLanguageTerm("en", "SponsorName"); 
+                    worksheet.Cells["Y1"].Value = termTranslationsService.GetLanguageTerm("en", "SponsorEmailAddress");
+                    worksheet.Cells["Z1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 1));
+                    worksheet.Cells["AA1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 2));
+                    worksheet.Cells["AB1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 3));
+                    worksheet.Cells["AC1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 4));
+                    worksheet.Cells["AD1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 5));
+                    worksheet.Cells["AE1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 6));
+                    worksheet.Cells["AF1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 7));
+                    worksheet.Cells["A2"].LoadFromCollection(excel, PrintHeaders: true);
                     int noOfProperties = excel.GetType().GetGenericArguments()[0].GetProperties().Length;
 
                     using (ExcelRange r = worksheet.Cells[1, 1, 1, noOfProperties])
