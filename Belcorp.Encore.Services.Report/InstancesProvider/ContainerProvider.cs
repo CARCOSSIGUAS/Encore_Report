@@ -46,6 +46,8 @@ namespace Belcorp.Encore.Services.Report.InstancesProvider
             services.AddScoped<IHomeService, HomeService>();
             services.AddScoped<IReportAccountService, ReportAccountService>();
             services.AddScoped<IReportPerformanceService, ReportPerformanceService>();
+            
+            services.AddScoped<ITermTranslationsService, TermTranslationsService>();
         }
 
 	}

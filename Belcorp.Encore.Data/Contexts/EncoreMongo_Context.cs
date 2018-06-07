@@ -11,12 +11,10 @@ namespace Belcorp.Encore.Data.Contexts
 
         public EncoreMongo_Context(IConfiguration configuration)
         {
-            //var client = new MongoClient(settings.Value.ConnectionString);
-            //if (client != null)
-            //    Database = client.GetDatabase(settings.Value.Database);
             this._configuration = configuration;
         }
-
+      
+        #region Collections
         public IMongoCollection<AccountsInformation_Mongo> AccountsInformationProvider(string pais)
         {
 
@@ -85,14 +83,30 @@ namespace Belcorp.Encore.Data.Contexts
             }
 
         }
+      
+        public IMongoCollection<TermTranslations_Mongo> TermTranslationsProvider(string pais)
+        {
 
+            string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + pais);
+            string database = _configuration.GetValue<string>("Encore_Mongo:Database" + pais);
 
+            var client = new MongoClient(connectionString);
 
+            IMongoDatabase _database;
 
-        #region Collections
-        //public IMongoCollection<AccountsInformation_Mongo> AccountsInformationProvider => Database.GetCollection<AccountsInformation_Mongo>("AccountsInformation");
-        //public IMongoCollection<Accounts_Mongo> AccountsProvider => Database.GetCollection<Accounts_Mongo>("Accounts");
-        //public IMongoCollection<Periods_Mongo> PeriodsProvider => Database.GetCollection<Periods_Mongo>("Periods");
+            if (client != null)
+            {
+                _database = client.GetDatabase(database);
+
+                return _database.GetCollection<TermTranslationsProvider>("TermTranslations");
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+      
         #endregion
     }
 }

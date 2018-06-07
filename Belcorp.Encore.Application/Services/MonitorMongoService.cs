@@ -62,6 +62,9 @@ namespace Belcorp.Encore.Application.Services
                         case (int)Constants.MonitorTables.Periods:
                             Migrate_PeriodsbyId(item, country);
                             break;
+                        case (int)Constants.MonitorTables.TermTranslations:
+                            Migrate_TermTranslationsbyId(item);
+                            break;
                         default:
                             break;
                     }
@@ -246,6 +249,47 @@ namespace Belcorp.Encore.Application.Services
                 .Set(p => p.LockDate, period.LockDate);
 
                 periodsCollection.UpdateOne(p => p.PeriodID == period.PeriodID, updatesAttributes);
+            }
+
+        }
+        #endregion
+
+        #region TermTranslations
+        private void Migrate_TermTranslationsbyId(Monitor monitor)
+        {
+            IRepository<TermTranslationsMongo> termTranslationsRepository = unitOfWork_Core.GetRepository<TermTranslationsMongo>();
+
+            var termTranslations = termTranslationsRepository.GetFirstOrDefault(t => t.TermTranslationID == monitor.RowId, null, t => t.Include(l => l.Languages), true);
+            var termTranslations_Mongo = encoreMongo_Context.TermTranslationsProvider.Find(t => t.TermTranslationID == termTranslations.TermTranslationID).FirstOrDefault();
+
+            TermTranslations_Mongo registro = new TermTranslations_Mongo()
+            {
+                TermTranslationID = termTranslations.TermTranslationID,
+                LanguageID = termTranslations.LanguageID,
+                Active = termTranslations.Active,
+                LastUpdatedUTC = termTranslations.LastUpdatedUTC,
+                Term = termTranslations.Term,
+                TermName = termTranslations.TermName,
+                LanguageCode = termTranslations.Languages.LanguageCode.ToLower()
+            };
+
+            if (termTranslations == null)
+            {
+                encoreMongo_Context.TermTranslationsProvider.DeleteOne(t => t.TermTranslationID == monitor.RowId);
+            }
+            else if (termTranslations_Mongo == null)
+            {
+                encoreMongo_Context.TermTranslationsProvider.InsertOne(registro);
+            }
+            else
+            {
+                var updatesAttributes = Builders<TermTranslations_Mongo>.Update
+                .Set(t => t.Active, termTranslations.Active)
+                .Set(t => t.LastUpdatedUTC, termTranslations.LastUpdatedUTC)
+                .Set(t => t.Term, termTranslations.Term)
+                .Set(t => t.TermName, termTranslations.TermName);
+
+                encoreMongo_Context.TermTranslationsProvider.UpdateOne(t => t.TermTranslationID == termTranslations.TermTranslationID, updatesAttributes);
             }
 
         }

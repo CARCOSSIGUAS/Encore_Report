@@ -71,7 +71,8 @@ namespace Belcorp.Encore.Entities.Constants
             NotSet = 0,
             Accounts = 1,
             AccountsPhones = 2,
-            Periods = 3
+            Periods = 3,
+            TermTranslations = 4
         }
 
         public enum ResourceUriType
@@ -85,6 +86,22 @@ namespace Belcorp.Encore.Entities.Constants
             NotSet = 0,
             Career = 1, 
             Paid = 2
+        }
+
+        public enum AccountStatus : short
+        {
+            NotSet = 0,
+            Active = 1,
+            Terminated = 2,
+            BegunEnrollment = 3,
+            Imported = 4,
+        }
+
+        public enum Countries : int
+        {
+            NotSet = 0,
+            USA = 1,
+            BRA = 73
         }
     }
 }
