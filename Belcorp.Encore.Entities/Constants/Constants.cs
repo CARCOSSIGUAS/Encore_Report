@@ -95,5 +95,12 @@ namespace Belcorp.Encore.Entities.Constants
             BegunEnrollment = 3,
             Imported = 4,
         }
+
+        public enum Countries : int
+        {
+            NotSet = 0,
+            USA = 1,
+            BRA = 73
+        }
     }
 }

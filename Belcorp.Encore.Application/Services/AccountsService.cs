@@ -10,6 +10,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Belcorp.Encore.Application.Services
@@ -43,13 +44,21 @@ namespace Belcorp.Encore.Application.Services
                 var ssoModel = new SingleSignOnModel_DTO();
                 ssoModel.EncodedText = token;
                 authenticationService.Decode(ssoModel);
-
+                List<string> data = ssoModel.DecodedText.Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
                 int n;
-                bool isNumeric = int.TryParse(ssoModel.DecodedText, out n);
+                bool isNumeric = int.TryParse(data[0], out n);
 
                 int accountID = isNumeric == true && (expiration == null || ssoModel.TimeStamp.Add(expiration.Value) >= DateTime.Now) ? n : 0;
+                int countryID = 0;
+                if (data.Count > 1)
+                {
+                    isNumeric = int.TryParse(data[0], out n);
+                    countryID = n;
+                }
 
                 var result = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountID).FirstOrDefaultAsync();
+                result.CountryID = countryID;
+
                 return result;
             }
             catch (Exception ex)
