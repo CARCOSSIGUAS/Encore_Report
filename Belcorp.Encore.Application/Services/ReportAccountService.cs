@@ -33,6 +33,7 @@ namespace Belcorp.Encore.Application
         public PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string  country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
 
             var accountRoot = accountInformationCollection.Find(a => a.AccountID == filter.AccountId && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
             if (accountRoot == null)
@@ -156,14 +157,14 @@ namespace Belcorp.Encore.Application
                 .Skip(filter.PageSize * (filter.PageNumber - 1))
                 .Limit(filter.PageSize)
                 .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
-                    encoreMongo_Context.AccountsProvider,
+                    accountsCollection,
                     ai => ai.AccountID,
                     a => a.AccountID,
                     r => r.Account
                 )
                 .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true } )
                 .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
-                    encoreMongo_Context.AccountsProvider,
+                    accountsCollection,
                     ai => ai.SponsorID,
                     s => s.AccountID,
                     r => r.Sponsor

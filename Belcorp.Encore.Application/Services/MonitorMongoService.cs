@@ -57,13 +57,13 @@ namespace Belcorp.Encore.Application.Services
                     switch (item.TableIdPrincipal)
                     {
                         case (int)Constants.MonitorTables.Accounts:
-                            Migrate_AccountsById(item, country);
+                            MigrateAccountsById(item, country);
                             break;
                         case (int)Constants.MonitorTables.Periods:
-                            Migrate_PeriodsbyId(item, country);
+                            MigratePeriodsbyId(item, country);
                             break;
                         case (int)Constants.MonitorTables.TermTranslations:
-                            Migrate_TermTranslationsbyId(item);
+                            MigrateTermTranslationsbyId(item, country);
                             break;
                         default:
                             break;
@@ -77,7 +77,7 @@ namespace Belcorp.Encore.Application.Services
         }
 
         #region Accounts
-        public void Migrate_AccountsById(Monitor monitor, string country)
+        public void MigrateAccountsById(Monitor monitor, string country)
         {
             IRepository<Entities.Entities.Core.Accounts> accountsRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
 
@@ -143,7 +143,7 @@ namespace Belcorp.Encore.Application.Services
                     {
                         if (detail.TableIdSecundary == (int)Constants.MonitorTables.AccountsPhones)
                         {
-                            Migrate_Phones(account, detail, country);
+                            MigratePhones(account, detail, country);
                         }
 
                         detail.Process = true;
@@ -153,7 +153,7 @@ namespace Belcorp.Encore.Application.Services
             }
         }
 
-        private void Migrate_Phones(Entities.Entities.Core.Accounts account, MonitorDetails detail, string country)
+        private void MigratePhones(Entities.Entities.Core.Accounts account, MonitorDetails detail, string country)
         {
             IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
 
@@ -199,7 +199,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Periods
-        private void Migrate_PeriodsbyId(Monitor monitor, string country)
+        private void MigratePeriodsbyId(Monitor monitor, string country)
         {
             IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
 
@@ -255,12 +255,13 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region TermTranslations
-        private void Migrate_TermTranslationsbyId(Monitor monitor)
+        private void MigrateTermTranslationsbyId(Monitor monitor, string country)
         {
             IRepository<TermTranslationsMongo> termTranslationsRepository = unitOfWork_Core.GetRepository<TermTranslationsMongo>();
+            IMongoCollection<TermTranslations_Mongo> termTranslationsCollection = encoreMongo_Context.TermTranslationsProvider(country);
 
             var termTranslations = termTranslationsRepository.GetFirstOrDefault(t => t.TermTranslationID == monitor.RowId, null, t => t.Include(l => l.Languages), true);
-            var termTranslations_Mongo = encoreMongo_Context.TermTranslationsProvider.Find(t => t.TermTranslationID == termTranslations.TermTranslationID).FirstOrDefault();
+            var termTranslations_Mongo = termTranslationsCollection.Find(t => t.TermTranslationID == termTranslations.TermTranslationID).FirstOrDefault();
 
             TermTranslations_Mongo registro = new TermTranslations_Mongo()
             {
@@ -275,11 +276,11 @@ namespace Belcorp.Encore.Application.Services
 
             if (termTranslations == null)
             {
-                encoreMongo_Context.TermTranslationsProvider.DeleteOne(t => t.TermTranslationID == monitor.RowId);
+                termTranslationsCollection.DeleteOne(t => t.TermTranslationID == monitor.RowId);
             }
             else if (termTranslations_Mongo == null)
             {
-                encoreMongo_Context.TermTranslationsProvider.InsertOne(registro);
+                termTranslationsCollection.InsertOne(registro);
             }
             else
             {
@@ -289,7 +290,7 @@ namespace Belcorp.Encore.Application.Services
                 .Set(t => t.Term, termTranslations.Term)
                 .Set(t => t.TermName, termTranslations.TermName);
 
-                encoreMongo_Context.TermTranslationsProvider.UpdateOne(t => t.TermTranslationID == termTranslations.TermTranslationID, updatesAttributes);
+                termTranslationsCollection.UpdateOne(t => t.TermTranslationID == termTranslations.TermTranslationID, updatesAttributes);
             }
 
         }

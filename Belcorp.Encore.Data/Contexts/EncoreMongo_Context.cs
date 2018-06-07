@@ -98,7 +98,7 @@ namespace Belcorp.Encore.Data.Contexts
             {
                 _database = client.GetDatabase(database);
 
-                return _database.GetCollection<TermTranslationsProvider>("TermTranslations");
+                return _database.GetCollection<TermTranslations_Mongo>("TermTranslations");
             }
             else
             {

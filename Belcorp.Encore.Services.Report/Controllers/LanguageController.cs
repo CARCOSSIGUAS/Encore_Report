@@ -21,9 +21,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("{LanguageId}", Name = "GetLanguage")]
-        public IActionResult GetLanguage(int LanguageId)
+        public IActionResult GetLanguage(int languageID, string country)
         {
-            var result = TermTranslationsService.GetLanguage(LanguageId);
+            var result = TermTranslationsService.GetLanguage(languageID, country);
             if (result == null)
             {
                 return NotFound();

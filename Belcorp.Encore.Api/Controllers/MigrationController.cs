@@ -58,9 +58,9 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("termtranslations")]
         [AutomaticRetry(Attempts = 0)]
-        public ActionResult TermTranslations()
+        public ActionResult TermTranslations(string country)
         {
-            BackgroundJob.Enqueue(() => migrateService.MigrateTermTranslations());
+            BackgroundJob.Enqueue(() => migrateService.MigrateTermTranslations(country));
             return Json(new { Status = "Processing Background" });
         }
     }

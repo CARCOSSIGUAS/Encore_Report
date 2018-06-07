@@ -243,7 +243,9 @@ namespace Belcorp.Encore.Application.Services
         public void MigrateTermTranslations(string country)
         {
             IRepository<TermTranslationsMongo> termTranslationsRepository = unitOfWork_Core.GetRepository<TermTranslationsMongo>();
-            encoreMongo_Context.TermTranslationsProvider.DeleteMany(new BsonDocument { });
+
+            IMongoCollection<TermTranslations_Mongo> termTranslationsCollection = encoreMongo_Context.TermTranslationsProvider(country);
+            termTranslationsCollection.DeleteMany(new BsonDocument { });
 
             var total = termTranslationsRepository.GetPagedList(null, null, null, 0, 10000, true);
             int ii = total.TotalPages;
@@ -269,7 +271,7 @@ namespace Belcorp.Encore.Application.Services
                     termTranslations_Mongo.Add(registro);
                 }
 
-                encoreMongo_Context.TermTranslationsProvider.InsertMany(termTranslations_Mongo);
+                termTranslationsCollection.InsertMany(termTranslations_Mongo);
             }
         }
     }

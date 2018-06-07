@@ -68,7 +68,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("exportexcel")]
-        public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter, int LanguageID, string country)
+        public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter, int languageID, string country)
         {
             try
             {
@@ -89,38 +89,38 @@ namespace Belcorp.Encore.Services.Report.Controllers
                     
                     var excel = result.List.ToExcel_DTO();
                    
-                    worksheet.Cells["A1"].Value = termTranslationsService.GetLanguageTerm("en", "AccountID");
-                    worksheet.Cells["B1"].Value = termTranslationsService.GetLanguageTerm("en", "AccountNumber");
-                    worksheet.Cells["C1"].Value = termTranslationsService.GetLanguageTerm("en", "AccountName");
-                    worksheet.Cells["D1"].Value = termTranslationsService.GetLanguageTerm("en", "JoinDateToString");
-                    worksheet.Cells["E1"].Value = termTranslationsService.GetLanguageTerm("en", "EmailAddress");
-                    worksheet.Cells["F1"].Value = termTranslationsService.GetLanguageTerm("en", "Generation");
-                    worksheet.Cells["G1"].Value = termTranslationsService.GetLanguageTerm("en", "LEVEL");
-                    worksheet.Cells["H1"].Value = termTranslationsService.GetLanguageTerm("en", "Activity");
-                    worksheet.Cells["I1"].Value = termTranslationsService.GetLanguageTerm("en", "PQV");
-                    worksheet.Cells["J1"].Value = termTranslationsService.GetLanguageTerm("en", "PCV");
-                    worksheet.Cells["K1"].Value = termTranslationsService.GetLanguageTerm("en", "DQV");
-                    worksheet.Cells["L1"].Value = termTranslationsService.GetLanguageTerm("en", "DQVT");
-                    worksheet.Cells["M1"].Value = termTranslationsService.GetLanguageTerm("en", "CareerTitle");
-                    worksheet.Cells["N1"].Value = termTranslationsService.GetLanguageTerm("en", "PaidAsCurrentMonth");
-                    worksheet.Cells["O1"].Value = termTranslationsService.GetLanguageTerm("en", "MainAddress");
-                    worksheet.Cells["P1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 1));
-                    worksheet.Cells["Q1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 2));
-                    worksheet.Cells["R1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 3));
-                    worksheet.Cells["S1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 4));
-                    worksheet.Cells["T1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 5));
-                    worksheet.Cells["U1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 6));
-                    worksheet.Cells["V1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 7));
-                    worksheet.Cells["W1"].Value = termTranslationsService.GetLanguageTerm("en", "SponsorID");
-                    worksheet.Cells["X1"].Value = termTranslationsService.GetLanguageTerm("en", "SponsorName"); 
-                    worksheet.Cells["Y1"].Value = termTranslationsService.GetLanguageTerm("en", "SponsorEmailAddress");
-                    worksheet.Cells["Z1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 1));
-                    worksheet.Cells["AA1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 2));
-                    worksheet.Cells["AB1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 3));
-                    worksheet.Cells["AC1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 4));
-                    worksheet.Cells["AD1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 5));
-                    worksheet.Cells["AE1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 6));
-                    worksheet.Cells["AF1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 7));
+                    worksheet.Cells["A1"].Value = termTranslationsService.GetLanguageTerm("en", "AccountID", country);
+                    worksheet.Cells["B1"].Value = termTranslationsService.GetLanguageTerm("en", "AccountNumber", country);
+                    worksheet.Cells["C1"].Value = termTranslationsService.GetLanguageTerm("en", "AccountName", country);
+                    worksheet.Cells["D1"].Value = termTranslationsService.GetLanguageTerm("en", "JoinDateToString", country);
+                    worksheet.Cells["E1"].Value = termTranslationsService.GetLanguageTerm("en", "EmailAddress", country);
+                    worksheet.Cells["F1"].Value = termTranslationsService.GetLanguageTerm("en", "Generation", country);
+                    worksheet.Cells["G1"].Value = termTranslationsService.GetLanguageTerm("en", "LEVEL", country);
+                    worksheet.Cells["H1"].Value = termTranslationsService.GetLanguageTerm("en", "Activity", country);
+                    worksheet.Cells["I1"].Value = termTranslationsService.GetLanguageTerm("en", "PQV", country);
+                    worksheet.Cells["J1"].Value = termTranslationsService.GetLanguageTerm("en", "PCV", country);
+                    worksheet.Cells["K1"].Value = termTranslationsService.GetLanguageTerm("en", "DQV", country);
+                    worksheet.Cells["L1"].Value = termTranslationsService.GetLanguageTerm("en", "DQVT", country);
+                    worksheet.Cells["M1"].Value = termTranslationsService.GetLanguageTerm("en", "CareerTitle", country);
+                    worksheet.Cells["N1"].Value = termTranslationsService.GetLanguageTerm("en", "PaidAsCurrentMonth", country);
+                    worksheet.Cells["O1"].Value = termTranslationsService.GetLanguageTerm("en", "MainAddress", country);
+                    worksheet.Cells["P1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 1), country);
+                    worksheet.Cells["Q1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 2), country);
+                    worksheet.Cells["R1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 3), country);
+                    worksheet.Cells["S1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 4), country);
+                    worksheet.Cells["T1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 5), country);
+                    worksheet.Cells["U1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 6), country);
+                    worksheet.Cells["V1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("AccountPhone_{0}", 7), country);
+                    worksheet.Cells["W1"].Value = termTranslationsService.GetLanguageTerm("en", "SponsorID", country);
+                    worksheet.Cells["X1"].Value = termTranslationsService.GetLanguageTerm("en", "SponsorName", country); 
+                    worksheet.Cells["Y1"].Value = termTranslationsService.GetLanguageTerm("en", "SponsorEmailAddress", country);
+                    worksheet.Cells["Z1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 1), country);
+                    worksheet.Cells["AA1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 2), country);
+                    worksheet.Cells["AB1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 3), country);
+                    worksheet.Cells["AC1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 4), country);
+                    worksheet.Cells["AD1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 5), country);
+                    worksheet.Cells["AE1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 6), country);
+                    worksheet.Cells["AF1"].Value = termTranslationsService.GetLanguageTerm("en", string.Format("SponsorPhone_{0}", 7), country);
                     worksheet.Cells["A2"].LoadFromCollection(excel, PrintHeaders: true);
                     int noOfProperties = excel.GetType().GetGenericArguments()[0].GetProperties().Length;
 
