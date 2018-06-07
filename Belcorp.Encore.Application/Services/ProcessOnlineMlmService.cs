@@ -13,6 +13,7 @@ using Belcorp.Encore.Entities.Entities.Commissions;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Microsoft.Extensions.Options;
 using Belcorp.Encore.Data;
+using Belcorp.Encore.Application.Services.Interfaces;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -22,7 +23,7 @@ namespace Belcorp.Encore.Application.Services
         private readonly IUnitOfWork<EncoreCommissions_Context> unitOfWork_Comm;
         private readonly EncoreMongo_Context encoreMongo_Context;
 
-
+        private readonly IMigrateService migrateService;
         private readonly IProcessOnlineRepository processOnlineRepository;
         private readonly IAccountKPIsRepository accountKPIsRepository;
         private readonly IAccountInformationRepository accountsInformationRepository;
@@ -34,8 +35,9 @@ namespace Belcorp.Encore.Application.Services
 
         public ProcessOnlineMlmService
         (
-            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
-            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, 
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core,
+            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
+            IMigrateService _migrateService,
             IProcessOnlineRepository _processOnlineRepository, 
             IAccountKPIsRepository _accountKPIsRepository, 
             IAccountInformationRepository _accountsInformationRepository,
@@ -46,6 +48,7 @@ namespace Belcorp.Encore.Application.Services
             unitOfWork_Comm = _unitOfWork_Comm;
             encoreMongo_Context = new EncoreMongo_Context(settings);
 
+            migrateService = _migrateService;
             processOnlineRepository = _processOnlineRepository;
             accountKPIsRepository = _accountKPIsRepository;
             accountsInformationRepository = _accountsInformationRepository;
@@ -493,47 +496,12 @@ namespace Belcorp.Encore.Application.Services
             var titles = titlesRepository.GetAll().ToList();
 
             var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
-            var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId);
+            var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId).ToList();
 
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
             var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses), true);
 
-            var result = from ai in accountsInformation
-                         join titlesInfo_Career in titles on Int32.Parse(ai.CareerTitle) equals titlesInfo_Career.TitleID
-                         join titlesInfo_Paid in titles on Int32.Parse(ai.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
-                         select new AccountsInformation_Mongo
-                         {
-                             AccountsInformationID = ai.AccountsInformationID,
-
-                             PeriodID = ai.PeriodID,
-                             AccountID = ai.AccountID,
-
-                             AccountNumber = ai.AccountNumber,
-                             AccountName = ai.AccountName,
-                             SponsorID = ai.SponsorID,
-                             SponsorName = ai.SponsorName,
-                             Address = ai.Address,
-                             PostalCode = ai.PostalCode,
-                             City = ai.City,
-                             STATE = ai.STATE,
-
-                             PQV = ai.PQV,
-                             DQV = ai.DQV,
-                             DQVT = ai.DQVT,
-
-                             CareerTitle = ai.CareerTitle,
-                             PaidAsCurrentMonth = ai.PaidAsCurrentMonth,
-                             CareerTitle_Des = titlesInfo_Career.ClientName,
-                             PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
-
-                             JoinDate = ai.JoinDate,
-                             Generation = ai.Generation,
-                             LEVEL = ai.LEVEL,
-                             SortPath = ai.SortPath,
-                             LeftBower = ai.LeftBower,
-                             RightBower = ai.RightBower,
-                             Activity = (Order.AccountID == ai.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : ai.Activity
-                         };
+            IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformation, activity);
             try
             {
                 if (childLog != null && childLog.EndTime == null)
