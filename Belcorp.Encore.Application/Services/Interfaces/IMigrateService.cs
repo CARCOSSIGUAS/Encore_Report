@@ -9,10 +9,10 @@ namespace Belcorp.Encore.Application.Services.Interfaces
 {
     public interface IMigrateService
     {
-        void MigrateAccountInformationByPeriod(int? periodId);
-        void MigrateAccounts();
-        void MigratePeriods();
-        void MigrateTermTranslations();
+        void MigrateAccountInformationByPeriod(string country, int? periodId);
+        void MigrateAccounts(string country);
+        void MigratePeriods(string country);
+        void MigrateTermTranslations(string country);
 
         IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int? AccountID = null);
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Belcorp.Encore.Api.Filters;
 using Belcorp.Encore.Application.Interfaces;
 using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Application.Services.Interfaces;
@@ -30,25 +31,28 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("accountsInformation/{periodId}")]
         [AutomaticRetry(Attempts = 0)]
-        public ActionResult AccountsInformation(int periodId)
+        [ServiceFilter(typeof(FilterActionProxy))]
+        public ActionResult AccountsInformation(int periodId, string country = null)
         {
-            BackgroundJob.Enqueue(() => migrateService.MigrateAccountInformationByPeriod(periodId));
+            BackgroundJob.Enqueue(() => migrateService.MigrateAccountInformationByPeriod(country, periodId));
             return Json(new { Status = "Processing Background" } );
         }
 
         [HttpGet("accounts")]
         [AutomaticRetry(Attempts = 0)]
-        public ActionResult Accounts()
+        [ServiceFilter(typeof(FilterActionProxy))]
+        public ActionResult Accounts(string country)
         {
-            BackgroundJob.Enqueue(() => migrateService.MigrateAccounts());
+            BackgroundJob.Enqueue(() => migrateService.MigrateAccounts(country));
             return Json(new { Status = "Processing Background" });
         }
 
         [HttpGet("periods")]
         [AutomaticRetry(Attempts = 0)]
-        public ActionResult Periods()
+        [ServiceFilter(typeof(FilterActionProxy))]
+        public ActionResult Periods(string country)
         {
-            BackgroundJob.Enqueue(() => migrateService.MigratePeriods());
+            BackgroundJob.Enqueue(() => migrateService.MigratePeriods(country));
             return Json(new { Status = "Processing Background" });
         }
 

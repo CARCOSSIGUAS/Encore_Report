@@ -13,6 +13,7 @@ using Belcorp.Encore.Entities.Entities.Commissions;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Microsoft.Extensions.Options;
 using Belcorp.Encore.Data;
+using Microsoft.Extensions.Configuration;
 using Belcorp.Encore.Application.Services.Interfaces;
 
 namespace Belcorp.Encore.Application.Services
@@ -41,12 +42,12 @@ namespace Belcorp.Encore.Application.Services
             IProcessOnlineRepository _processOnlineRepository, 
             IAccountKPIsRepository _accountKPIsRepository, 
             IAccountInformationRepository _accountsInformationRepository,
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
             unitOfWork_Core = _unitOfWork_Core;
             unitOfWork_Comm = _unitOfWork_Comm;
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
 
             migrateService = _migrateService;
             processOnlineRepository = _processOnlineRepository;
@@ -55,7 +56,7 @@ namespace Belcorp.Encore.Application.Services
             CalculationTypes = GetCalculationTypesByCode();
         }
 
-        public void ProcessMLMOrder(int _orderId)
+        public void ProcessMLMOrder(int _orderId, string country)
         {
             IRepository<Orders> ordersRepository = unitOfWork_Core.GetRepository<Orders>();
             Order = ordersRepository.GetFirstOrDefault(o => o.OrderID == _orderId, null, null, true);
@@ -98,13 +99,13 @@ namespace Belcorp.Encore.Application.Services
                 Indicadores_InDivision(QV, CV, RV, parentLog);
                 Indicadores_InTableReports(QV, CV, RV, parentLog);
                 Indicadores_InOrderCalculationsOnline(QV, CV, RV, parentLog);
-                Migrate_AccountInformationByAccountId(parentLog);
+                Migrate_AccountInformationByAccountId(parentLog, country);
 
                 PersonalIndicatorLog_Update(parentLog);
             }
         }
 
-        public void ProcessMLMLote(int loteId)
+        public void ProcessMLMLote(int loteId, string country)
         {
             IRepository<MonitorLotes> monitorLotesRepository = unitOfWork_Core.GetRepository<MonitorLotes>();
             IRepository<MonitorOrders> monitorOrdersRepository = unitOfWork_Core.GetRepository<MonitorOrders>();
@@ -118,7 +119,7 @@ namespace Belcorp.Encore.Application.Services
                 {
                     try
                     {
-                        ProcessMLMOrder(order.OrderId);
+                        ProcessMLMOrder(order.OrderId, country);
                         order.Process = true;
                         order.DateProcess = DateTime.Now;
 
@@ -488,8 +489,10 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Actualizar Mongo
-        public void Migrate_AccountInformationByAccountId(PersonalIndicatorLog parentLog)
+        public void Migrate_AccountInformationByAccountId(PersonalIndicatorLog parentLog, string country)
         {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
             var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationMigrateMongoIndicator");
 
             IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
@@ -508,14 +511,14 @@ namespace Belcorp.Encore.Application.Services
                 {
                     foreach (var item in result)
                     {
-                        var item_Mongo = encoreMongo_Context.AccountsInformationProvider.Find(ai => ai.AccountsInformationID == item.AccountsInformationID).FirstOrDefault();
+                        var item_Mongo = accountInformationCollection.Find(ai => ai.AccountsInformationID == item.AccountsInformationID).FirstOrDefault();
                         if (item_Mongo != null)
                         {
-                            encoreMongo_Context.AccountsInformationProvider.ReplaceOne(ai => ai.AccountsInformationID == item.AccountsInformationID, item, new UpdateOptions { IsUpsert = true });
+                            accountInformationCollection.ReplaceOne(ai => ai.AccountsInformationID == item.AccountsInformationID, item, new UpdateOptions { IsUpsert = true });
                         }
                         else
                         {
-                            encoreMongo_Context.AccountsInformationProvider.InsertOne(item);
+                            accountInformationCollection.InsertOne(item);
                         }
                     }
                 }

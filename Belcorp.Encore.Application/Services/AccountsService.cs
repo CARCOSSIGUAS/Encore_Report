@@ -1,12 +1,8 @@
-﻿using Belcorp.Encore.Data;
-using Belcorp.Encore.Data.Contexts;
-using Belcorp.Encore.Entities.Entities.Core;
+﻿using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
-using Belcorp.Encore.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using MongoDB.Bson;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -23,21 +19,23 @@ namespace Belcorp.Encore.Application.Services
         public AccountsService
         (
             IAuthenticationService _authenticationService,
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
             authenticationService = _authenticationService;
         }
 
-        public async Task<List<Accounts_Mongo>> GetListAccounts(int accountId)
+        public async Task<List<Accounts_Mongo>> GetListAccounts(int accountId, string country)
         {
-            var result = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountId).Project(Builders<Accounts_Mongo>.Projection.Exclude("_id")).As<Accounts_Mongo>().ToListAsync();
+            IMongoCollection<Accounts_Mongo> accountColletion = encoreMongo_Context.AccountsProvider(country);
+
+            var result = await accountColletion.Find(a => a.AccountID == accountId).Project(Builders<Accounts_Mongo>.Projection.Exclude("_id")).As<Accounts_Mongo>().ToListAsync();
             return result;
         }
 
 
-        public async Task<Accounts_Mongo> GetAccountFromSingleSignOnToken(string token, TimeSpan? expiration = null)
+        public async Task<Accounts_Mongo> GetAccountFromSingleSignOnToken(string token, string country, TimeSpan? expiration = null)
         {
             try
             {
@@ -56,9 +54,9 @@ namespace Belcorp.Encore.Application.Services
                     countryID = n;
                 }
 
-                var result = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountID).FirstOrDefaultAsync();
-                result.CountryID = countryID;
+                IMongoCollection<Accounts_Mongo> accountColletion = encoreMongo_Context.AccountsProvider(country);
 
+                var result = await accountColletion.Find(a => a.AccountID == accountID).FirstOrDefaultAsync();
                 return result;
             }
             catch (Exception ex)

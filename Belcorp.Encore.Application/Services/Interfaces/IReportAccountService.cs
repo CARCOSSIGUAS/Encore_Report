@@ -8,7 +8,7 @@ namespace Belcorp.Encore.Application.Services
 {
     public interface IReportAccountService
     {
-        PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter);
-        Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods();
+        PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string country);
+        Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods(string country);
     }
 }

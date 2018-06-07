@@ -30,14 +30,14 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("sponsoreds", Name = "GetReportAccountsSponsoreds")]
-        public IActionResult GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter)
+        public IActionResult GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string country = null)
         {
             if (filter == null)
             {
                 return BadRequest();
             }
 
-            var result = reportAccountService.GetReportAccountsSponsoreds(filter);
+            var result = reportAccountService.GetReportAccountsSponsoreds(filter, country);
 
             if (result == null)
             {
@@ -56,9 +56,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("periods", Name = "GetReportAccountsPeriods")]
-        public IActionResult GetReportAccountsPeriods()
+        public IActionResult GetReportAccountsPeriods(string country)
         {
-            var result = reportAccountService.GetReportAccountsPeriods();
+            var result = reportAccountService.GetReportAccountsPeriods(country);
             if (result == null)
             {
                 return NotFound();
@@ -68,7 +68,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("exportexcel")]
-        public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter, int LanguageID)
+        public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter, int LanguageID, string country)
         {
             try
             {
@@ -76,7 +76,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 filter.PageNumber = 1;
                 filter.PageSize = int.MaxValue;
 
-                var result = reportAccountService.GetReportAccountsSponsoreds(filter);
+                var result = reportAccountService.GetReportAccountsSponsoreds(filter, country);
                 if (result == null)
                 {
                     return NotFound();

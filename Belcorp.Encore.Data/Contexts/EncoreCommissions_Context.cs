@@ -1,11 +1,4 @@
-﻿using Belcorp.Encore.Entities;
-using Belcorp.Encore.Entities.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Reflection.Emit;
+﻿using Microsoft.EntityFrameworkCore;
 using Belcorp.Encore.Entities.Entities.Commissions;
 
 namespace Belcorp.Encore.Data.Contexts

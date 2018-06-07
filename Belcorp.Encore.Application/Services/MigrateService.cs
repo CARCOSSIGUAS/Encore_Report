@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Microsoft.Extensions.Configuration;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -28,17 +29,19 @@ namespace Belcorp.Encore.Application.Services
             IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
             IUnitOfWork<EncoreCore_Context> _unitOfWork_Core,
             IAccountInformationRepository _accountInformationRepository,
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
             unitOfWork_Comm = _unitOfWork_Comm;
             unitOfWork_Core = _unitOfWork_Core;
             accountInformationRepository = _accountInformationRepository;
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
-        public void MigrateAccountInformationByPeriod(int? periodId = null)
+        public void MigrateAccountInformationByPeriod(string country, int? periodId = null)
         {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
             if (periodId == null)
             {
                 IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
@@ -53,14 +56,14 @@ namespace Belcorp.Encore.Application.Services
             IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
             var titles = titlesRepository.GetAll().ToList();
 
-            encoreMongo_Context.AccountsInformationProvider.DeleteMany(p => p.PeriodID == periodId);
+            accountInformationCollection.DeleteMany(p => p.PeriodID == periodId);
 
             for (int i = 0; i < ii; i++)
             {
                 var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
                 IEnumerable<AccountsInformation_Mongo> result = GetAccountInformations(titles, accountsInformation);
 
-                encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
+                accountInformationCollection.InsertMany(result);
             }
         }
 
@@ -149,10 +152,12 @@ namespace Belcorp.Encore.Application.Services
                    };
         }
 
-        public void MigrateAccounts()
+        public void MigrateAccounts(string country)
         {
+            IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
+
             IRepository<Entities.Entities.Core.Accounts> accountsRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
-            encoreMongo_Context.AccountsProvider.DeleteMany(new BsonDocument { });
+            accountCollection.DeleteMany(new BsonDocument { });
             var total = accountsRepository.GetPagedList(null, null, null, 0, 5000, true);
             int ii = total.TotalPages;
 
@@ -191,14 +196,16 @@ namespace Belcorp.Encore.Application.Services
                     accounts_Mongo.Add(account_Mongo);
                 }
 
-                encoreMongo_Context.AccountsProvider.InsertManyAsync(accounts_Mongo);
+                accountCollection.InsertManyAsync(accounts_Mongo);
             }
         }
 
-        public void MigratePeriods()
+        public void MigratePeriods(string country)
         {
+            IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
+
             IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
-            encoreMongo_Context.PeriodsProvider.DeleteMany(new BsonDocument { });
+            periodsCollection.DeleteMany(new BsonDocument { });
             var total = periodsRepository.GetPagedList(null, null, null, 0, 10000, true);
             int ii = total.TotalPages;
 
@@ -229,11 +236,11 @@ namespace Belcorp.Encore.Application.Services
                     periods_Mongo.Add(registro);
                 }
 
-                encoreMongo_Context.PeriodsProvider.InsertMany(periods_Mongo);
+                periodsCollection.InsertMany(periods_Mongo);
             }
         }
 
-        public void MigrateTermTranslations()
+        public void MigrateTermTranslations(string country)
         {
             IRepository<TermTranslationsMongo> termTranslationsRepository = unitOfWork_Core.GetRepository<TermTranslationsMongo>();
             encoreMongo_Context.TermTranslationsProvider.DeleteMany(new BsonDocument { });
