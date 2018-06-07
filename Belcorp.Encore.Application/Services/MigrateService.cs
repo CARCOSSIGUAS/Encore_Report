@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -59,90 +58,95 @@ namespace Belcorp.Encore.Application.Services
             for (int i = 0; i < ii; i++)
             {
                 var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
-
-                var result = from accountsInfo in accountsInformation
-                             join titlesInfo_Career in titles on Int32.Parse(accountsInfo.CareerTitle) equals titlesInfo_Career.TitleID
-                             join titlesInfo_Paid in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
-                             select new AccountsInformation_Mongo
-                             {
-                                 AccountsInformationID = accountsInfo.AccountsInformationID,
-                                 PeriodID = accountsInfo.PeriodID,
-                                 AccountID = accountsInfo.AccountID,
-                                 AccountNumber = accountsInfo.AccountNumber,
-                                 AccountName = accountsInfo.AccountName,
-                                 SponsorID = accountsInfo.SponsorID,
-                                 SponsorName = accountsInfo.SponsorName,
-                                 Address = accountsInfo.Address,
-                                 PostalCode = accountsInfo.PostalCode,
-                                 City = accountsInfo.City,
-                                 STATE = accountsInfo.STATE,
-                                 Region = accountsInfo.Region,
-                                 NewStatus = accountsInfo.NewStatus,
-                                 TimeLimitToBeDemote = accountsInfo.TimeLimitToBeDemote,
-                                 CareerTitle = accountsInfo.CareerTitle,
-                                 PaidAsCurrentMonth = accountsInfo.PaidAsCurrentMonth,
-                                 PaidAsLastMonth = accountsInfo.PaidAsLastMonth,
-                                 VolumeForCareerTitle = accountsInfo.VolumeForCareerTitle,
-                                 Activity = accountsInfo.Activity,
-                                 NineMonthsPQV = accountsInfo.NineMonthsPQV,
-                                 PQV = accountsInfo.PQV,
-                                 PCV = accountsInfo.PCV,
-                                 GQV = accountsInfo.GQV,
-                                 GCV = accountsInfo.GCV,
-                                 DQVT = accountsInfo.DQVT,
-                                 DCV = accountsInfo.DCV,
-                                 DQV = accountsInfo.DQV,
-                                 JoinDate = accountsInfo.JoinDate,
-                                 Generation = accountsInfo.Generation,
-                                 LEVEL = accountsInfo.LEVEL,
-                                 SortPath = accountsInfo.SortPath,
-                                 LeftBower = accountsInfo.LeftBower,
-                                 RightBower = accountsInfo.RightBower,
-                                 RequirementNewGeneration = accountsInfo.RequirementNewGeneration,
-                                 TimeLimitForNewGeneration = accountsInfo.TimeLimitForNewGeneration,
-                                 Title1Legs = accountsInfo.Title1Legs,
-                                 Title2Legs = accountsInfo.Title2Legs,
-                                 Title3Legs = accountsInfo.Title3Legs,
-                                 Title4Legs = accountsInfo.Title4Legs,
-                                 Title5Legs = accountsInfo.Title5Legs,
-                                 Title6Legs = accountsInfo.Title6Legs,
-                                 Title7Legs = accountsInfo.Title7Legs,
-                                 Title8Legs = accountsInfo.Title8Legs,
-                                 Title9Legs = accountsInfo.Title9Legs,
-                                 Title10Legs = accountsInfo.Title10Legs,
-                                 Title11Legs = accountsInfo.Title11Legs,
-                                 Title12Legs = accountsInfo.Title12Legs,
-                                 Title13Legs = accountsInfo.Title13Legs,
-                                 Title14Legs = accountsInfo.Title14Legs,
-                                 EmailAddress = accountsInfo.EmailAddress,
-                                 CQL = accountsInfo.CQL,
-                                 LastOrderDate = accountsInfo.LastOrderDate,
-                                 IsCommissionQualified = accountsInfo.IsCommissionQualified,
-                                 BirthdayUTC = accountsInfo.BirthdayUTC,
-                                 UplineLeaderM3 = accountsInfo.UplineLeaderM3,
-                                 UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name,
-                                 UplineLeaderL1 = accountsInfo.UplineLeaderL1,
-                                 UplineLeaderL1Name = accountsInfo.UplineLeaderL1Name,
-                                 TotalDownline = accountsInfo.TotalDownline,
-                                 CreditAvailable = accountsInfo.CreditAvailable,
-                                 DebtsToExpire = accountsInfo.DebtsToExpire,
-                                 ExpiredDebts = accountsInfo.ExpiredDebts,
-                                 GenerationM3 = accountsInfo.GenerationM3,
-                                 ActiveDownline = accountsInfo.ActiveDownline,
-                                 TitleMaintainance = accountsInfo.TitleMaintainance,
-                                 SalesAverage = accountsInfo.SalesAverage,
-                                 NewQualification = accountsInfo.NewQualification,
-                                 NewEnrollments = accountsInfo.NewEnrollments,
-                                 NineMonthsGQV = accountsInfo.NineMonthsGQV,
-                                 NineMonthsDQV = accountsInfo.NineMonthsDQV,
-                                 ConsultActive = accountsInfo.ConsultActive,
-
-                                 CareerTitle_Des = titlesInfo_Career.ClientName,
-                                 PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName
-                             };
+                IEnumerable<AccountsInformation_Mongo> result = GetAccountInformations(titles, accountsInformation);
 
                 encoreMongo_Context.AccountsInformationProvider.InsertMany(result);
             }
+        }
+
+        public IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int ? AccountID = null)
+        {
+            return from accountsInfo in accountsInformation
+                   join titlesInfo_Career in titles on Int32.Parse(accountsInfo.CareerTitle) equals titlesInfo_Career.TitleID
+                   join titlesInfo_Paid in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
+                   select new AccountsInformation_Mongo
+                   {
+                       AccountsInformationID = accountsInfo.AccountsInformationID,
+                       PeriodID = accountsInfo.PeriodID,
+                       AccountID = accountsInfo.AccountID,
+                       AccountNumber = accountsInfo.AccountNumber,
+                       AccountName = String.IsNullOrEmpty(accountsInfo.AccountName) ? "" : accountsInfo.AccountName.ToUpper(),
+                       SponsorID = accountsInfo.SponsorID,
+                       SponsorName = String.IsNullOrEmpty(accountsInfo.SponsorName) ? "" : accountsInfo.SponsorName.ToUpper(),
+                       Address = accountsInfo.Address,
+                       PostalCode = accountsInfo.PostalCode,
+                       City = accountsInfo.City,
+                       STATE = accountsInfo.STATE,
+                       Region = accountsInfo.Region,
+                       NewStatus = accountsInfo.NewStatus,
+                       TimeLimitToBeDemote = accountsInfo.TimeLimitToBeDemote,
+                       CareerTitle = accountsInfo.CareerTitle,
+                       PaidAsCurrentMonth = accountsInfo.PaidAsCurrentMonth,
+                       PaidAsLastMonth = accountsInfo.PaidAsLastMonth,
+                       VolumeForCareerTitle = accountsInfo.VolumeForCareerTitle,
+                       NineMonthsPQV = accountsInfo.NineMonthsPQV,
+                       PQV = accountsInfo.PQV,
+                       PCV = accountsInfo.PCV,
+                       GQV = accountsInfo.GQV,
+                       GCV = accountsInfo.GCV,
+                       DQVT = accountsInfo.DQVT,
+                       DCV = accountsInfo.DCV,
+                       DQV = accountsInfo.DQV,
+                       JoinDate = accountsInfo.JoinDate,
+                       Generation = accountsInfo.Generation,
+                       LEVEL = accountsInfo.LEVEL,
+                       SortPath = accountsInfo.SortPath,
+                       LeftBower = accountsInfo.LeftBower,
+                       RightBower = accountsInfo.RightBower,
+                       RequirementNewGeneration = accountsInfo.RequirementNewGeneration,
+                       TimeLimitForNewGeneration = accountsInfo.TimeLimitForNewGeneration,
+                       Title1Legs = accountsInfo.Title1Legs,
+                       Title2Legs = accountsInfo.Title2Legs,
+                       Title3Legs = accountsInfo.Title3Legs,
+                       Title4Legs = accountsInfo.Title4Legs,
+                       Title5Legs = accountsInfo.Title5Legs,
+                       Title6Legs = accountsInfo.Title6Legs,
+                       Title7Legs = accountsInfo.Title7Legs,
+                       Title8Legs = accountsInfo.Title8Legs,
+                       Title9Legs = accountsInfo.Title9Legs,
+                       Title10Legs = accountsInfo.Title10Legs,
+                       Title11Legs = accountsInfo.Title11Legs,
+                       Title12Legs = accountsInfo.Title12Legs,
+                       Title13Legs = accountsInfo.Title13Legs,
+                       Title14Legs = accountsInfo.Title14Legs,
+                       EmailAddress = accountsInfo.EmailAddress,
+                       CQL = accountsInfo.CQL,
+                       LastOrderDate = accountsInfo.LastOrderDate,
+                       IsCommissionQualified = accountsInfo.IsCommissionQualified,
+                       BirthdayUTC = accountsInfo.BirthdayUTC,
+                       UplineLeaderM3 = accountsInfo.UplineLeaderM3,
+                       UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name,
+                       UplineLeaderL1 = accountsInfo.UplineLeaderL1,
+                       UplineLeaderL1Name = accountsInfo.UplineLeaderL1Name,
+                       TotalDownline = accountsInfo.TotalDownline,
+                       CreditAvailable = accountsInfo.CreditAvailable,
+                       DebtsToExpire = accountsInfo.DebtsToExpire,
+                       ExpiredDebts = accountsInfo.ExpiredDebts,
+                       GenerationM3 = accountsInfo.GenerationM3,
+                       ActiveDownline = accountsInfo.ActiveDownline,
+                       TitleMaintainance = accountsInfo.TitleMaintainance,
+                       SalesAverage = accountsInfo.SalesAverage,
+                       NewQualification = accountsInfo.NewQualification,
+                       NewEnrollments = accountsInfo.NewEnrollments,
+                       NineMonthsGQV = accountsInfo.NineMonthsGQV,
+                       NineMonthsDQV = accountsInfo.NineMonthsDQV,
+                       ConsultActive = accountsInfo.ConsultActive,
+
+                       CareerTitle_Des = titlesInfo_Career.ClientName,
+                       PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
+
+                       Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity
+                   };
         }
 
         public void MigrateAccounts()
