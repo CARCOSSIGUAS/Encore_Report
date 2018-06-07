@@ -3,6 +3,7 @@ using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Entities.Entities.Search;
 using Belcorp.Encore.Entities.Entities.Search.Paging;
+using Belcorp.Encore.Services.Report.Filters;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using System;
@@ -11,6 +12,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
 {
     [Produces("application/json")]
     [Route("api/reportaccount")]
+    [ServiceFilter(typeof(FilterActionProxy))]
     public class ReportAccountController : Controller
     {
         private readonly IReportAccountService reportAccountService;
@@ -68,7 +70,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("exportexcel")]
-        public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter, int languageID, string country)
+        public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter, int languageID, string country = null)
         {
             try
             {

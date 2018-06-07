@@ -14,6 +14,7 @@ namespace Belcorp.Encore.Api.Controllers
 {
     [Produces("application/json")]
     [Route("api/migration")]
+    [ServiceFilter(typeof(FilterActionProxy))]
     public class MigrationController : Controller
     {
         private readonly IMigrateService migrateService;
@@ -31,7 +32,6 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("accountsInformation/{periodId}")]
         [AutomaticRetry(Attempts = 0)]
-        [ServiceFilter(typeof(FilterActionProxy))]
         public ActionResult AccountsInformation(int periodId, string country = null)
         {
             BackgroundJob.Enqueue(() => migrateService.MigrateAccountInformationByPeriod(country, periodId));
@@ -40,8 +40,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("accounts")]
         [AutomaticRetry(Attempts = 0)]
-        [ServiceFilter(typeof(FilterActionProxy))]
-        public ActionResult Accounts(string country)
+        public ActionResult Accounts(string country = null)
         {
             BackgroundJob.Enqueue(() => migrateService.MigrateAccounts(country));
             return Json(new { Status = "Processing Background" });
@@ -49,7 +48,6 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("periods")]
         [AutomaticRetry(Attempts = 0)]
-        [ServiceFilter(typeof(FilterActionProxy))]
         public ActionResult Periods(string country)
         {
             BackgroundJob.Enqueue(() => migrateService.MigratePeriods(country));
@@ -58,7 +56,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("termtranslations")]
         [AutomaticRetry(Attempts = 0)]
-        public ActionResult TermTranslations(string country)
+        public ActionResult TermTranslations(string country = null)
         {
             BackgroundJob.Enqueue(() => migrateService.MigrateTermTranslations(country));
             return Json(new { Status = "Processing Background" });

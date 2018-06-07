@@ -22,7 +22,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
 
         // GET: api/reportperformance
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetPerformance_Detail(int accountId, int periodId, string country)
+        public async Task<IActionResult> GetPerformance_Detail(int accountId, int periodId, string country = null)
         {
             var header = await reportPerformanceService.GetPerformance_Detail(accountId, periodId, country);
             return Json(header);
@@ -30,7 +30,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
 
         // GET: api/reportperformance
         [HttpGet("[action]")]
-        public JsonResult GetPerformance_AccountInformation(int accountId, int periodId, string country)
+        public JsonResult GetPerformance_AccountInformation(int accountId, int periodId, string country = null)
         {
             var header = reportPerformanceService.GetPerformance_AccountInformation(accountId, periodId, country);
             return Json(header);

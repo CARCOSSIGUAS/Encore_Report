@@ -13,6 +13,7 @@ namespace Belcorp.Encore.Api.Controllers
 {
     [Produces("application/json")]
     [Route("api/onlinemlm")]
+    [ServiceFilter(typeof(FilterActionProxy))]
     public class OnlineMLMController : Controller
     {
         private readonly IProcessOnlineMlmService processOnlineMlmService;
@@ -24,8 +25,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("orders/{orderId}")]
         [AutomaticRetry(Attempts = 0)]
-        [ServiceFilter(typeof(FilterActionProxy))]
-        public ActionResult Orders(int orderId, string country)
+        public ActionResult Orders(int orderId, string country = null)
         {
             BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLMOrder(orderId, country));
             return Json(new { Status = "Processing Background" });
@@ -33,8 +33,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("monitorlotes/{loteId}")]
         [AutomaticRetry(Attempts = 0)]
-        [ServiceFilter(typeof(FilterActionProxy))]
-        public ActionResult MonitorLotes(int loteId, string country)
+        public ActionResult MonitorLotes(int loteId, string country = null)
         {
             BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLMLote(loteId, country));
             return Json(new { Status = "Processing Background" });
