@@ -20,8 +20,8 @@ namespace Belcorp.Encore.Data.Contexts
         public IMongoCollection<AccountsInformation_Mongo> AccountsInformationProvider(string pais)
         {
 
-            string connectionString = _configuration.GetValue<string>("Mongo:ConnectionString" + pais);
-            string database = _configuration.GetValue<string>("Mongo:Database" + pais);
+            string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + pais);
+            string database = _configuration.GetValue<string>("Encore_Mongo:Database" + pais);
 
             var client = new MongoClient(connectionString);
 
@@ -43,8 +43,8 @@ namespace Belcorp.Encore.Data.Contexts
         public IMongoCollection<Accounts_Mongo> AccountsProvider(string pais)
         {
 
-            string connectionString = _configuration.GetValue<string>("Mongo:ConnectionString" + pais);
-            string database = _configuration.GetValue<string>("Mongo:Database" + pais);
+            string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + pais);
+            string database = _configuration.GetValue<string>("Encore_Mongo:Database" + pais);
 
             var client = new MongoClient(connectionString);
 

@@ -6,7 +6,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
 {
     [Produces("application/json")]
     [Route("api/home")]
-    [FilterActionProxy]
+    [ServiceFilter(typeof(FilterActionProxy))]
     public class HomeController : Controller
     {
         private readonly IHomeService homeService;

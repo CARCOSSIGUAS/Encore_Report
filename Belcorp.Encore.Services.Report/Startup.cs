@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
+using Belcorp.Encore.Services.Report.Filters;
 using Belcorp.Encore.Services.Report.InstancesProvider;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +38,7 @@ namespace Belcorp.Encore.Services.Report
             });
 
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.AddScoped<FilterActionProxy>();
 
             services.AddScoped<IUrlHelper>(implementationFactory =>
             {

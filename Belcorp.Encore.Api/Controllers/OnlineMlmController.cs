@@ -24,7 +24,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("orders/{orderId}")]
         [AutomaticRetry(Attempts = 0)]
-        [FilterActionProxy]
+        [ServiceFilter(typeof(FilterActionProxy))]
         public ActionResult Orders(int orderId, string country)
         {
             BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLMOrder(orderId, country));
@@ -33,7 +33,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("monitorlotes/{loteId}")]
         [AutomaticRetry(Attempts = 0)]
-        [FilterActionProxy]
+        [ServiceFilter(typeof(FilterActionProxy))]
         public ActionResult MonitorLotes(int loteId, string country)
         {
             BackgroundJob.Enqueue(() => processOnlineMlmService.ProcessMLMLote(loteId, country));

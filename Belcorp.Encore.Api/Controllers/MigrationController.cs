@@ -31,7 +31,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("accountsInformation/{periodId}")]
         [AutomaticRetry(Attempts = 0)]
-        [FilterActionProxy]
+        [ServiceFilter(typeof(FilterActionProxy))]
         public ActionResult AccountsInformation(int periodId, string country = null)
         {
             BackgroundJob.Enqueue(() => migrateService.MigrateAccountInformationByPeriod(country, periodId));
@@ -40,7 +40,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("accounts")]
         [AutomaticRetry(Attempts = 0)]
-        [FilterActionProxy]
+        [ServiceFilter(typeof(FilterActionProxy))]
         public ActionResult Accounts(string country)
         {
             BackgroundJob.Enqueue(() => migrateService.MigrateAccounts(country));
@@ -49,7 +49,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("periods")]
         [AutomaticRetry(Attempts = 0)]
-        [FilterActionProxy]
+        [ServiceFilter(typeof(FilterActionProxy))]
         public ActionResult Periods(string country)
         {
             BackgroundJob.Enqueue(() => migrateService.MigratePeriods(country));
