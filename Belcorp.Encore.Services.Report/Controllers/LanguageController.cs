@@ -22,7 +22,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
             TermTranslationsService = _TermTranslationsService;
         }
 
-        [HttpGet("{LanguageId}", Name = "GetLanguage")]
+        [HttpGet("{languageID}", Name = "GetLanguage")]
         public IActionResult GetLanguage(int languageID, string country = null)
         {
             var result = TermTranslationsService.GetLanguage(languageID, country);

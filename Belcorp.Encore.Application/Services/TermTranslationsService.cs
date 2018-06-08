@@ -14,16 +14,13 @@ namespace Belcorp.Encore.Application.Services
     public class TermTranslationsService : ITermTranslationsService
     {
         private readonly EncoreMongo_Context encoreMongo_Context;
-        private readonly IAuthenticationService authenticationService;
 
         public TermTranslationsService
         (
-            IAuthenticationService _authenticationService,
             IConfiguration configuration
         )
         {
             encoreMongo_Context = new EncoreMongo_Context(configuration);
-            authenticationService = _authenticationService;
         }
 
         public string GetLanguageTerm(string languageCode, string termName, string country)
@@ -50,8 +47,7 @@ namespace Belcorp.Encore.Application.Services
 
             foreach (var item in languageType)
             {
-                result = lng.FindAll(a => a.LanguageCode == item).ToDictionary(a => a.TermName, a => a.Term);
-
+                result = lng.FindAll(a => a.LanguageCode == item).GroupBy(a => a.TermName).Select(a => a.First()).ToDictionary(a => a.TermName, a => a.Term);
                 termTranslations_DTO.Add(item, new Dictionary<string, IDictionary<string, string>> { { "translations", result } });
             }  
             
