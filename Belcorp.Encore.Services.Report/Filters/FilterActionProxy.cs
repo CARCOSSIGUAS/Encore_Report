@@ -18,13 +18,12 @@ namespace Belcorp.Encore.Services.Report.Filters
             _dnsName = configuration.GetSection("Encore:DnsBRA").Value;
         }
 
-
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             var demo = context.HttpContext.Request.Host.Value;
             var country = "USA";
 
-            if (demo.IndexOf(_dnsName) >0)
+            if (demo.Contains(_dnsName))
             {
                 country = "BRA";
             }

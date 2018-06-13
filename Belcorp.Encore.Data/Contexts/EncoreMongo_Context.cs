@@ -86,7 +86,6 @@ namespace Belcorp.Encore.Data.Contexts
       
         public IMongoCollection<TermTranslations_Mongo> TermTranslationsProvider(string pais)
         {
-
             string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + pais);
             string database = _configuration.GetValue<string>("Encore_Mongo:Database" + pais);
 

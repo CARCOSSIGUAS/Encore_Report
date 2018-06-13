@@ -10,8 +10,6 @@ namespace Belcorp.Encore.Entities.Entities.DTO
     public class Excel_DTO
     {
         public int AccountID { get; set; }
-
-        public string AccountNumber { get; set; }
         public string AccountName { get; set; }
         public string JoinDate { get; set; }
 

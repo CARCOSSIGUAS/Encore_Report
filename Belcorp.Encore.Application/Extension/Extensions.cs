@@ -27,10 +27,10 @@ namespace Belcorp.Encore.Application.Extension
                 PCV = ai.PCV,
                 Phones = String.Join(" - ", ai.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()),
                 PQV = ai.PQV,
-                SponsorEmailAddress = ai.Sponsor.EmailAddress,
+                SponsorEmailAddress = ai.Sponsor != null ? ai.Sponsor.EmailAddress : "",
                 SponsorID = ai.SponsorID,
                 SponsorName = ai.SponsorName,
-                SponsorPhones = String.Join(" - ", ai.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList())
+                SponsorPhones = ai.Sponsor != null ? String.Join(" - ", ai.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : ""
             }).ToList();
 
             return result;
@@ -42,7 +42,6 @@ namespace Belcorp.Encore.Application.Extension
             {
                 AccountID = ai.AccountID,
                 AccountName = ai.AccountName,
-                AccountNumber = ai.AccountNumber,
                 Activity = ai.Activity,
                 CareerTitle = ai.CareerTitle_Des,
                 DQV = ai.DQV,
@@ -62,16 +61,16 @@ namespace Belcorp.Encore.Application.Extension
                 AccountPhone_6 = ai.Account.AccountPhones.Where(p => p.AccountPhoneID == 6).Select(p => p.PhoneNumber).FirstOrDefault(),
                 AccountPhone_7 = ai.Account.AccountPhones.Where(p => p.AccountPhoneID == 7).Select(p => p.PhoneNumber).FirstOrDefault(),
                 PQV = ai.PQV,
-                SponsorEmailAddress = ai.Sponsor.EmailAddress,
+                SponsorEmailAddress = ai.Sponsor != null ? ai.Sponsor.EmailAddress : "",
                 SponsorID = ai.SponsorID,
                 SponsorName = ai.SponsorName,
-                SponsorPhone_1 = ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(p => p.PhoneNumber).FirstOrDefault(),
-                SponsorPhone_2 = ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 2).Select(p => p.PhoneNumber).FirstOrDefault(),
-                SponsorPhone_3 = ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 3).Select(p => p.PhoneNumber).FirstOrDefault(),
-                SponsorPhone_4 = ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 4).Select(p => p.PhoneNumber).FirstOrDefault(),
-                SponsorPhone_5 = ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 5).Select(p => p.PhoneNumber).FirstOrDefault(),
-                SponsorPhone_6 = ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 6).Select(p => p.PhoneNumber).FirstOrDefault(),
-                SponsorPhone_7 = ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 7).Select(p => p.PhoneNumber).FirstOrDefault()
+                SponsorPhone_1 = ai.Sponsor != null ? ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(p => p.PhoneNumber).FirstOrDefault() : "",
+                SponsorPhone_2 = ai.Sponsor != null ? ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 2).Select(p => p.PhoneNumber).FirstOrDefault() : "",
+                SponsorPhone_3 = ai.Sponsor != null ? ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 3).Select(p => p.PhoneNumber).FirstOrDefault() : "",
+                SponsorPhone_4 = ai.Sponsor != null ? ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 4).Select(p => p.PhoneNumber).FirstOrDefault() : "",
+                SponsorPhone_5 = ai.Sponsor != null ? ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 5).Select(p => p.PhoneNumber).FirstOrDefault() : "",
+                SponsorPhone_6 = ai.Sponsor != null ? ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 6).Select(p => p.PhoneNumber).FirstOrDefault() : "",
+                SponsorPhone_7 = ai.Sponsor != null ? ai.Sponsor.AccountPhones.Where(p => p.PhoneTypeID == 7).Select(p => p.PhoneNumber).FirstOrDefault() : ""
             }).ToList();
 
             return result;

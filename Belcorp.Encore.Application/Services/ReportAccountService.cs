@@ -52,7 +52,8 @@ namespace Belcorp.Encore.Application
 
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Ne(ai => ai.AccountName, "TempName TempName");
+
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression("^((?!TempName).)*$", "i"));
 
             if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
             {

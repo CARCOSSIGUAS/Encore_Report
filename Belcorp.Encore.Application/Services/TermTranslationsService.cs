@@ -27,10 +27,11 @@ namespace Belcorp.Encore.Application.Services
         {
             IMongoCollection<TermTranslations_Mongo> termTranslationsCollection = encoreMongo_Context.TermTranslationsProvider(country);
             var result = termTranslationsCollection.Find(a => a.LanguageCode == languageCode && a.TermName == termName).FirstOrDefault();
-            var item="";
-            if (result == null)
-                item = result.Term;
-            return item;
+
+            if (result == null || result.Term == null)
+                return termName;
+
+            return result.Term;
         }
 
         public Dictionary<string, IDictionary<string, IDictionary<string, string>>> GetLanguage(int languageID, string country)
