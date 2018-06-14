@@ -44,6 +44,7 @@ namespace Belcorp.Encore.Data.Contexts
 
         public DbSet<Periods> Periods { get; set; }
         public DbSet<AccountKPIsDetails> AccountKPIsDetails { get; set; }
+        public DbSet<BonusDetails> BonusDetails { get; set; }
 
         public DbSet<PersonalIndicatorLog> PersonalIndicatorLog { get; set; }
         public DbSet<PersonalIndicatorDetailLog> PersonalIndicatorDetailLog { get; set; }

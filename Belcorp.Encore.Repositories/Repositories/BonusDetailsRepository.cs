@@ -10,18 +10,18 @@ using Belcorp.Encore.Entities.Entities.Commissions;
 
 namespace Belcorp.Encore.Repositories
 {
-    public class AccountsKPIDetailsRepository : Repository<AccountKPIsDetails>, IAccountKPIsDetailsRepository
+    public class BonusDetailsRepository : Repository<BonusDetails>, IBonusDetailsRepository
     {
         protected readonly EncoreCommissions_Context dbCommissions_Context;
 
-        public AccountsKPIDetailsRepository(EncoreCommissions_Context _dbCommissions_Context) : base(_dbCommissions_Context)
+        public BonusDetailsRepository(EncoreCommissions_Context _dbCommissions_Context) : base(_dbCommissions_Context)
         {
             dbCommissions_Context = _dbCommissions_Context;
         }
 
-        public IEnumerable<AccountKPIsDetails> GetAccountKPIsDetails(string country = null, int? periodId = null)
+        public IEnumerable<BonusDetails> GetBonusDetails(string country = null, int? periodId = null)
         {
-            var result = dbCommissions_Context.AccountKPIsDetails.AsNoTracking().Where(ai => ai.PeriodID == periodId);
+            var result = dbCommissions_Context.BonusDetails.AsNoTracking().Where(ai => ai.PeriodID == periodId);
             return result;
         }
     }

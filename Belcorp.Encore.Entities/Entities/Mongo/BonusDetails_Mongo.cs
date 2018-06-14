@@ -47,7 +47,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public decimal? CorpPayoutAmount { get; set; }
         public int? CorpCurrencyTypeID { get; set; }
         public DateTime? DateModified { get; set; }
-        public char INDICATORPAYMENT { get; set; }
+        public string INDICATORPAYMENT { get; set; }
         public int? PERIODIDPAYMENT { get; set; }
     }
 }

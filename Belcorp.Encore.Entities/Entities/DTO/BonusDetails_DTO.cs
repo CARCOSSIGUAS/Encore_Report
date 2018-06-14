@@ -1,17 +1,14 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace Belcorp.Encore.Entities.Entities.Commissions
+namespace Belcorp.Encore.Entities.Entities.DTO
 {
-    [Table("BonusDetails", Schema = "Reports")]
-    public class BonusDetails
+    public class BonusDetails_DTO
     {
-        [Key]
         public int BonusDetailID { get; set; }
-
         public int SponsorID { get; set; }
         public string SponsorName { get; set; }
         public int DownlineID { get; set; }

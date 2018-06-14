@@ -1,4 +1,5 @@
-﻿using Belcorp.Encore.Entities.Entities.Mongo;
+﻿using Belcorp.Encore.Entities.Entities.DTO;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 
@@ -120,6 +121,28 @@ namespace Belcorp.Encore.Data.Contexts
                 _database = client.GetDatabase(database);
 
                 return _database.GetCollection<AccountKPIsDetails_Mongo>("AccountKPIsDetails");
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
+        public IMongoCollection<BonusDetails_Mongo> BonusDetailsProvider(string country)
+        {
+            string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + country);
+            string database = _configuration.GetValue<string>("Encore_Mongo:Database" + country);
+
+            var client = new MongoClient(connectionString);
+
+            IMongoDatabase _database;
+
+            if (client != null)
+            {
+                _database = client.GetDatabase(database);
+
+                return _database.GetCollection<BonusDetails_Mongo>("BonusDetails");
             }
             else
             {

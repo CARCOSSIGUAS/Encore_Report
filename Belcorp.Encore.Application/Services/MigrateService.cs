@@ -155,7 +155,7 @@ namespace Belcorp.Encore.Application.Services
                    };
         }
 
-        public void MigrateBonusDetailsByPeriod(string country, int? periodId = null)
+        public void MigrateBonusDetailsByPeriod(string country = null, int? periodId = null)
         {
             IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
 
@@ -183,8 +183,33 @@ namespace Belcorp.Encore.Application.Services
             return from accountsInfo in bonusDetails
                    select new BonusDetails_Mongo
                    {
-                       
-                   };
+                        BonusDetailID = accountsInfo.BonusDetailID,
+                        SponsorID =accountsInfo.SponsorID,
+                        SponsorName =accountsInfo.SponsorName ,
+                        DownlineID =accountsInfo.DownlineID,
+                        DownlineName =accountsInfo.DownlineName,
+                        BonusTypeID =accountsInfo.BonusTypeID,
+                        BonusCode =accountsInfo.BonusCode,
+                        OrderID =accountsInfo.OrderID,
+                        QV =accountsInfo.QV,
+                        CV =accountsInfo.CV,
+                        Percentage =accountsInfo.Percentage,
+                        OriginalAmount =accountsInfo.OriginalAmount,
+                        Adjustment =accountsInfo.Adjustment,
+                        PayoutAmount =accountsInfo.PayoutAmount,
+                        CurrencyTypeID =accountsInfo.CurrencyTypeID,
+                        AccountSponsorTypeID =accountsInfo.AccountSponsorTypeID,
+                        TreeLevel =accountsInfo.TreeLevel,
+                        PeriodID =accountsInfo.PeriodID,
+                        ParentOrderID =accountsInfo.ParentOrderID,
+                        CorpOriginalAmount =accountsInfo.CorpOriginalAmount,
+                        CorpAdjustment =accountsInfo.CorpAdjustment,
+                        CorpPayoutAmount =accountsInfo.CorpPayoutAmount,
+                        CorpCurrencyTypeID =accountsInfo.CorpCurrencyTypeID,
+                        DateModified =accountsInfo.DateModified,
+                        INDICATORPAYMENT =accountsInfo.INDICATORPAYMENT,
+                        PERIODIDPAYMENT =accountsInfo.PERIODIDPAYMENT
+                    };
         }
 
         public void MigrateAccounts(string country)
@@ -310,16 +335,13 @@ namespace Belcorp.Encore.Application.Services
             }
         }
 
-        public void MigrateAccountKPIsDetailsbyPeriod(string country, int? periodId=null)
+        public void MigrateAccountKPIsDetailsByPeriod(string country = null, int? periodId=null)
         {
             IMongoCollection<AccountKPIsDetails_Mongo> AccountKPIsDetailsCollection = encoreMongo_Context.AccountKPIsDetailsProvider(country);
 
              if (periodId == null)
             {
-                IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
-                var date = DateTime.Now;
-                var result = periodsRepository.GetFirstOrDefault(p => date >= p.StartDateUTC && date <= p.EndDateUTC && p.PlanID == 1, null, null, true);
-                periodId = result.PeriodID;
+                periodId = GetCurrentPeriod();
             }
 
             var total = accountKPIsDetailsRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
@@ -336,7 +358,7 @@ namespace Belcorp.Encore.Application.Services
             }
         }
 
-        public IEnumerable<AccountKPIsDetails_Mongo> GetAccountKPIsDetails(IList<AccountKPIsDetails> AccountKPIsDetailsInformation)
+        private IEnumerable<AccountKPIsDetails_Mongo> GetAccountKPIsDetails(IList<AccountKPIsDetails> AccountKPIsDetailsInformation)
         {
             return from kpiInfo in AccountKPIsDetailsInformation
                    select new AccountKPIsDetails_Mongo

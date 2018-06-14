@@ -40,7 +40,7 @@ namespace Belcorp.Encore.Api.Controllers
 
         [HttpGet("bonusdetails/{periodId}")]
         [AutomaticRetry(Attempts = 0)]
-        public ActionResult BonusDetails(int periodId, string country = null)
+        public ActionResult BonusDetails(string country = null, int? periodId = null)
         {
             BackgroundJob.Enqueue(() => migrateService.MigrateBonusDetailsByPeriod(country, periodId));
             return Json(new { Status = "Processing Background" });
@@ -70,11 +70,11 @@ namespace Belcorp.Encore.Api.Controllers
             return Json(new { Status = "Processing Background" });
         }
 
-        [HttpGet("AccountKPIsDetails")]
+        [HttpGet("accountKpisDetails/{periodId}")]
         [AutomaticRetry(Attempts = 0)]
-        public ActionResult AccountKPIsDetails(string country, int? periodId = null)
+        public ActionResult AccountKPIsDetails(string country = null, int? periodId = null)
         {
-            BackgroundJob.Enqueue(() => migrateService.MigrateAccountKPIsDetailsbyPeriod(country, periodId));
+            BackgroundJob.Enqueue(() => migrateService.MigrateAccountKPIsDetailsByPeriod(country, periodId));
             return Json(new { Status = "Processing Background" });
         }
     }
