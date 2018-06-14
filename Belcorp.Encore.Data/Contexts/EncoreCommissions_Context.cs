@@ -47,6 +47,5 @@ namespace Belcorp.Encore.Data.Contexts
 
         public DbSet<PersonalIndicatorLog> PersonalIndicatorLog { get; set; }
         public DbSet<PersonalIndicatorDetailLog> PersonalIndicatorDetailLog { get; set; }
-
     }
 }
