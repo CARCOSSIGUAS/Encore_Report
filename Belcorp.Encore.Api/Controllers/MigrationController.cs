@@ -38,6 +38,14 @@ namespace Belcorp.Encore.Api.Controllers
             return Json(new { Status = "Processing Background" } );
         }
 
+        [HttpGet("bonusdetails/{periodId}")]
+        [AutomaticRetry(Attempts = 0)]
+        public ActionResult BonusDetails(string country = null, int? periodId = null)
+        {
+            BackgroundJob.Enqueue(() => migrateService.MigrateBonusDetailsByPeriod(country, periodId));
+            return Json(new { Status = "Processing Background" });
+        }
+
         [HttpGet("accounts")]
         [AutomaticRetry(Attempts = 0)]
         public ActionResult Accounts(string country = null)
@@ -59,6 +67,14 @@ namespace Belcorp.Encore.Api.Controllers
         public ActionResult TermTranslations(string country = null)
         {
             BackgroundJob.Enqueue(() => migrateService.MigrateTermTranslations(country));
+            return Json(new { Status = "Processing Background" });
+        }
+
+        [HttpGet("accountKpisDetails/{periodId}")]
+        [AutomaticRetry(Attempts = 0)]
+        public ActionResult AccountKPIsDetails(string country = null, int? periodId = null)
+        {
+            BackgroundJob.Enqueue(() => migrateService.MigrateAccountKPIsDetailsByPeriod(country, periodId));
             return Json(new { Status = "Processing Background" });
         }
     }

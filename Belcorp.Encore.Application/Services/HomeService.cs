@@ -118,5 +118,85 @@ namespace Belcorp.Encore.Application.Services
                                         }
                                 ).FirstOrDefault();
         }
+
+        public KpiIndicatorPivot_DTO GetkpisIndicator(int periodID, int SponsorID, int DownLineID, string country = null)
+        {
+        //    KpiIndicator_DTO kpiIndicator_DTO = new KpiIndicator_DTO();
+            List<string> codigos = new List<string> {"DCV","DQV","GCV","GQV" };
+            KpiIndicatorPivot_DTO kpiIndicatorPivot_DTO = new KpiIndicatorPivot_DTO();
+            foreach (var item in codigos)
+            {
+                IMongoCollection<AccountKPIsDetails_Mongo> accountKpisDetailsCollection = encoreMongo_Context.AccountKPIsDetailsProvider(country);
+                var result = accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == SponsorID && a.DownlineID == DownLineID && a.KPICode == item).FirstOrDefault();
+                switch (item)
+                {
+                    case "DCV":
+                        kpiIndicatorPivot_DTO.PeriodID = result.PeriodID;
+                        kpiIndicatorPivot_DTO.SponsorID = result.SponsorID;
+                        kpiIndicatorPivot_DTO.SponsorName = result.SponsorName;
+                        kpiIndicatorPivot_DTO.DownlineID = result.DownlineID;
+                        kpiIndicatorPivot_DTO.DownlineName = result.DownlineName;
+                        kpiIndicatorPivot_DTO.DCV = result.Value;
+                        kpiIndicatorPivot_DTO.Percentage = result.Percentage;
+                        kpiIndicatorPivot_DTO.DownlinePaidAsTitle = result.DownlinePaidAsTitle;
+                        kpiIndicatorPivot_DTO.CurrencyTypeID = result.CurrencyTypeID;
+                        kpiIndicatorPivot_DTO.AccountSponsorTypeID = result.AccountSponsorTypeID;
+                        kpiIndicatorPivot_DTO.TreeLevel = result.TreeLevel;
+                        kpiIndicatorPivot_DTO.DateModified = result.DateModified;
+                        break;
+                    case "DQV":
+                        kpiIndicatorPivot_DTO.DQV = result.Value;
+                        break;
+                    case "GCV":
+                        kpiIndicatorPivot_DTO.GCV = result.Value;
+                        break;
+                    case "GQV":
+                        kpiIndicatorPivot_DTO.GQV = result.Value;
+                        break;
+                }
+            }
+            return kpiIndicatorPivot_DTO;
+        }
+            
+
+        public BonusDetails_DTO GetBonusIndicator(int SponsorID, int periodID, string country)
+        {
+            BonusDetails_DTO bonusDetails_DTO = new BonusDetails_DTO();
+            IMongoCollection<BonusDetails_Mongo> accountKpisDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
+            var result = accountKpisDetailsCollection.Find(a => a.SponsorID == SponsorID && a.PeriodID == periodID).FirstOrDefault();
+            if (result != null)
+            {
+                return new BonusDetails_DTO
+                {
+                    BonusDetailID = result.BonusDetailID,
+                    SponsorID = result.SponsorID,
+                    SponsorName = result.SponsorName,
+                    DownlineID = result.DownlineID,
+                    DownlineName = result.DownlineName,
+                    BonusTypeID = result.BonusTypeID,
+                    BonusCode = result.BonusCode,
+                    OrderID = result.OrderID,
+                    QV = result.QV,
+                    CV = result.CV,
+                    Percentage = result.Percentage,
+                    OriginalAmount = result.OriginalAmount,
+                    Adjustment = result.Adjustment,
+                    PayoutAmount = result.PayoutAmount,
+                    CurrencyTypeID = result.CurrencyTypeID,
+                    AccountSponsorTypeID = result.AccountSponsorTypeID,
+                    TreeLevel = result.TreeLevel,
+                    PeriodID = result.PeriodID,
+                    ParentOrderID = result.ParentOrderID,
+                    CorpOriginalAmount = result.CorpOriginalAmount,
+                    CorpAdjustment = result.CorpAdjustment,
+                    CorpPayoutAmount = result.CorpPayoutAmount,
+                    CorpCurrencyTypeID = result.CorpCurrencyTypeID,
+                    DateModified = result.DateModified,
+                    INDICATORPAYMENT = result.INDICATORPAYMENT,
+                    PERIODIDPAYMENT = result.PERIODIDPAYMENT
+                };
+            }
+            return bonusDetails_DTO;
+        }
     }
 }

@@ -13,7 +13,8 @@ namespace Belcorp.Encore.Application.Services.Interfaces
         void MigrateAccounts(string country);
         void MigratePeriods(string country);
         void MigrateTermTranslations(string country);
-
+        void MigrateAccountKPIsDetailsByPeriod(string country, int? periodId);
+        void MigrateBonusDetailsByPeriod(string country, int? periodId);
         IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int? AccountID = null);
     }
 }

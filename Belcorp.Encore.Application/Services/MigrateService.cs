@@ -23,18 +23,24 @@ namespace Belcorp.Encore.Application.Services
 
         private readonly EncoreMongo_Context encoreMongo_Context;
         private readonly IAccountInformationRepository accountInformationRepository;
+        private readonly IBonusDetailsRepository bonusDetailsRepository;
+        private readonly IAccountKPIsDetailsRepository accountKPIsDetailsRepository;
 
         public MigrateService
         (
             IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
             IUnitOfWork<EncoreCore_Context> _unitOfWork_Core,
             IAccountInformationRepository _accountInformationRepository,
+            IBonusDetailsRepository _bonusDetailsRepository,
+            IAccountKPIsDetailsRepository _accountKPIsDetailsRepository,
             IConfiguration configuration
         )
         {
             unitOfWork_Comm = _unitOfWork_Comm;
             unitOfWork_Core = _unitOfWork_Core;
             accountInformationRepository = _accountInformationRepository;
+            bonusDetailsRepository = _bonusDetailsRepository;
+            accountKPIsDetailsRepository = _accountKPIsDetailsRepository;
             encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
@@ -44,10 +50,7 @@ namespace Belcorp.Encore.Application.Services
 
             if (periodId == null)
             {
-                IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
-                var date = DateTime.Now;
-                var result = periodsRepository.GetFirstOrDefault(p => date >= p.StartDateUTC && date <= p.EndDateUTC && p.PlanID == 1, null, null, true);
-                periodId = result.PeriodID;
+                periodId = GetCurrentPeriod();
             }
 
             var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
@@ -150,6 +153,63 @@ namespace Belcorp.Encore.Application.Services
 
                        Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity
                    };
+        }
+
+        public void MigrateBonusDetailsByPeriod(string country = null, int? periodId = null)
+        {
+            IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
+
+            if (periodId == null)
+            {
+                periodId = GetCurrentPeriod();
+            }
+
+            var total = bonusDetailsRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
+            int ii = total.TotalPages;
+
+            bonusDetailsCollection.DeleteMany(p => p.PeriodID == periodId);
+
+            for (int i = 0; i < ii; i++)
+            {
+                var bonusDetails = bonusDetailsRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
+                IEnumerable<BonusDetails_Mongo> result = GetBonusDetails(bonusDetails);
+
+                bonusDetailsCollection.InsertMany(result);
+            }
+        }
+
+        private IEnumerable<BonusDetails_Mongo> GetBonusDetails(IList<BonusDetails> bonusDetails)
+        {
+            return from accountsInfo in bonusDetails
+                   select new BonusDetails_Mongo
+                   {
+                        BonusDetailID = accountsInfo.BonusDetailID,
+                        SponsorID =accountsInfo.SponsorID,
+                        SponsorName =accountsInfo.SponsorName ,
+                        DownlineID =accountsInfo.DownlineID,
+                        DownlineName =accountsInfo.DownlineName,
+                        BonusTypeID =accountsInfo.BonusTypeID,
+                        BonusCode =accountsInfo.BonusCode,
+                        OrderID =accountsInfo.OrderID,
+                        QV =accountsInfo.QV,
+                        CV =accountsInfo.CV,
+                        Percentage =accountsInfo.Percentage,
+                        OriginalAmount =accountsInfo.OriginalAmount,
+                        Adjustment =accountsInfo.Adjustment,
+                        PayoutAmount =accountsInfo.PayoutAmount,
+                        CurrencyTypeID =accountsInfo.CurrencyTypeID,
+                        AccountSponsorTypeID =accountsInfo.AccountSponsorTypeID,
+                        TreeLevel =accountsInfo.TreeLevel,
+                        PeriodID =accountsInfo.PeriodID,
+                        ParentOrderID =accountsInfo.ParentOrderID,
+                        CorpOriginalAmount =accountsInfo.CorpOriginalAmount,
+                        CorpAdjustment =accountsInfo.CorpAdjustment,
+                        CorpPayoutAmount =accountsInfo.CorpPayoutAmount,
+                        CorpCurrencyTypeID =accountsInfo.CorpCurrencyTypeID,
+                        DateModified =accountsInfo.DateModified,
+                        INDICATORPAYMENT =accountsInfo.INDICATORPAYMENT,
+                        PERIODIDPAYMENT =accountsInfo.PERIODIDPAYMENT
+                    };
         }
 
         public void MigrateAccounts(string country)
@@ -273,6 +333,61 @@ namespace Belcorp.Encore.Application.Services
 
                 termTranslationsCollection.InsertMany(termTranslations_Mongo);
             }
+        }
+
+        public void MigrateAccountKPIsDetailsByPeriod(string country = null, int? periodId=null)
+        {
+            IMongoCollection<AccountKPIsDetails_Mongo> AccountKPIsDetailsCollection = encoreMongo_Context.AccountKPIsDetailsProvider(country);
+
+             if (periodId == null)
+            {
+                periodId = GetCurrentPeriod();
+            }
+
+            var total = accountKPIsDetailsRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
+            int ii = total.TotalPages;
+            
+            AccountKPIsDetailsCollection.DeleteMany(p => p.PeriodID == periodId);
+
+            for (int i = 0; i < ii; i++)
+            {
+                var AccountKPIsDetailsInformation = accountKPIsDetailsRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
+                IEnumerable<AccountKPIsDetails_Mongo> result = GetAccountKPIsDetails(AccountKPIsDetailsInformation);
+
+                AccountKPIsDetailsCollection.InsertMany(result);
+            }
+        }
+
+        private IEnumerable<AccountKPIsDetails_Mongo> GetAccountKPIsDetails(IList<AccountKPIsDetails> AccountKPIsDetailsInformation)
+        {
+            return from kpiInfo in AccountKPIsDetailsInformation
+                   select new AccountKPIsDetails_Mongo
+                   {
+                       AccountKPIDetailID = kpiInfo.AccountKPIDetailID,
+                       PeriodID = kpiInfo.PeriodID,
+                       SponsorID = kpiInfo.SponsorID,
+                       SponsorName = kpiInfo.SponsorName,
+                       DownlineID = kpiInfo.DownlineID,
+                       DownlineName = kpiInfo.DownlineName,
+                       KPICode = kpiInfo.KPICode,
+                       Value = kpiInfo.Value,
+                       Percentage = kpiInfo.Percentage,
+                       DownlinePaidAsTitle = kpiInfo.DownlinePaidAsTitle,
+                       CurrencyTypeID = kpiInfo.CurrencyTypeID,
+                       AccountSponsorTypeID = kpiInfo.AccountSponsorTypeID,
+                       TreeLevel = kpiInfo.TreeLevel,
+                       DateModified = kpiInfo.DateModified
+                   };
+        }
+
+        private int? GetCurrentPeriod()
+        {
+            int? periodId;
+            IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
+            var date = DateTime.Now;
+            var result = periodsRepository.GetFirstOrDefault(p => date >= p.StartDateUTC && date <= p.EndDateUTC && p.PlanID == 1, null, null, true);
+            periodId = result.PeriodID;
+            return periodId;
         }
     }
 }
