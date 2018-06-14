@@ -38,6 +38,14 @@ namespace Belcorp.Encore.Api.Controllers
             return Json(new { Status = "Processing Background" } );
         }
 
+        [HttpGet("bonusdetails/{periodId}")]
+        [AutomaticRetry(Attempts = 0)]
+        public ActionResult BonusDetails(int periodId, string country = null)
+        {
+            BackgroundJob.Enqueue(() => migrateService.MigrateBonusDetailsByPeriod(country, periodId));
+            return Json(new { Status = "Processing Background" });
+        }
+
         [HttpGet("accounts")]
         [AutomaticRetry(Attempts = 0)]
         public ActionResult Accounts(string country = null)
