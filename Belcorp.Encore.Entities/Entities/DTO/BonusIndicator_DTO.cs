@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Belcorp.Encore.Entities.Entities.DTO
 {
-    public class BonusDetails_DTO
+    public class BonusIndicator_DTO
     {
         public int BonusDetailID { get; set; }
         public int SponsorID { get; set; }

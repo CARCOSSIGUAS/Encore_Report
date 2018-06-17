@@ -42,9 +42,16 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public int? TreeLevel { get; set; }
         public int? PeriodID { get; set; }
         public int? ParentOrderID { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? CorpOriginalAmount { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? CorpAdjustment { get; set; }
+
+        [BsonRepresentation(BsonType.Double)]
         public decimal? CorpPayoutAmount { get; set; }
+
         public int? CorpCurrencyTypeID { get; set; }
         public DateTime? DateModified { get; set; }
         public string INDICATORPAYMENT { get; set; }

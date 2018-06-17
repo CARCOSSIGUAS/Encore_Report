@@ -38,25 +38,24 @@ namespace Belcorp.Encore.Application.Services
                     var datetimeNow = DateTime.Now;
                     var period = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
 
-                    var result = accountInformationCollection.Find(ai => ai.AccountID == account.AccountID &&
-                                                                                            ai.PeriodID == period.PeriodID
-                                                                                     )
-                                                                                .ToList()
-                                                                                .Select(ai => new AccountHomeHeader_DTO()
-                                                                                {
-                                                                                    LeftBower = ai.LeftBower,
-                                                                                    RightBower = ai.RightBower,
-                                                                                    account = account,
-                                                                                    CareerTitle = ai.CareerTitle,
-                                                                                    CareerTitle_Des = ai.CareerTitle_Des,
-                                                                                    periodStartDateUTC = period == null ? null : period.StartDateUTC,
-                                                                                    periodEndDateUTC = period == null ? null : period.EndDateUTC,
-                                                                                    periodDescription = period == null ? "" : period.Description,
-                                                                                    periodId = period == null ? 0 : period.PeriodID,
-                                                                                    cantFinalPeriodo = TimeLimitEndPeriod(period == null ? null : period.EndDateUTC)
-                                                                                });
+                    AccountHomeHeader_DTO accountHomeHeader_DTO = new AccountHomeHeader_DTO()
+                    {
+                         account = account,
+                         periodStartDateUTC = period == null ? null : period.StartDateUTC,
+                         periodEndDateUTC = period == null ? null : period.EndDateUTC,
+                         periodDescription = period == null ? "" : period.Description,
+                         periodId = period == null ? 0 : period.PeriodID,
+                         cantFinalPeriodo = TimeLimitEndPeriod(period == null ? null : period.EndDateUTC)
+                    };
 
-                    return result.FirstOrDefault();
+                    var result = accountInformationCollection.Find(ai => ai.PeriodID == period.PeriodID && ai.AccountID == account.AccountID).FirstOrDefault();
+                    if(result != null)
+                    {
+                        accountHomeHeader_DTO.CareerTitle = result.CareerTitle;
+                        accountHomeHeader_DTO.CareerTitle_Des = result.CareerTitle_Des;
+                    }
+
+                    return accountHomeHeader_DTO;
                 }
 
                 return null;
@@ -102,9 +101,7 @@ namespace Belcorp.Encore.Application.Services
 
             var period = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
 
-            var result = await accountInformationCollection.Find(ai => ai.AccountID == accountId &&
-                                                                                          ai.PeriodID == period.PeriodID
-                                                                                   ).ToListAsync();
+            var result = await accountInformationCollection.Find(ai => ai.AccountID == accountId && ai.PeriodID == period.PeriodID).ToListAsync();
 
             return result.Select(ai => new PerformanceIndicator_DTO
                                         {
@@ -119,54 +116,65 @@ namespace Belcorp.Encore.Application.Services
                                 ).FirstOrDefault();
         }
 
-        public KpiIndicatorPivot_DTO GetkpisIndicator(int periodID, int SponsorID, int DownLineID, string country = null)
+        public KpisIndicator_DTO GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country)
         {
-        //    KpiIndicator_DTO kpiIndicator_DTO = new KpiIndicator_DTO();
-            List<string> codigos = new List<string> {"DCV","DQV","GCV","GQV" };
-            KpiIndicatorPivot_DTO kpiIndicatorPivot_DTO = new KpiIndicatorPivot_DTO();
-            foreach (var item in codigos)
+            List<string> codigos = new List<string> { "DCV", "DQV", "GCV", "GQV" };
+            IMongoCollection<AccountKPIsDetails_Mongo> accountKpisDetailsCollection = encoreMongo_Context.AccountKPIsDetailsProvider(country);
+            var main = accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == SponsorID && a.DownlineID == DownLineID).FirstOrDefault();
+
+            if (main != null)
             {
-                IMongoCollection<AccountKPIsDetails_Mongo> accountKpisDetailsCollection = encoreMongo_Context.AccountKPIsDetailsProvider(country);
-                var result = accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == SponsorID && a.DownlineID == DownLineID && a.KPICode == item).FirstOrDefault();
-                switch (item)
+                KpisIndicator_DTO kpisIndicator_DTO = new KpisIndicator_DTO()
                 {
-                    case "DCV":
-                        kpiIndicatorPivot_DTO.PeriodID = result.PeriodID;
-                        kpiIndicatorPivot_DTO.SponsorID = result.SponsorID;
-                        kpiIndicatorPivot_DTO.SponsorName = result.SponsorName;
-                        kpiIndicatorPivot_DTO.DownlineID = result.DownlineID;
-                        kpiIndicatorPivot_DTO.DownlineName = result.DownlineName;
-                        kpiIndicatorPivot_DTO.DCV = result.Value;
-                        kpiIndicatorPivot_DTO.Percentage = result.Percentage;
-                        kpiIndicatorPivot_DTO.DownlinePaidAsTitle = result.DownlinePaidAsTitle;
-                        kpiIndicatorPivot_DTO.CurrencyTypeID = result.CurrencyTypeID;
-                        kpiIndicatorPivot_DTO.AccountSponsorTypeID = result.AccountSponsorTypeID;
-                        kpiIndicatorPivot_DTO.TreeLevel = result.TreeLevel;
-                        kpiIndicatorPivot_DTO.DateModified = result.DateModified;
-                        break;
-                    case "DQV":
-                        kpiIndicatorPivot_DTO.DQV = result.Value;
-                        break;
-                    case "GCV":
-                        kpiIndicatorPivot_DTO.GCV = result.Value;
-                        break;
-                    case "GQV":
-                        kpiIndicatorPivot_DTO.GQV = result.Value;
-                        break;
+                    PeriodID = main.PeriodID,
+                    SponsorID = main.SponsorID,
+                    SponsorName = main.SponsorName,
+                    DownlineID = main.DownlineID,
+                    DownlineName = main.DownlineName,
+                    Percentage = main.Percentage,
+                    DownlinePaidAsTitle = main.DownlinePaidAsTitle,
+                    CurrencyTypeID = main.CurrencyTypeID,
+                    AccountSponsorTypeID = main.AccountSponsorTypeID,
+                    TreeLevel = main.TreeLevel,
+                    DateModified = main.DateModified
+                };
+
+                foreach (var item in codigos)
+                {
+                    var result = accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == SponsorID && a.DownlineID == DownLineID && a.KPICode == item).FirstOrDefault();
+                    switch (item)
+                    {
+                        case "DCV":
+                            kpisIndicator_DTO.DCV = result.Value;
+                            break;
+                        case "DQV":
+                            kpisIndicator_DTO.DQV = result.Value;
+                            break;
+                        case "GCV":
+                            kpisIndicator_DTO.GCV = result.Value;
+                            break;
+                        case "GQV":
+                            kpisIndicator_DTO.GQV = result.Value;
+                            break;
+                    }
                 }
+
+                return kpisIndicator_DTO;
             }
-            return kpiIndicatorPivot_DTO;
+
+            return new KpisIndicator_DTO();
         }
             
 
-        public BonusDetails_DTO GetBonusIndicator(int SponsorID, int periodID, string country)
+        public BonusIndicator_DTO GetBonusIndicator(int periodID, int SponsorID, int DownlineID, string country)
         {
-            BonusDetails_DTO bonusDetails_DTO = new BonusDetails_DTO();
-            IMongoCollection<BonusDetails_Mongo> accountKpisDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
-            var result = accountKpisDetailsCollection.Find(a => a.SponsorID == SponsorID && a.PeriodID == periodID).FirstOrDefault();
+            BonusIndicator_DTO bonusDetails_DTO = new BonusIndicator_DTO();
+            IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
+            var result = bonusDetailsCollection.Find(b => b.PeriodID == periodID && b.SponsorID == SponsorID && b.DownlineID == DownlineID).FirstOrDefault();
+
             if (result != null)
             {
-                return new BonusDetails_DTO
+                return new BonusIndicator_DTO
                 {
                     BonusDetailID = result.BonusDetailID,
                     SponsorID = result.SponsorID,
