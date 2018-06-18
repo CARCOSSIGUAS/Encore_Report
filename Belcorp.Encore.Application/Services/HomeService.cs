@@ -121,7 +121,6 @@ namespace Belcorp.Encore.Application.Services
 
         public KpiIndicatorPivot_DTO GetkpisIndicator(int periodID, int SponsorID, int DownLineID, string country = null)
         {
-        //    KpiIndicator_DTO kpiIndicator_DTO = new KpiIndicator_DTO();
             List<string> codigos = new List<string> {"DCV","DQV","GCV","GQV" };
             KpiIndicatorPivot_DTO kpiIndicatorPivot_DTO = new KpiIndicatorPivot_DTO();
             foreach (var item in codigos)
@@ -157,7 +156,6 @@ namespace Belcorp.Encore.Application.Services
             }
             return kpiIndicatorPivot_DTO;
         }
-            
 
         public BonusDetails_DTO GetBonusIndicator(int SponsorID, int periodID, string country)
         {
