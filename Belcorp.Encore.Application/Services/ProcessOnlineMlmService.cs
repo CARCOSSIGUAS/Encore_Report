@@ -1,20 +1,18 @@
 ﻿using Belcorp.Encore.Application.Interfaces;
+using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Data.Contexts;
+using Belcorp.Encore.Entities.Constants;
+using Belcorp.Encore.Entities.Entities.Commissions;
+using Belcorp.Encore.Entities.Entities.Core;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Repositories;
 using Belcorp.Encore.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Belcorp.Encore.Entities.Constants;
-using Belcorp.Encore.Entities.Entities.Core;
-using Belcorp.Encore.Entities.Entities.Commissions;
-using Belcorp.Encore.Entities.Entities.Mongo;
-using Microsoft.Extensions.Options;
-using Belcorp.Encore.Data;
-using Microsoft.Extensions.Configuration;
-using Belcorp.Encore.Application.Services.Interfaces;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -95,10 +93,11 @@ namespace Belcorp.Encore.Application.Services
 
                 var parentLog = PersonalIndicatorLog_Insert();
 
-                Indicadores_InPersonal(QV, CV, RV, parentLog);
-                Indicadores_InDivision(QV, CV, RV, parentLog);
-                Indicadores_InTableReports(QV, CV, RV, parentLog);
-                Indicadores_InOrderCalculationsOnline(QV, CV, RV, parentLog);
+                Indicators_InPersonal(QV, CV, RV, parentLog);
+                Indicators_InDivision(QV, CV, RV, parentLog);
+                Indicators_InTableReports(QV, CV, RV, parentLog);
+                Indicators_InOrderCalculationsOnline(QV, CV, RV, parentLog);
+                Execute_Activities(parentLog);
                 Migrate_AccountInformationByAccountId(parentLog, country);
 
                 PersonalIndicatorLog_Update(parentLog);
@@ -188,7 +187,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos Personales
-        public void Indicadores_InPersonal(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InPersonal(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
         {
             int calculationType_PQV = CalculationTypes.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
             int calculationType_PCV = CalculationTypes.Where(c => c.Code == "PCV").FirstOrDefault().CalculationTypeID;
@@ -242,7 +241,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos Divison
-        public void Indicadores_InDivision(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InDivision(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
         {
             var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationDivisionIndicator");
             try
@@ -335,7 +334,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos OrdercalculationsOnline
-        public void Indicadores_InOrderCalculationsOnline(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InOrderCalculationsOnline(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
         {
             var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationOrderCalculationIndicator");
 
@@ -401,7 +400,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Actualizar Reportes
-        public void Indicadores_InTableReports(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InTableReports(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
         {
             var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationTableReportsIndicator");
 
@@ -486,6 +485,73 @@ namespace Belcorp.Encore.Application.Services
             PersonalIndicatorDetailLog_Update(childLog);
         }
 
+        #endregion
+
+        #region Actividades
+        public void Execute_Activities(PersonalIndicatorLog parentLog)
+        {
+            var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessExecutionActivities");
+            try
+            {
+                if (childLog != null && childLog.EndTime == null)
+                {
+                    processOnlineRepository.Execute_Activities(Order.OrderID);
+                }
+            }
+            catch (Exception ex)
+            {
+                childLog.RealError = "Error";
+            }
+
+            PersonalIndicatorDetailLog_Update(childLog);
+        }
+
+        public void Update_Activities()
+        {
+            IRepository<RuleTypes> ruleTypesRepository = unitOfWork_Comm.GetRepository<RuleTypes>();
+            var ruleType = ruleTypesRepository.GetFirstOrDefault(rt => rt.Name == "Qualification" && rt.Active == true, null, rt => rt.Include(r => r.RequirementRules), true);
+
+            string typePrice;
+            decimal ? amountCalification;
+
+            typePrice = ruleType.RequirementRules.Value1;
+            amountCalification = decimal.Parse(ruleType.RequirementRules.Value2);
+
+            if (!String.IsNullOrEmpty(typePrice) && amountCalification.HasValue)
+            {
+                int calculationTypeID = CalculationTypes.Where(c => c.Code == typePrice).FirstOrDefault().CalculationTypeID;
+
+                var result = accountKPIsRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID && a.CalculationTypeID == calculationTypeID, null, null, true);
+
+                if (result != null)
+                {
+                    bool isQualified;
+                    isQualified = (result.Value >= amountCalification) ? true : false;
+
+                    IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
+                    var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID, null, null, false);
+
+                    if (activity != null)
+                    {
+                        activity.IsQualified = isQualified;
+                    }
+                    else
+                    {
+                        activitiesRepository.Insert(
+                            new Activities
+                            {
+                                AccountID = Order.AccountID,
+                                ActivityStatusID = 1,
+                                PeriodID = PeriodId,
+                                IsQualified = isQualified
+                            }
+                        );
+                    }
+
+                    unitOfWork_Core.SaveChanges();
+                }
+            }
+        }
         #endregion
 
         #region Actualizar Mongo

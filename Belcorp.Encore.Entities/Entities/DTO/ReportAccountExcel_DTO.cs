@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Belcorp.Encore.Entities.Entities.DTO
 {
-    public class Excel_DTO
+    public class ReportAccountExcel_DTO
     {
         public int AccountID { get; set; }
         public string AccountName { get; set; }
