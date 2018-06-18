@@ -36,9 +36,9 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
-        public static List<Excel_DTO> ToExcel_DTO(this List<AccountsInformation_MongoWithAccountAndSponsor> list)
+        public static List<ReportAccountExcel_DTO> ToExcel_DTO(this List<AccountsInformation_MongoWithAccountAndSponsor> list)
         {
-            var result = list.Select(ai => new Excel_DTO()
+            var result = list.Select(ai => new ReportAccountExcel_DTO()
             {
                 AccountID = ai.AccountID,
                 AccountName = ai.AccountName,
