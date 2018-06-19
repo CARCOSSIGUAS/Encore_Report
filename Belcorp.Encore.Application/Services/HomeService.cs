@@ -164,7 +164,6 @@ namespace Belcorp.Encore.Application.Services
 
             return new KpisIndicator_DTO();
         }
-            
 
         public BonusIndicator_DTO GetBonusIndicator(int periodID, int SponsorID, int DownlineID, string country)
         {
