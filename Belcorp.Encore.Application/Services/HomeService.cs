@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -204,6 +205,53 @@ namespace Belcorp.Encore.Application.Services
                 };
             }
             return bonusDetails_DTO;
+        }
+
+        public List<Accounts_AccountsInformation> GetConsultant(string filter, string country = null)
+        {
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            var PeriodId = GetCurrentPeriod(country);
+
+            var filterDefinition = Builders<Accounts_Mongo>.Filter.Empty;
+            filterDefinition &= Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
+            //filterDefinition &= Builders<Accounts_Mongo>.Filter.Or(Builders<Accounts_Mongo>.Filter.Regex(ai => ai.LastName, new BsonRegularExpression(filter, "i")));
+
+            var filterDefinitionAI = Builders<Accounts_AccountsInformation>.Filter.Empty;
+            filterDefinitionAI &= Builders<Accounts_AccountsInformation>.Filter.Eq(ai => ai.AccountInformation.PeriodID, PeriodId);
+
+            var result = accountsCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Lookup<Accounts_Mongo, AccountsInformation_Mongo, Accounts_AccountsInformation>(
+                    accountInformationCollection,
+                    ai => ai.AccountID,
+                    a => a.AccountID,
+                    r => r.AccountInformation
+                )
+                .Match(filterDefinitionAI)
+                .Unwind(a => a.AccountInformation, new AggregateUnwindOptions<Accounts_AccountsInformation> { PreserveNullAndEmptyArrays = true })
+                .ToList();
+
+            if (result == null)
+            {
+                return new List<Accounts_AccountsInformation>();
+            }
+            return result;
+        }
+
+        private int GetCurrentPeriod(string country = null)
+        {
+            var datetimeNow = DateTime.Now;
+            IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
+            Periods_Mongo period = new Periods_Mongo();
+            var periodID = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
+            return periodID.PeriodID;
+        }
+
+        public class Accounts_AccountsInformation : Accounts_Mongo
+        {
+            public AccountsInformation_Mongo AccountInformation { get; set; }
         }
     }
 }

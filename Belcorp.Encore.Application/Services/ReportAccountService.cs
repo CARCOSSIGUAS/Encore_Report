@@ -227,7 +227,6 @@ namespace Belcorp.Encore.Application
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
-
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, PeriodId);
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, AccountId);
 
@@ -256,47 +255,14 @@ namespace Belcorp.Encore.Application
             }
             return result;
         }
-
-        public List<AccountsInformation_MongoWithAccountAndSponsor> GetConsultant(string filter, string country = null)
-        {
-            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
-            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
-
-            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression(filter, "i"));
-            //filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountID, new BsonRegularExpression(filter, "i"));
-
-
-            var result = accountInformationCollection
-                .Aggregate()
-                .Match(filterDefinition)
-                .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
-                    accountsCollection,
-                    ai => ai.AccountID,
-                    a => a.AccountID,
-                    r => r.Account
-                )
-                .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
-                .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
-                    accountsCollection,
-                    ai => ai.SponsorID,
-                    s => s.AccountID,
-                    r => r.Sponsor
-                )
-                .Unwind(a => a.Sponsor, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
-                .ToList();
-
-            if (result == null)
-            {
-                return new List<AccountsInformation_MongoWithAccountAndSponsor>();
-            }
-            return result;
-        }
     }
 
+        
     public class AccountsInformation_MongoWithAccountAndSponsor : AccountsInformation_Mongo
     {
         public Accounts_Mongo Account { get; set; }
         public Accounts_Mongo Sponsor { get; set; }
     }
+
+    
 }

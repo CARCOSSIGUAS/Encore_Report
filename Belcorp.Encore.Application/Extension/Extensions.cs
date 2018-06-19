@@ -1,7 +1,9 @@
 ﻿using Belcorp.Encore.Entities.Entities.DTO;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Belcorp.Encore.Application.Services.HomeService;
 
 namespace Belcorp.Encore.Application.Extension
 {
@@ -105,15 +107,15 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
-        public static List<ReportAccountFilter_DTO> ToAccountFilter_DTO(this List<AccountsInformation_MongoWithAccountAndSponsor> list)
+        public static List<AccountsAutocomplete_DTO> toAccountsAutocomplete_DTO(this List<Accounts_AccountsInformation> list)
         {
-            var result = list.Select(ai => new ReportAccountFilter_DTO()
+            var result = list.Select(ai => new AccountsAutocomplete_DTO()
             {
                 //photoURL = ai.photoURL,
                 photoURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT38n3CrP_ImhTcMxK2N8gwLnfHHVQaunUSS235Pk-JbFP6xkjw8w",
                 AccountID = ai.AccountID,
-                AccountName = ai.AccountName,
-                CareerTitle_Des = ai.CareerTitle_Des
+                AccountName = ai.FirstName + " " + ai.LastName,
+                CareerTitle = ai.AccountInformation != null ? ai.AccountInformation.CareerTitle_Des : "",
             }).ToList();
             return result;
         }
