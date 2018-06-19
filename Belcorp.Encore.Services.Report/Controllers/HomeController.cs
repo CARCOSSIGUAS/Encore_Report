@@ -54,9 +54,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("bonusindicator", Name = "GetBonusIndicator")]
-        public IActionResult GetBonusIndicator(int periodID, int SponsorID, int DownLineID, string country = null)
+        public IActionResult GetBonusIndicator(int periodID, int SponsorID,string country = null)
         {
-            var result = homeService.GetBonusIndicator(periodID, SponsorID, DownLineID, country);
+            var result = homeService.GetBonusIndicator(periodID, SponsorID,  country);
             if (result == null)
             {
                 return NotFound();

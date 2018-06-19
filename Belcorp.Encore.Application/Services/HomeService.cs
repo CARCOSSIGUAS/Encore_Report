@@ -165,42 +165,24 @@ namespace Belcorp.Encore.Application.Services
             return new KpisIndicator_DTO();
         }
 
-        public BonusIndicator_DTO GetBonusIndicator(int periodID, int SponsorID, int DownlineID, string country)
+        public BonusIndicator_DTO GetBonusIndicator(int periodID, int SponsorID, string country)
         {
             BonusIndicator_DTO bonusDetails_DTO = new BonusIndicator_DTO();
             IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
-            var result = bonusDetailsCollection.Find(b => b.PeriodID == periodID && b.SponsorID == SponsorID && b.DownlineID == DownlineID).FirstOrDefault();
+            var result = bonusDetailsCollection.Find(b => b.PeriodID == periodID && b.SponsorID == SponsorID).ToList();
+            var levelCode = "Level1,Level2,Level3,Level4";
+            var generationCode = "Generation1Title7,Generation2Title7,Generation3Title7,Generation4Title7,Generation5Title7,Generation1Title10,Generation2Title10";
+            var bonusCode = "TurboInfinityBonus,FastStartBonus,CoachingBonus,TeamBuildingBonus,AdvancementBonus,MatchingAdvacementBonus,ConsistencyBonus,SubsidyBonus,RetailProfitBonus,2DaySizzlePromotion,30 % Discount Adjustment, Ambassador Payout Subsidy,BA3 Advancement Bonus,BA3 MatchAdvancementBonus,BM Advancement Bonus,BMMatchAdvancementBonus,Bonus Adjustment,Fast Cash Bonus,FoundersClubPool,GenerationOverrides,Generations,Group Commission,GroupVolumeOverrides,LCMAdvancementBonus,Level1 - 3Overrides,  MatchAdvancementBonus,MatchingMentorBonus,Leadership,BusinessmanForm,FormingBusinessman,Group Commission,Generation1Trans,Generation2Trans,Generation4Trans,MentorBonus,PowerSellerBonus,Productivity - AddBonus,RankAdvAddBonus,Rank MaintainAddBonus,Rank Maintenance - BD,Retail Profit Commission,Generation3Trans,ExtraBonusPack";
+
 
             if (result != null)
             {
                 return new BonusIndicator_DTO
                 {
-                    BonusDetailID = result.BonusDetailID,
-                    SponsorID = result.SponsorID,
-                    SponsorName = result.SponsorName,
-                    DownlineID = result.DownlineID,
-                    DownlineName = result.DownlineName,
-                    BonusTypeID = result.BonusTypeID,
-                    BonusCode = result.BonusCode,
-                    OrderID = result.OrderID,
-                    QV = result.QV,
-                    CV = result.CV,
-                    Percentage = result.Percentage,
-                    OriginalAmount = result.OriginalAmount,
-                    Adjustment = result.Adjustment,
-                    PayoutAmount = result.PayoutAmount,
-                    CurrencyTypeID = result.CurrencyTypeID,
-                    AccountSponsorTypeID = result.AccountSponsorTypeID,
-                    TreeLevel = result.TreeLevel,
-                    PeriodID = result.PeriodID,
-                    ParentOrderID = result.ParentOrderID,
-                    CorpOriginalAmount = result.CorpOriginalAmount,
-                    CorpAdjustment = result.CorpAdjustment,
-                    CorpPayoutAmount = result.CorpPayoutAmount,
-                    CorpCurrencyTypeID = result.CorpCurrencyTypeID,
-                    DateModified = result.DateModified,
-                    INDICATORPAYMENT = result.INDICATORPAYMENT,
-                    PERIODIDPAYMENT = result.PERIODIDPAYMENT
+                    PayoutAmount = result.Sum(x=>x.PayoutAmount),
+                    PayoutAmountLevel = result.Where(x=> levelCode.Split(",").Any(q=>q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount),
+                    PayoutAmountGeneration = result.Where(x => generationCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount),
+                    PayoutAmountBonus = result.Where(x => bonusCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount)
                 };
             }
             return bonusDetails_DTO;

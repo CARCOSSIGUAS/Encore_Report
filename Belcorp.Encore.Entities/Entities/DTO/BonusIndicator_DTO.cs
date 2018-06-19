@@ -34,5 +34,10 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public DateTime? DateModified { get; set; }
         public string INDICATORPAYMENT { get; set; }
         public int? PERIODIDPAYMENT { get; set; }
+
+
+        public decimal? PayoutAmountLevel { get; set; }
+        public decimal? PayoutAmountGeneration { get; set; }
+        public decimal? PayoutAmountBonus { get; set; }
     }
 }
