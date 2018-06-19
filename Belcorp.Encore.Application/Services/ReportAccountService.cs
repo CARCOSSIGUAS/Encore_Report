@@ -221,15 +221,15 @@ namespace Belcorp.Encore.Application
             return result;
         }
 
-        public AccountsInformation_MongoWithAccountAndSponsor GetConsultantDetails(int AccountId, int PeriodId, string country = null)
+        public AccountsInformation_MongoWithAccountAndSponsor GetConsultantDetails(int periodId, int accountId, string country = null)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, PeriodId);
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, AccountId);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodId);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountId);
 
             var result = accountInformationCollection
                 .Aggregate()

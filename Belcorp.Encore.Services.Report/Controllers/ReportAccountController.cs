@@ -158,14 +158,14 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("consultantdetails", Name = "GetConsultantDetails")]
-        public IActionResult GetConsultantDetails(int AccountId, int PeriodId, string country = null)
+        public IActionResult GetConsultantDetails(int periodId, int accountId, string country = null)
         {
-            if (AccountId == 0 && PeriodId == 0)
+            if (accountId == 0 && periodId == 0)
             {
                 return BadRequest();
             }
 
-            var result = reportAccountService.GetConsultantDetails(AccountId, PeriodId, country);
+            var result = reportAccountService.GetConsultantDetails(periodId, accountId, country);
 
             if (result == null)
             {
