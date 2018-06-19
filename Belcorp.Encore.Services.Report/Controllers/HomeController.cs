@@ -41,10 +41,10 @@ namespace Belcorp.Encore.Services.Report.Controllers
             return Ok(result);
         }
 
-        [HttpGet("kpisIndicator", Name = "GetKpisIndicator")]
+        [HttpGet("kpisindicator", Name = "GetKpisIndicator")]
         public IActionResult GetkpisIndicator(int periodID, int SponsorID, int DownLineID, string country = null)
         {
-            var result = homeService.GetkpisIndicator(periodID, SponsorID, DownLineID, country);
+            var result = homeService.GetKpisIndicator(periodID, SponsorID, DownLineID, country);
             if (result == null)
             {
                 return NotFound();
@@ -53,10 +53,10 @@ namespace Belcorp.Encore.Services.Report.Controllers
             return Ok(result);
         }
 
-        [HttpGet("bonusIndicator", Name = "GetBonusIndicator")]
-        public IActionResult GetBonusIndicator(int SponsorID, int periodID, string country = null)
+        [HttpGet("bonusindicator", Name = "GetBonusIndicator")]
+        public IActionResult GetBonusIndicator(int periodID, int SponsorID, int DownLineID, string country = null)
         {
-            var result = homeService.GetBonusIndicator(SponsorID, periodID, country);
+            var result = homeService.GetBonusIndicator(periodID, SponsorID, DownLineID, country);
             if (result == null)
             {
                 return NotFound();

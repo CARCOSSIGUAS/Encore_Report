@@ -74,18 +74,17 @@ namespace Belcorp.Encore.Api
 
             #region HangFire_Jobs
 
-            //JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:" + connection).Value, Configuration.GetSection("Encore_Mongo:Database_HangFire").Value + "_" + Configuration.GetSection("Encore:Country").Value);
-            //var provider = services.BuildServiceProvider();
-            //IMigrateService migrateService = provider.GetService<IMigrateService>();
-            //IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();
-            //IProcessOnlineMlmService processOnlineMlmService = provider.GetService<IProcessOnlineMlmService>();
+            JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:" + connection).Value, Configuration.GetSection("Encore_Mongo:Database_HangFire").Value + "_" + Configuration.GetSection("Encore:Country").Value);
+            var provider = services.BuildServiceProvider();
+            IMigrateService migrateService = provider.GetService<IMigrateService>();
+            IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();
+            IProcessOnlineMlmService processOnlineMlmService = provider.GetService<IProcessOnlineMlmService>();
 
+            //Todos los dias a las 03:00
+            RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => migrateService.MigrateAccountInformationByPeriod(null, Configuration.GetSection("Encore:Country").Value), Configuration.GetSection("Encore:ScheduleTask").Value);
 
-            ////Todos los dias a las 03:00
-            //RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => migrateService.MigrateAccountInformationByPeriod(Configuration.GetSection("Encore:Country").Value, null), Configuration.GetSection("Encore:ScheduleTask").Value);
-
-            ////Todos los dias, cada 10 minutos
-            //RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(Configuration.GetSection("Encore:Country").Value), Cron.MinuteInterval(int.Parse(Configuration.GetSection("Encore:ScheduleTaskDaily").Value)));
+            //Todos los dias, cada 10 minutos
+            RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(Configuration.GetSection("Encore:Country").Value), Cron.MinuteInterval(int.Parse(Configuration.GetSection("Encore:ScheduleTaskDaily").Value)));
             #endregion
 
             services.AddMvc();
@@ -94,10 +93,6 @@ namespace Belcorp.Encore.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseCors(builder =>
-                        builder.WithOrigins("http://localhost:3000")
-                        .AllowAnyHeader());
-
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 HeartbeatInterval = new System.TimeSpan(0, 5, 0),

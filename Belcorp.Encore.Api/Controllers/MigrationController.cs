@@ -30,19 +30,19 @@ namespace Belcorp.Encore.Api.Controllers
             monitorMongoService = _monitorMongoService;
         }
 
-        [HttpGet("accountsInformation/{periodId}")]
+        [HttpGet("accountsinformation/{periodId}")]
         [AutomaticRetry(Attempts = 0)]
         public ActionResult AccountsInformation(int periodId, string country = null)
         {
-            BackgroundJob.Enqueue(() => migrateService.MigrateAccountInformationByPeriod(country, periodId));
+            BackgroundJob.Enqueue(() => migrateService.MigrateAccountInformationByPeriod(periodId, country));
             return Json(new { Status = "Processing Background" } );
         }
 
         [HttpGet("bonusdetails/{periodId}")]
         [AutomaticRetry(Attempts = 0)]
-        public ActionResult BonusDetails(string country = null, int? periodId = null)
+        public ActionResult BonusDetails(int? periodId = null, string country = null)
         {
-            BackgroundJob.Enqueue(() => migrateService.MigrateBonusDetailsByPeriod(country, periodId));
+            BackgroundJob.Enqueue(() => migrateService.MigrateBonusDetailsByPeriod(periodId, country));
             return Json(new { Status = "Processing Background" });
         }
 
@@ -70,11 +70,11 @@ namespace Belcorp.Encore.Api.Controllers
             return Json(new { Status = "Processing Background" });
         }
 
-        [HttpGet("accountKpisDetails/{periodId}")]
+        [HttpGet("accountkpisdetails/{periodId}")]
         [AutomaticRetry(Attempts = 0)]
-        public ActionResult AccountKPIsDetails(string country = null, int? periodId = null)
+        public ActionResult AccountKPIsDetails(int? periodId = null, string country = null)
         {
-            BackgroundJob.Enqueue(() => migrateService.MigrateAccountKPIsDetailsByPeriod(country, periodId));
+            BackgroundJob.Enqueue(() => migrateService.MigrateAccountKPIsDetailsByPeriod(periodId, country));
             return Json(new { Status = "Processing Background" });
         }
     }
