@@ -44,7 +44,7 @@ namespace Belcorp.Encore.Application.Services
             encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
-        public void MigrateAccountInformationByPeriod(string country, int? periodId = null)
+        public void MigrateAccountInformationByPeriod(int? periodId = null, string country = null)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
@@ -53,17 +53,17 @@ namespace Belcorp.Encore.Application.Services
                 periodId = GetCurrentPeriod();
             }
 
-            var total = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
+            var total = accountInformationRepository.GetPagedList(a => a.PeriodID == periodId, null, null, 0, 10000, true);
             int ii = total.TotalPages;
 
             IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
             var titles = titlesRepository.GetAll().ToList();
 
-            accountInformationCollection.DeleteMany(p => p.PeriodID == periodId);
+            accountInformationCollection.DeleteMany(a => a.PeriodID == periodId);
 
             for (int i = 0; i < ii; i++)
             {
-                var accountsInformation = accountInformationRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
+                var accountsInformation = accountInformationRepository.GetPagedList(a => a.PeriodID == periodId, a => a.OrderBy(o => o.AccountsInformationID), null, i, 10000, true).Items;
                 IEnumerable<AccountsInformation_Mongo> result = GetAccountInformations(titles, accountsInformation);
 
                 accountInformationCollection.InsertMany(result);
@@ -155,7 +155,7 @@ namespace Belcorp.Encore.Application.Services
                    };
         }
 
-        public void MigrateBonusDetailsByPeriod(string country = null, int? periodId = null)
+        public void MigrateBonusDetailsByPeriod(int? periodId = null, string country = null)
         {
             IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
 
@@ -164,14 +164,14 @@ namespace Belcorp.Encore.Application.Services
                 periodId = GetCurrentPeriod();
             }
 
-            var total = bonusDetailsRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
+            var total = bonusDetailsRepository.GetPagedList(b => b.PeriodID == periodId, null, null, 0, 10000, true);
             int ii = total.TotalPages;
 
-            bonusDetailsCollection.DeleteMany(p => p.PeriodID == periodId);
+            bonusDetailsCollection.DeleteMany(b => b.PeriodID == periodId);
 
             for (int i = 0; i < ii; i++)
             {
-                var bonusDetails = bonusDetailsRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
+                var bonusDetails = bonusDetailsRepository.GetPagedList(b => b.PeriodID == periodId, b => b.OrderBy(o => o.BonusDetailID), null, i, 10000, true).Items;
                 IEnumerable<BonusDetails_Mongo> result = GetBonusDetails(bonusDetails);
 
                 bonusDetailsCollection.InsertMany(result);
@@ -223,7 +223,7 @@ namespace Belcorp.Encore.Application.Services
 
             for (int i = 0; i < ii; i++)
             {
-                var accounts = accountsRepository.GetPagedList(null, null, a => a.Include(p => p.AccountPhones).Include(p => p.AccountAddresses).ThenInclude(p => p.Addresses), i, 5000, true).Items;
+                var accounts = accountsRepository.GetPagedList(null, a => a.OrderBy(o => o.AccountID), a => a.Include(p => p.AccountPhones).Include(p => p.AccountAddresses).ThenInclude(p => p.Addresses), i, 5000, true).Items;
 
                 List<Accounts_Mongo> accounts_Mongo = new List<Accounts_Mongo>();
                 foreach (var account in accounts)
@@ -271,7 +271,7 @@ namespace Belcorp.Encore.Application.Services
 
             for (int i = 0; i < ii; i++)
             {
-                var periods = periodsRepository.GetPagedList(null, null, null, i, 10000, true).Items;
+                var periods = periodsRepository.GetPagedList(null, p => p.OrderBy(o => o.PeriodID), null, i, 10000, true).Items;
 
                 List<Periods_Mongo> periods_Mongo = new List<Periods_Mongo>();
                 foreach (var period in periods)
@@ -312,7 +312,7 @@ namespace Belcorp.Encore.Application.Services
 
             for (int i = 0; i < ii; i++)
             {
-                var termTranslations = termTranslationsRepository.GetPagedList(null, null, t => t.Include(l => l.Languages), i, 10000, true).Items;
+                var termTranslations = termTranslationsRepository.GetPagedList(null, t => t.OrderBy(o => o.TermTranslationID), t => t.Include(l => l.Languages), i, 10000, true).Items;
 
                 List<TermTranslations_Mongo> termTranslations_Mongo = new List<TermTranslations_Mongo>();
                 foreach (var termTranslation in termTranslations)
@@ -335,23 +335,23 @@ namespace Belcorp.Encore.Application.Services
             }
         }
 
-        public void MigrateAccountKPIsDetailsByPeriod(string country = null, int? periodId=null)
+        public void MigrateAccountKPIsDetailsByPeriod(int? periodId = null, string country = null)
         {
             IMongoCollection<AccountKPIsDetails_Mongo> AccountKPIsDetailsCollection = encoreMongo_Context.AccountKPIsDetailsProvider(country);
 
-             if (periodId == null)
+            if (periodId == null)
             {
                 periodId = GetCurrentPeriod();
             }
 
-            var total = accountKPIsDetailsRepository.GetPagedList(p => p.PeriodID == periodId, null, null, 0, 10000, true);
+            var total = accountKPIsDetailsRepository.GetPagedList(a => a.PeriodID == periodId, null, null, 0, 10000, true);
             int ii = total.TotalPages;
             
-            AccountKPIsDetailsCollection.DeleteMany(p => p.PeriodID == periodId);
+            AccountKPIsDetailsCollection.DeleteMany(a => a.PeriodID == periodId);
 
             for (int i = 0; i < ii; i++)
             {
-                var AccountKPIsDetailsInformation = accountKPIsDetailsRepository.GetPagedList(p => p.PeriodID == periodId, null, null, i, 10000, true).Items;
+                var AccountKPIsDetailsInformation = accountKPIsDetailsRepository.GetPagedList(a => a.PeriodID == periodId, a => a.OrderBy(o => o.AccountKPIDetailID), null, i, 10000, true).Items;
                 IEnumerable<AccountKPIsDetails_Mongo> result = GetAccountKPIsDetails(AccountKPIsDetailsInformation);
 
                 AccountKPIsDetailsCollection.InsertMany(result);
