@@ -11,7 +11,7 @@ namespace Belcorp.Encore.Application.Services
         PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string country);
         Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods(string country);
         AccountsInformation_MongoWithAccountAndSponsor GetConsultantDetails(int AccountId, int PeriodId, string country = null);
-
+        List<AccountsInformation_MongoWithAccountAndSponsor> GetConsultant(string filter, string country = null);
 
     }
 }

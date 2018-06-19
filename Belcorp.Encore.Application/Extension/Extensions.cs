@@ -104,5 +104,18 @@ namespace Belcorp.Encore.Application.Extension
 
             return result;
         }
+
+        public static List<ReportAccountFilter_DTO> ToAccountFilter_DTO(this List<AccountsInformation_MongoWithAccountAndSponsor> list)
+        {
+            var result = list.Select(ai => new ReportAccountFilter_DTO()
+            {
+                //photoURL = ai.photoURL,
+                photoURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT38n3CrP_ImhTcMxK2N8gwLnfHHVQaunUSS235Pk-JbFP6xkjw8w",
+                AccountID = ai.AccountID,
+                AccountName = ai.AccountName,
+                CareerTitle_Des = ai.CareerTitle_Des
+            }).ToList();
+            return result;
+        }
     }
 }

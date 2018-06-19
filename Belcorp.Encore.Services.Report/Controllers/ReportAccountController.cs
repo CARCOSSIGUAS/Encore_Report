@@ -174,6 +174,23 @@ namespace Belcorp.Encore.Services.Report.Controllers
             
             return Ok(result.ToAccount_DTO());
         }
+
+        [HttpGet("consultant", Name = "GetConsultant")]
+        public IActionResult GetConsultant(string filter, string country = null)
+        {
+            //if (filter == null || filter == "")
+            //{
+            //    return badrequest();
+            //}
+            var result = reportAccountService.GetConsultant(filter, country);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Json(new { items = result.ToAccountFilter_DTO() });
+            //return Ok(result.ToAccountFilter_DTO());
+        }
     }
 }
 
