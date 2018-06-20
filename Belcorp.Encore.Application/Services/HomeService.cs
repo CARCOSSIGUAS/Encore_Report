@@ -165,11 +165,17 @@ namespace Belcorp.Encore.Application.Services
             return new KpisIndicator_DTO();
         }
 
-        public BonusIndicator_DTO GetBonusIndicator(int periodID, int SponsorID, string country)
+        public BonusIndicator_DTO GetBonusIndicator(int SponsorID, string country)
         {
+            var datetimeNow = DateTime.Now;
+
+            IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
+            var period = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
+
+
             BonusIndicator_DTO bonusDetails_DTO = new BonusIndicator_DTO();
             IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
-            var result = bonusDetailsCollection.Find(b => b.PeriodID == periodID && b.SponsorID == SponsorID).ToList();
+            var result = bonusDetailsCollection.Find(b => b.PeriodID == period.PeriodID && b.SponsorID == SponsorID).ToList();
             var levelCode = "Level1,Level2,Level3,Level4";
             var generationCode = "Generation1Title7,Generation2Title7,Generation3Title7,Generation4Title7,Generation5Title7,Generation1Title10,Generation2Title10";
             var bonusCode = "TurboInfinityBonus,FastStartBonus,CoachingBonus,TeamBuildingBonus,AdvancementBonus,MatchingAdvacementBonus,ConsistencyBonus,SubsidyBonus,RetailProfitBonus,2DaySizzlePromotion,30 % Discount Adjustment, Ambassador Payout Subsidy,BA3 Advancement Bonus,BA3 MatchAdvancementBonus,BM Advancement Bonus,BMMatchAdvancementBonus,Bonus Adjustment,Fast Cash Bonus,FoundersClubPool,GenerationOverrides,Generations,Group Commission,GroupVolumeOverrides,LCMAdvancementBonus,Level1 - 3Overrides,  MatchAdvancementBonus,MatchingMentorBonus,Leadership,BusinessmanForm,FormingBusinessman,Group Commission,Generation1Trans,Generation2Trans,Generation4Trans,MentorBonus,PowerSellerBonus,Productivity - AddBonus,RankAdvAddBonus,Rank MaintainAddBonus,Rank Maintenance - BD,Retail Profit Commission,Generation3Trans,ExtraBonusPack";
