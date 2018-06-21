@@ -89,7 +89,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                     ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Accounts");
                     int totalRows = result.TotalItems;
 
-                    var excel = result.List.ToExcel_DTO();
+                    var excel = result.List.ToReportAccountExcel_DTO();
 
                     worksheet.Cells["A1"].Value = termTranslationsService.GetLanguageTerm(language, "ConsultantCode", country);
                     worksheet.Cells["B1"].Value = termTranslationsService.GetLanguageTerm(language, "ConsultantName", country);
@@ -172,7 +172,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return NotFound();
             }
 
-            return Ok(result.ToAccount_DTO());
+            return Ok(result.ToReportAccount_DTO());
         }
     }
 }

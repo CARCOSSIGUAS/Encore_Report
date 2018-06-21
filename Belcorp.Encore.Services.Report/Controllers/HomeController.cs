@@ -66,10 +66,10 @@ namespace Belcorp.Encore.Services.Report.Controllers
             return Ok(result);
         }
 
-        [HttpGet("consultant", Name = "GetConsultant")]
+        [HttpGet("searchconsultant", Name = "GetConsultant")]
         public IActionResult GetConsultant(string filter, string country = null)
         {
-            var result = homeService.GetConsultant(filter, country);
+            var result = homeService.GetConsultantSearch(filter, country);
 
             if (result == null)
             {
