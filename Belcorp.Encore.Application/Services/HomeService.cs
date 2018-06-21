@@ -216,7 +216,8 @@ namespace Belcorp.Encore.Application.Services
 
             var filter_FirstName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
             var filter_LastName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.LastName, new BsonRegularExpression(filter, "i"));
-            filterDefinition &= Builders<Accounts_Mongo>.Filter.Or(filter_FirstName, filter_LastName);
+            var filterDefinitionAccounts = Builders<Accounts_Mongo>.Filter.Empty;
+            filterDefinitionAccounts &= Builders<Accounts_Mongo>.Filter.Or(filter_FirstName, filter_LastName);
 
             var filterDefinitionAccountInformations = Builders<Accounts_MongoWithAccountsInformation>.Filter.Empty;
             filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Eq(ai => ai.AccountInformation.PeriodID, period.PeriodID);
