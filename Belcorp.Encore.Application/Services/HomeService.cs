@@ -214,8 +214,10 @@ namespace Belcorp.Encore.Application.Services
             var PeriodId = GetCurrentPeriod(country);
 
             var filterDefinition = Builders<Accounts_Mongo>.Filter.Empty;
-            filterDefinition &= Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
-            //filterDefinition &= Builders<Accounts_Mongo>.Filter.Or(Builders<Accounts_Mongo>.Filter.Regex(ai => ai.LastName, new BsonRegularExpression(filter, "i")));
+            //filterDefinition &= Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
+            var filter1 = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
+            var filter2 = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.LastName, new BsonRegularExpression(filter, "i"));
+            filterDefinition &= Builders<Accounts_Mongo>.Filter.Or(filter1, filter2);
 
             var filterDefinitionAI = Builders<Accounts_AccountsInformation>.Filter.Empty;
             filterDefinitionAI &= Builders<Accounts_AccountsInformation>.Filter.Eq(ai => ai.AccountInformation.PeriodID, PeriodId);
