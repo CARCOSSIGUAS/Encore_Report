@@ -88,9 +88,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 {
                     ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Accounts");
                     int totalRows = result.TotalItems;
-                    
-                    var excel = result.List.ToExcel_DTO();
-                   
+
+                    var excel = result.List.ToReportAccountExcel_DTO();
+
                     worksheet.Cells["A1"].Value = termTranslationsService.GetLanguageTerm(language, "ConsultantCode", country);
                     worksheet.Cells["B1"].Value = termTranslationsService.GetLanguageTerm(language, "ConsultantName", country);
                     worksheet.Cells["C1"].Value = termTranslationsService.GetLanguageTerm(language, "DateEnrolled", country);
@@ -115,10 +115,10 @@ namespace Belcorp.Encore.Services.Report.Controllers
                     worksheet.Cells["U1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 7";
 
                     worksheet.Cells["V1"].Value = termTranslationsService.GetLanguageTerm(language, "SponsorCode", country);
-                    worksheet.Cells["W1"].Value = termTranslationsService.GetLanguageTerm(language, "SponsorName", country); 
+                    worksheet.Cells["W1"].Value = termTranslationsService.GetLanguageTerm(language, "SponsorName", country);
                     worksheet.Cells["X1"].Value = termTranslationsService.GetLanguageTerm(language, "Email", country);
-                    worksheet.Cells["Y1"].Value =  $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 1";
-                    worksheet.Cells["Z1"].Value =  $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 2";
+                    worksheet.Cells["Y1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 1";
+                    worksheet.Cells["Z1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 2";
                     worksheet.Cells["AA1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 3";
                     worksheet.Cells["AB1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 4";
                     worksheet.Cells["AC1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 5";
@@ -171,8 +171,8 @@ namespace Belcorp.Encore.Services.Report.Controllers
             {
                 return NotFound();
             }
-            
-            return Ok(result.ToAccount_DTO());
+
+            return Ok(result.ToReportAccount_DTO());
         }
     }
 }
