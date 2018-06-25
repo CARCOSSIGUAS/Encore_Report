@@ -216,15 +216,17 @@ namespace Belcorp.Encore.Application.Services
 
             var filter_FirstName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
             var filter_LastName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.LastName, new BsonRegularExpression(filter, "i"));
+            var AccountNumber = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.AccountNumber, new BsonRegularExpression(filter, "i"));
             var filterDefinitionAccounts = Builders<Accounts_Mongo>.Filter.Empty;
-            filterDefinitionAccounts &= Builders<Accounts_Mongo>.Filter.Or(filter_FirstName, filter_LastName);
+            filterDefinitionAccounts &= Builders<Accounts_Mongo>.Filter.Or(filter_FirstName, filter_LastName, AccountNumber);
 
             var filterDefinitionAccountInformations = Builders<Accounts_MongoWithAccountsInformation>.Filter.Empty;
             filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Eq(ai => ai.AccountInformation.PeriodID, period.PeriodID);
-
+            var limit = 10;
             var result = accountsCollection
                 .Aggregate()
                 .Match(filterDefinitionAccounts)
+                .Limit(limit)
                 .Lookup<Accounts_Mongo, AccountsInformation_Mongo, Accounts_MongoWithAccountsInformation>(
                     accountInformationCollection,
                     a => a.AccountID,
