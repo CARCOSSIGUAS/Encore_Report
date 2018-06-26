@@ -1,4 +1,5 @@
-﻿using Belcorp.Encore.Application.Services.Interfaces;
+﻿using Belcorp.Encore.Application.Extension;
+using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Services.Report.Filters;
 using Microsoft.AspNetCore.Mvc;
 
@@ -63,6 +64,18 @@ namespace Belcorp.Encore.Services.Report.Controllers
             }
 
             return Ok(result);
+        }
+
+        [HttpGet("searchconsultant", Name = "GetConsultant")]
+        public IActionResult GetConsultant(string filter, string country = null)
+        {
+            var result = homeService.GetConsultantSearch(filter, country);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Json(new { items = result.toAccountsAutocomplete_DTO() });
         }
     }
 }

@@ -258,9 +258,12 @@ namespace Belcorp.Encore.Application
         }
     }
 
+        
     public class AccountsInformation_MongoWithAccountAndSponsor : AccountsInformation_Mongo
     {
         public Accounts_Mongo Account { get; set; }
         public Accounts_Mongo Sponsor { get; set; }
     }
+
+    
 }

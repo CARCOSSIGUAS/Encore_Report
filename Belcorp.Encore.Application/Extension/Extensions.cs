@@ -1,7 +1,9 @@
 ﻿using Belcorp.Encore.Entities.Entities.DTO;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Belcorp.Encore.Application.Services.HomeService;
 
 namespace Belcorp.Encore.Application.Extension
 {
@@ -36,7 +38,7 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
-        public static List<ReportAccountExcel_DTO> ToExcel_DTO(this List<AccountsInformation_MongoWithAccountAndSponsor> list)
+        public static List<ReportAccountExcel_DTO> ToReportAccountExcel_DTO(this List<AccountsInformation_MongoWithAccountAndSponsor> list)
         {
             var result = list.Select(ai => new ReportAccountExcel_DTO()
             {
@@ -76,7 +78,7 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
-        public static ReportAccount_DTO ToAccount_DTO(this AccountsInformation_MongoWithAccountAndSponsor item)
+        public static ReportAccount_DTO ToReportAccount_DTO(this AccountsInformation_MongoWithAccountAndSponsor item)
         {
             var result = new ReportAccount_DTO()
             {
@@ -101,6 +103,19 @@ namespace Belcorp.Encore.Application.Extension
                 SponsorName = item.SponsorName,
                 SponsorPhones = item.Sponsor != null ? String.Join(" - ", item.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : ""
             };
+
+            return result;
+        }
+
+        public static List<AccountsAutoComplete_DTO> toAccountsAutocomplete_DTO(this List<Accounts_MongoWithAccountsInformation> list)
+        {
+            var result = list.Select(ai => new AccountsAutoComplete_DTO()
+            {
+                PhotoURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT38n3CrP_ImhTcMxK2N8gwLnfHHVQaunUSS235Pk-JbFP6xkjw8w",
+                AccountID = ai.AccountID,
+                AccountName = ai.FirstName + " " + ai.LastName,
+                CareerTitle = ai.AccountInformation != null ? ai.AccountInformation.CareerTitle_Des : "",
+            }).ToList();
 
             return result;
         }
