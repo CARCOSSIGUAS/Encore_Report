@@ -117,11 +117,11 @@ namespace Belcorp.Encore.Application.Services
                                 ).FirstOrDefault();
         }
 
-        public KpisIndicator_DTO GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country)
+        public KpisIndicator_DTO GetKpisIndicator(int periodID, int sponsorID, int downLineID, string country)
         {
             List<string> codigos = new List<string> { "DCV", "DQV", "GCV", "GQV" };
             IMongoCollection<AccountKPIsDetails_Mongo> accountKpisDetailsCollection = encoreMongo_Context.AccountKPIsDetailsProvider(country);
-            var main = accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == SponsorID && a.DownlineID == DownLineID).FirstOrDefault();
+            var main = accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == sponsorID && a.DownlineID == downLineID).FirstOrDefault();
 
             if (main != null)
             {
@@ -142,7 +142,7 @@ namespace Belcorp.Encore.Application.Services
 
                 foreach (var item in codigos)
                 {
-                    var result = accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == SponsorID && a.DownlineID == DownLineID && a.KPICode == item).FirstOrDefault();
+                    var result = accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == sponsorID && a.DownlineID == downLineID && a.KPICode == item).FirstOrDefault();
                     switch (item)
                     {
                         case "DCV":
@@ -166,7 +166,7 @@ namespace Belcorp.Encore.Application.Services
             return new KpisIndicator_DTO();
         }
 
-        public BonusIndicator_DTO GetBonusIndicator(int SponsorID, string country)
+        public BonusIndicator_DTO GetBonusIndicator(int sponsorID, string country)
         {
             var datetimeNow = DateTime.Now;
 
@@ -176,7 +176,7 @@ namespace Belcorp.Encore.Application.Services
 
             BonusIndicator_DTO bonusDetails_DTO = new BonusIndicator_DTO();
             IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
-            var result = bonusDetailsCollection.Find(b => b.PeriodID == period.PeriodID && b.SponsorID == SponsorID).ToList();
+            var result = bonusDetailsCollection.Find(b => b.PeriodID == period.PeriodID && b.SponsorID == sponsorID).ToList();
             var levelCode = "Level1,Level2,Level3,Level4";
             var generationCode = "Generation1Title7,Generation2Title7,Generation3Title7,Generation4Title7,Generation5Title7,Generation1Title10,Generation2Title10";
             var bonusCode = "TurboInfinityBonus,FastStartBonus,CoachingBonus,TeamBuildingBonus,AdvancementBonus,MatchingAdvacementBonus,ConsistencyBonus,SubsidyBonus,RetailProfitBonus,2DaySizzlePromotion,30 % Discount Adjustment, Ambassador Payout Subsidy,BA3 Advancement Bonus,BA3 MatchAdvancementBonus,BM Advancement Bonus,BMMatchAdvancementBonus,Bonus Adjustment,Fast Cash Bonus,FoundersClubPool,GenerationOverrides,Generations,Group Commission,GroupVolumeOverrides,LCMAdvancementBonus,Level1 - 3Overrides,  MatchAdvancementBonus,MatchingMentorBonus,Leadership,BusinessmanForm,FormingBusinessman,Group Commission,Generation1Trans,Generation2Trans,Generation4Trans,MentorBonus,PowerSellerBonus,Productivity - AddBonus,RankAdvAddBonus,Rank MaintainAddBonus,Rank Maintenance - BD,Retail Profit Commission,Generation3Trans,ExtraBonusPack";
