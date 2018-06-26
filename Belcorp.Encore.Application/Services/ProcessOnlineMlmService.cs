@@ -1,4 +1,5 @@
 ﻿using Belcorp.Encore.Application.Interfaces;
+using Belcorp.Encore.Application.OnlineMLM;
 using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Constants;
@@ -23,13 +24,18 @@ namespace Belcorp.Encore.Application.Services
         private readonly EncoreMongo_Context encoreMongo_Context;
 
         private readonly IMigrateService migrateService;
+        private readonly ICalculationTypesService calculationTypesService;
+        private readonly IOrderCalculationTypesService orderCalculationTypesService;
+        private readonly IPersonalIndicatorLogService personalIndicatorLogService;
+        private readonly IPersonalIndicatorDetailLogService personalIndicatorDetailLogService;
+
         private readonly IProcessOnlineRepository processOnlineRepository;
         private readonly IAccountKPIsRepository accountKPIsRepository;
         private readonly IAccountInformationRepository accountsInformationRepository;
 
-        public Orders Order { get; set; }
-        public int PeriodId { get; set; }
-        public List<CalculationTypes> CalculationTypes { get; set; }
+        public OnlineMLM_Statistics Statistics { get; set; }
+        public PersonalIndicatorLog PersonalIndicatorLog { get; set; }
+
         public List<SponsorTree> Accounts_UpLine { get; set; }
 
         public ProcessOnlineMlmService
@@ -37,6 +43,11 @@ namespace Belcorp.Encore.Application.Services
             IUnitOfWork<EncoreCore_Context> _unitOfWork_Core,
             IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
             IMigrateService _migrateService,
+            ICalculationTypesService _calculationTypesService,
+            IOrderCalculationTypesService _orderCalculationTypesService,
+            IPersonalIndicatorLogService _personalIndicatorLogService,
+            IPersonalIndicatorDetailLogService _personalIndicatorDetailLogService,
+
             IProcessOnlineRepository _processOnlineRepository, 
             IAccountKPIsRepository _accountKPIsRepository, 
             IAccountInformationRepository _accountsInformationRepository,
@@ -48,59 +59,60 @@ namespace Belcorp.Encore.Application.Services
             encoreMongo_Context = new EncoreMongo_Context(configuration);
 
             migrateService = _migrateService;
+            calculationTypesService = _calculationTypesService;
+            orderCalculationTypesService = _orderCalculationTypesService;
+            personalIndicatorLogService = _personalIndicatorLogService;
+            personalIndicatorDetailLogService = _personalIndicatorDetailLogService;
+
             processOnlineRepository = _processOnlineRepository;
             accountKPIsRepository = _accountKPIsRepository;
             accountsInformationRepository = _accountsInformationRepository;
-            CalculationTypes = GetCalculationTypesByCode();
         }
 
         public void ProcessMLMOrder(int _orderId, string country)
         {
             IRepository<Orders> ordersRepository = unitOfWork_Core.GetRepository<Orders>();
-            Order = ordersRepository.GetFirstOrDefault(o => o.OrderID == _orderId, null, null, true);
+            var order = ordersRepository.GetFirstOrDefault(o => o.OrderID == _orderId, null, null, true);
 
-            if (Order == null) {
+            if (order == null)
+            {
                 return;
             }
 
-            var existsorderCalculationOnline = processOnlineRepository.GetExists_OrderCalculationsOnline(Order.OrderID);
+            Statistics = new OnlineMLM_Statistics(processOnlineRepository, order);
+
+            var existsorderCalculationOnline = processOnlineRepository.GetExists_OrderCalculationsOnline(Statistics.Order.OrderID);
 
             if (
                     (
-                        Order.OrderStatusID == (short)Constants.OrderStatus.Paid ||
-                        Order.OrderStatusID == (short)Constants.OrderStatus.Printed ||
-                        Order.OrderStatusID == (short)Constants.OrderStatus.Shipped ||
-                        Order.OrderStatusID == (short)Constants.OrderStatus.Invoiced ||
-                        Order.OrderStatusID == (short)Constants.OrderStatus.Embarked
+                        Statistics.Order.OrderStatusID == (short)Constants.OrderStatus.Paid ||
+                        Statistics.Order.OrderStatusID == (short)Constants.OrderStatus.Printed ||
+                        Statistics.Order.OrderStatusID == (short)Constants.OrderStatus.Shipped ||
+                        Statistics.Order.OrderStatusID == (short)Constants.OrderStatus.Invoiced ||
+                        Statistics.Order.OrderStatusID == (short)Constants.OrderStatus.Embarked
                     ) && !existsorderCalculationOnline
-                )
+               )
             {
 
-                PeriodId = GetPeriodId();
-                Accounts_UpLine = GetAccounts_UpLine(Order.AccountID);
+                Statistics.PeriodID = GetPeriodId();
+                Accounts_UpLine = GetAccounts_UpLine(Statistics.Order.AccountID);
 
-                decimal QV, CV, RV;
-                QV = processOnlineRepository.GetQV_ByOrder(Order.OrderID);
-                CV = Order.CommissionableTotal == null ? 0 : (decimal)Order.CommissionableTotal;
-                RV = Order.Subtotal == null ? 0 : (decimal)Order.Subtotal;
-
-                if (Order.OrderTypeID == (short)Constants.OrderType.ReturnOrder)
+                PersonalIndicatorLog = new PersonalIndicatorLog()
                 {
-                    QV = QV > 0 ? QV * -1 : QV;
-                    CV = CV > 0 ? CV * -1 : CV;
-                    RV = RV > 0 ? RV * -1 : RV;
-                }
+                    OrderID = Statistics.Order.OrderID,
+                    OrderStatusID = Statistics.Order.OrderStatusID
+                };
 
-                var parentLog = PersonalIndicatorLog_Insert();
+                PersonalIndicatorLog = personalIndicatorLogService.Insert(PersonalIndicatorLog);
 
-                Indicators_InPersonal(QV, CV, RV, parentLog);
-                Indicators_InDivision(QV, CV, RV, parentLog);
-                Indicators_InTableReports(QV, CV, RV, parentLog);
-                Indicators_InOrderCalculationsOnline(QV, CV, RV, parentLog);
-                Execute_Activities(parentLog);
-                Migrate_AccountInformationByAccountId(parentLog, country);
+                Indicators_InPersonal();
+                Indicators_InDivision();
+                Indicators_InTableReports();
+                Indicators_InOrderCalculationsOnline();
+                Execute_Activities();
+                Migrate_AccountInformationByAccountId(country);
 
-                PersonalIndicatorLog_Update(parentLog);
+                PersonalIndicatorLog = personalIndicatorLogService.Update(PersonalIndicatorLog);
             }
         }
 
@@ -141,21 +153,6 @@ namespace Belcorp.Encore.Application.Services
         }
 
         #region Metodos
-
-        public List<CalculationTypes> GetCalculationTypesByCode()
-        {
-            IRepository<CalculationTypes> calculationTypesRepository = unitOfWork_Comm.GetRepository<CalculationTypes>();
-            var result = calculationTypesRepository.GetAll();
-            return result == null ? null : result.ToList();
-        }
-
-        private List<OrderCalculationTypes> GetOrderCalculationTypesByCode(List<string> codigos)
-        { 
-            IRepository<OrderCalculationTypes> orderCalculationTypesRepository = unitOfWork_Comm.GetRepository<OrderCalculationTypes>();
-            var result = orderCalculationTypesRepository.GetPagedList(c => codigos.Contains(c.Code), null, null, 0, codigos.Count, true);
-            return result == null ? null : result.Items.ToList();
-        }
-
         public List<SponsorTree> GetAccounts_UpLine(int accountId)
         {
             IRepository<SponsorTree> sponsorTreeRepository = unitOfWork_Comm.GetRepository<SponsorTree>();
@@ -165,7 +162,7 @@ namespace Belcorp.Encore.Application.Services
 
         private void Indicadores_UpdateValue_AccountKPIs(List<int> accountsIds, int calculationType, decimal value)
         {
-            accountKPIsRepository.GetPagedList(a => accountsIds.Contains(a.AccountID) && a.PeriodID == PeriodId && a.CalculationTypeID == calculationType, null, null, 0, accountsIds.Count, false)
+            accountKPIsRepository.GetPagedList(a => accountsIds.Contains(a.AccountID) && a.PeriodID == Statistics.PeriodID && a.CalculationTypeID == calculationType, null, null, 0, accountsIds.Count, false)
                                     .Items.
                                     ToList().ForEach(a =>
                                     {
@@ -180,41 +177,41 @@ namespace Belcorp.Encore.Application.Services
         public int GetPeriodId()
         {
             IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
-            var result = periodsRepository.GetFirstOrDefault(p => Order.CompleteDateUTC >= p.StartDateUTC && Order.CompleteDateUTC <= p.EndDateUTC && p.PlanID == 1, null, null, true);
+            var result = periodsRepository.GetFirstOrDefault(p => Statistics.Order.CompleteDateUTC >= p.StartDateUTC && Statistics.Order.CompleteDateUTC <= p.EndDateUTC && p.PlanID == 1, null, null, true);
             return result.PeriodID;
         }
 
         #endregion
 
         #region Calculos Personales
-        public void Indicators_InPersonal(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InPersonal()
         {
-            int calculationType_PQV = CalculationTypes.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
-            int calculationType_PCV = CalculationTypes.Where(c => c.Code == "PCV").FirstOrDefault().CalculationTypeID;
-            int calculationType_PRV = CalculationTypes.Where(c => c.Code == "PRV").FirstOrDefault().CalculationTypeID;
+            int calculationType_PQV = calculationTypesService.GetCalculationTypeIdByCode("PQV");
+            int calculationType_PCV = calculationTypesService.GetCalculationTypeIdByCode("PCV");
+            int calculationType_PRV = calculationTypesService.GetCalculationTypeIdByCode("PRV");
 
-            var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationPersonalIndicator");
+            var detailLog = personalIndicatorDetailLogService.Insert(personalIndicatorDetailLogService.Create(PersonalIndicatorLog, "CodeSubProcessCalculationPersonalIndicator"));
 
             try
             {
-                if (childLog != null && childLog.EndTime == null)
+                if (detailLog != null && detailLog.EndTime == null)
                 {
-                    IndicadoresInPersonal_UpdateValue(calculationType_PQV, QV);
-                    IndicadoresInPersonal_UpdateValue(calculationType_PCV, CV);
-                    IndicadoresInPersonal_UpdateValue(calculationType_PRV, RV);
+                    IndicadoresInPersonal_UpdateValue(calculationType_PQV, (decimal)Statistics.QV);
+                    IndicadoresInPersonal_UpdateValue(calculationType_PCV, (decimal)Statistics.CV);
+                    IndicadoresInPersonal_UpdateValue(calculationType_PRV, (decimal)Statistics.RV);
                 }
             }
             catch (Exception ex)
             {
-                childLog.RealError = "Error";
+                detailLog.RealError = "Error";
             }
 
-            PersonalIndicatorDetailLog_Update(childLog);
+            personalIndicatorDetailLogService.Update(detailLog);
         }
 
         public void IndicadoresInPersonal_UpdateValue(int calculationType, decimal value)
         {
-            var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == PeriodId && a.CalculationTypeID == calculationType, null, null, false);
+            var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID && a.PeriodID == Statistics.PeriodID && a.CalculationTypeID == calculationType, null, null, false);
 
             if (result != null)
             {
@@ -227,8 +224,8 @@ namespace Belcorp.Encore.Application.Services
                 accountKPIsRepository.Insert(
                         new AccountKPIs
                         {
-                            AccountID = Order.AccountID,
-                            PeriodID = PeriodId,
+                            AccountID = Statistics.Order.AccountID,
+                            PeriodID = Statistics.PeriodID,
                             CalculationTypeID = calculationType,
                             Value = value,
                             DateModified = DateTime.Now
@@ -241,61 +238,57 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos Divison
-        public void Indicators_InDivision(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InDivision()
         {
-            var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationDivisionIndicator");
+            var detailLog = personalIndicatorDetailLogService.Insert(personalIndicatorDetailLogService.Create(PersonalIndicatorLog, "CodeSubProcessCalculationDivisionIndicator"));
             try
             {
-                if (childLog != null && childLog.EndTime == null)
+                if (detailLog != null && detailLog.EndTime == null)
                 {
                     IndicadoresInDivision_Initialize();
-                    if (Order.OrderTypeID != (short)Constants.OrderType.ReturnOrder)
+                    if (Statistics.Order.OrderTypeID != (short)Constants.OrderType.ReturnOrder)
                     {
-                        IndicadoresInDivision_UpdateValue(QV, CV, RV);
+                        IndicadoresInDivision_UpdateValue();
                     }
                 }
             }
             catch (Exception ex)
             {
-                childLog.RealError = "Error";
+                detailLog.RealError = "Error";
             }
 
-            PersonalIndicatorDetailLog_Update(childLog);
+            personalIndicatorDetailLogService.Update(detailLog);
         }
 
         public void IndicadoresInDivision_Initialize()
         {
-            List<string> codigos = new List<string> { "PQV", "PRV", "PCV", "GQV", "GCV", "DQV", "DCV", "CQL", "DQVT" };
-            var calculationTypesIds = CalculationTypes.Where(c => codigos.Contains(c.Code)).ToList();
+            List<string> codes = new List<string> { "PQV", "PRV", "PCV", "GQV", "GCV", "DQV", "DCV", "CQL", "DQVT" };
+            var calculationTypesIds = calculationTypesService.GetCalculationTypesByCodes(codes);
 
-            var result = processOnlineRepository.GetListAccounts_Initialize(Accounts_UpLine.Select(a => a.AccountID).ToList(), calculationTypesIds, PeriodId);
+            var result = processOnlineRepository.GetListAccounts_Initialize(Accounts_UpLine.Select(a => a.AccountID).ToList(), calculationTypesIds, Statistics.PeriodID);
             accountKPIsRepository.Insert(result);
 
             unitOfWork_Comm.SaveChanges();
         }
 
-        private void IndicadoresInDivision_UpdateValue(decimal QV, decimal CV, decimal RV)
+        private void IndicadoresInDivision_UpdateValue()
         {
-            var listAccounts = Accounts_UpLine.Select(a => a.AccountID).ToList();
+            var accountsIds = Accounts_UpLine.Select(a => a.AccountID).ToList();
 
-            int calculationType_DCV =  CalculationTypes.Where(c => c.Code == "DCV").FirstOrDefault().CalculationTypeID;
-            int calculationType_DQVT = CalculationTypes.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
+            int calculationType_DCV = calculationTypesService.GetCalculationTypeIdByCode("DCV");
+            int calculationType_DQVT = calculationTypesService.GetCalculationTypeIdByCode("DQVT");
 
-            Indicadores_UpdateValue_AccountKPIs(listAccounts, calculationType_DQVT, value: QV);
-            Indicadores_UpdateValue_AccountKPIs(listAccounts, calculationType_DCV,  value: CV);
+            Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DCV,  value: (decimal)Statistics.CV);
+            Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DQVT, value: (decimal)Statistics.QV);
 
-            IndicadoresInDivision_Valida_Porcentaje(Accounts_UpLine, QV);
+            IndicadoresInDivision_Valida_Porcentaje(Accounts_UpLine);
         }
         
-        public void IndicadoresInDivision_Valida_Porcentaje(List<SponsorTree> accounts, decimal QV)
+        public void IndicadoresInDivision_Valida_Porcentaje(List<SponsorTree> accounts)
         {
-            List<string> codigos = new List<string> { "PQV", "DQV", "DQVT" };
             int currentAccountID, porcentForRuler, titleForRuler;
             int? currentAccountTitle;
             decimal DQV_Result;
-
-            var calculationTypesIds =   CalculationTypes.Where(c => codigos.Contains(c.Code)).ToList();
-            int calculationType_DQV =   calculationTypesIds.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
 
             IRepository<RuleTypes> ruleTypesRepository = unitOfWork_Comm.GetRepository<RuleTypes>();
             
@@ -307,7 +300,9 @@ namespace Belcorp.Encore.Application.Services
                 titleForRuler = int.Parse(ruleType.RequirementRules.Value2);
 
                 var list_AccountIDsNoApplied = accounts.Where(a => a.CurrentPAT < titleForRuler).Select(a => a.AccountID).ToList();
-                Indicadores_UpdateValue_AccountKPIs(list_AccountIDsNoApplied, calculationType_DQV, value: QV);
+
+                int calculationType_DQV = calculationTypesService.GetCalculationTypeIdByCode("DQV");
+                Indicadores_UpdateValue_AccountKPIs(list_AccountIDsNoApplied, calculationType_DQV, value: (decimal)Statistics.QV);
 
                 foreach (var account in accounts.Where(a => a.CurrentPAT >= titleForRuler))
                 {
@@ -315,9 +310,9 @@ namespace Belcorp.Encore.Application.Services
                     currentAccountTitle = account.CurrentPAT;
 
                     DQV_Result = 0;
-                    DQV_Result = processOnlineRepository.GetQV_ByAccount_PorcentRuler(currentAccountID, PeriodId, calculationTypesIds, porcentForRuler);
+                    DQV_Result = processOnlineRepository.GetQV_ByAccount_PorcentRuler(currentAccountID, Statistics.PeriodID, porcentForRuler);
 
-                    var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == currentAccountID && a.PeriodID == PeriodId && a.CalculationTypeID == calculationType_DQV, null, null, false);
+                    var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == currentAccountID && a.PeriodID == Statistics.PeriodID && a.CalculationTypeID == calculationType_DQV, null, null, false);
 
                     if (result != null)
                     {
@@ -334,42 +329,39 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos OrdercalculationsOnline
-        public void Indicators_InOrderCalculationsOnline(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InOrderCalculationsOnline()
         {
-            var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationOrderCalculationIndicator");
-
-            List<string> codigos = new List<string> { "QV", "CV", "RP" };
-            var calculationTypesIds = GetOrderCalculationTypesByCode(codigos);
+            var detailLog = personalIndicatorDetailLogService.Insert(personalIndicatorDetailLogService.Create(PersonalIndicatorLog, "CodeSubProcessCalculationOrderCalculationIndicator"));
 
             IRepository<Entities.Entities.Core.Accounts> accountsRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
-            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID, null, null, true);
+            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID, null, null, true);
 
-            int orderCalculationTypeID_QV = calculationTypesIds.Where(c => c.Code == "QV").FirstOrDefault().OrderCalculationTypeID;
-            int orderCalculationTypeID_CV = calculationTypesIds.Where(c => c.Code == "CV").FirstOrDefault().OrderCalculationTypeID;
-            int orderCalculationTypeID_RP = calculationTypesIds.Where(c => c.Code == "RP").FirstOrDefault().OrderCalculationTypeID;
+            int orderCalculationTypeID_CV = orderCalculationTypesService.GetOrderCalculationTypeIdByCode("CV");
+            int orderCalculationTypeID_RP = orderCalculationTypesService.GetOrderCalculationTypeIdByCode("RP");
+            int orderCalculationTypeID_QV = orderCalculationTypesService.GetOrderCalculationTypeIdByCode("QV"); 
 
             try
             {
-                if (childLog != null && childLog.EndTime == null)
+                if (detailLog != null && detailLog.EndTime == null)
                 {
-                    OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_QV, QV, account.AccountTypeID);
-                    OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_CV, CV, account.AccountTypeID);
-                    OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_RP, RV, account.AccountTypeID);
+                    OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_QV, (decimal)Statistics.QV, account.AccountTypeID);
+                    OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_CV, (decimal)Statistics.CV, account.AccountTypeID);
+                    OrdercalculationsOnline_UpdateValue(orderCalculationTypeID_RP, (decimal)Statistics.RV, account.AccountTypeID);
                 }
             }
             catch (Exception ex)
             {
-                childLog.RealError = "Error";
+                detailLog.RealError = "Error";
             }
 
-            PersonalIndicatorDetailLog_Update(childLog);
+            personalIndicatorDetailLogService.Update(detailLog);
         }
 
-        public void OrdercalculationsOnline_UpdateValue(int calculationType, decimal value, int accountTypeId)
+        public void OrdercalculationsOnline_UpdateValue(int orderCalculationTypeID, decimal value, int accountTypeId)
         {
             IRepository<OrderCalculationsOnline> orderCalculationOnlineRepository = unitOfWork_Comm.GetRepository<OrderCalculationsOnline>();
 
-            var result = orderCalculationOnlineRepository.GetFirstOrDefault(o => o.OrderID == Order.OrderID && o.OrderCalculationTypeID == calculationType, null, null, false);
+            var result = orderCalculationOnlineRepository.GetFirstOrDefault(o => o.OrderID == Statistics.Order.OrderID && o.OrderCalculationTypeID == orderCalculationTypeID, null, null, false);
 
             if (result != null)
             {
@@ -382,15 +374,15 @@ namespace Belcorp.Encore.Application.Services
                 orderCalculationOnlineRepository.Insert(
                         new OrderCalculationsOnline
                         {
-                            AccountID = Order.AccountID,
-                            OrderID = Order.OrderID,
-                            OrderCalculationTypeID = calculationType,
-                            OrderStatusID = Order.OrderStatusID,
+                            AccountID = Statistics.Order.AccountID,
+                            OrderID = Statistics.Order.OrderID,
+                            OrderCalculationTypeID = orderCalculationTypeID,
+                            OrderStatusID = Statistics.Order.OrderStatusID,
                             Value = value,
-                            CalculationDateUTC = Order.CommissionDateUTC,
-                            ParentOrderID = Order.ParentOrderID,
+                            CalculationDateUTC = Statistics.Order.CommissionDateUTC,
+                            ParentOrderID = Statistics.Order.ParentOrderID,
                             AccountTypeID = accountTypeId,
-                            OrderTypeID = Order.OrderTypeID,
+                            OrderTypeID = Statistics.Order.OrderTypeID,
                             DateModifiedUTC = DateTime.Now
                         });
             }
@@ -400,61 +392,61 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Actualizar Reportes
-        public void Indicators_InTableReports(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InTableReports()
         {
-            var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationTableReportsIndicator");
+            var detailLog = personalIndicatorDetailLogService.Insert(personalIndicatorDetailLogService.Create(PersonalIndicatorLog, "CodeSubProcessCalculationTableReportsIndicator"));
 
             try
             {
-                if (childLog != null && childLog.EndTime == null)
+                if (detailLog != null && detailLog.EndTime == null)
                 {
-                    int calculationType_DQV = CalculationTypes.Where(c => c.Code == "DQV").FirstOrDefault().CalculationTypeID;
+                    var accountInformation_Current = accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID && a.PeriodID == Statistics.PeriodID, null, null, false);
 
-                    var accountInformation_Current = accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == Order.AccountID && a.PeriodID == PeriodId, null, null, false);
-
-                    accountInformation_Current.PCV += CV;
-                    accountInformation_Current.PQV += QV;
+                    accountInformation_Current.PCV += Statistics.CV;
+                    accountInformation_Current.PQV += Statistics.QV;
                     accountsInformationRepository.Update(accountInformation_Current);
 
                     unitOfWork_Comm.SaveChanges();
 
                     var listAccounts = Accounts_UpLine.Select(a => a.AccountID);
-                    var accountInformations = accountsInformationRepository.GetPagedList(a => a.PeriodID == PeriodId && listAccounts.Contains(a.AccountID), null, null, 0, Accounts_UpLine.Count, false);
+                    var accountInformations = accountsInformationRepository.GetPagedList(a => a.PeriodID == Statistics.PeriodID && listAccounts.Contains(a.AccountID), null, null, 0, Accounts_UpLine.Count, false);
 
                     IRepository<AccountKPIsDetails> accountKPIsDetailsRepository = unitOfWork_Comm.GetRepository<AccountKPIsDetails>();
-                    var listKpisCode = new List<string>(new[] { "DQV", "GQV", "DCV", "GCV" });
+                    var listKpisCode = new List<string>(new[] { "DQV", "DCV", "GQV", "GCV" });
+
+                    int calculationType_DQV = calculationTypesService.GetCalculationTypeIdByCode("DQV");
 
                     foreach (var accountInformation_Up in accountInformations.Items)
                     {
-                        var result_accountKPIs = accountKPIsRepository.GetFirstOrDefault(akp => akp.AccountID == accountInformation_Up.AccountID && akp.PeriodID == PeriodId && akp.CalculationTypeID == calculationType_DQV, null, null, true);
+                        var result_accountKPIs = accountKPIsRepository.GetFirstOrDefault(akp => akp.AccountID == accountInformation_Up.AccountID && akp.PeriodID == Statistics.PeriodID && akp.CalculationTypeID == calculationType_DQV, null, null, true);
 
                         accountInformation_Up.DQV = result_accountKPIs.Value;
-                        accountInformation_Up.DCV += CV;
-                        accountInformation_Up.DQVT += QV;
+                        accountInformation_Up.DCV += Statistics.CV;
+                        accountInformation_Up.DQVT += Statistics.QV;
                         accountsInformationRepository.Update(accountInformation_Up);
 
                         unitOfWork_Comm.SaveChanges();
 
                         foreach (var kpiCode in listKpisCode)
                         {
-                            var accountKPIsDetails = accountKPIsDetailsRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId &&
-                                                                                                                a.SponsorID == accountInformation_Up.AccountID &&
-                                                                                                                a.DownlineID == accountInformation_Current.AccountID &&
-                                                                                                                a.KPICode == kpiCode,
-                                                                                                            null, null, false
-                                                                                                          );
+                            var accountKPIsDetails = accountKPIsDetailsRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID &&
+                                                                                                         a.SponsorID == accountInformation_Up.AccountID &&
+                                                                                                         a.DownlineID == accountInformation_Current.AccountID &&
+                                                                                                         a.KPICode == kpiCode,
+                                                                                                         null, null, false
+                                                                                                   );
                             if (accountKPIsDetails == null)
                             {
                                 accountKPIsDetailsRepository.Insert(
                                         new AccountKPIsDetails
                                         {
-                                            PeriodID = PeriodId,
+                                            PeriodID = Statistics.PeriodID,
                                             SponsorID = accountInformation_Up.AccountID,
                                             SponsorName = accountInformation_Up.AccountName,
                                             DownlineID = accountInformation_Current.AccountID,
                                             DownlineName = accountInformation_Current.AccountName,
                                             KPICode = kpiCode,
-                                            Value = ((kpiCode == "DQV" || kpiCode == "GQV") ? QV : CV),
+                                            Value = ((kpiCode == "DQV" || kpiCode == "GQV") ? Statistics.QV : Statistics.CV),
                                             Percentage = 1,
                                             DownlinePaidAsTitle = null,
                                             TreeLevel = accountInformation_Up.LEVEL,
@@ -465,7 +457,7 @@ namespace Belcorp.Encore.Application.Services
                             else
                             {
 
-                                accountKPIsDetails.Value = accountKPIsDetails.Value + ((kpiCode == "DQV" || kpiCode == "GQV") ? QV : CV);
+                                accountKPIsDetails.Value = accountKPIsDetails.Value + ((kpiCode == "DQV" || kpiCode == "GQV") ? Statistics.QV : Statistics.CV);
                                 accountKPIsDetails.Percentage = 1;
                                 accountKPIsDetails.DownlinePaidAsTitle = null;
                                 accountKPIsDetails.TreeLevel = accountInformation_Current.LEVEL;
@@ -479,101 +471,54 @@ namespace Belcorp.Encore.Application.Services
             }
             catch (Exception ex)
             {
-                childLog.RealError = "Error";
+                detailLog.RealError = "Error";
             }
 
-            PersonalIndicatorDetailLog_Update(childLog);
+            personalIndicatorDetailLogService.Update(detailLog);
         }
 
         #endregion
 
         #region Actividades
-        public void Execute_Activities(PersonalIndicatorLog parentLog)
+        public void Execute_Activities()
         {
-            var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessExecutionActivities");
+            var detailLog = personalIndicatorDetailLogService.Insert(personalIndicatorDetailLogService.Create(PersonalIndicatorLog, "CodeSubProcessExecutionActivities"));
             try
             {
-                if (childLog != null && childLog.EndTime == null)
+                if (detailLog != null && detailLog.EndTime == null)
                 {
-                    processOnlineRepository.Execute_Activities(Order.OrderID);
+                    processOnlineRepository.Execute_Activities(Statistics.Order.OrderID);
                 }
             }
             catch (Exception ex)
             {
-                childLog.RealError = "Error";
+                detailLog.RealError = "Error";
             }
 
-            PersonalIndicatorDetailLog_Update(childLog);
-        }
-
-        public void Update_Activities()
-        {
-            IRepository<RuleTypes> ruleTypesRepository = unitOfWork_Comm.GetRepository<RuleTypes>();
-            var ruleType = ruleTypesRepository.GetFirstOrDefault(rt => rt.Name == "Qualification" && rt.Active == true, null, rt => rt.Include(r => r.RequirementRules), true);
-
-            string typePrice;
-            decimal ? amountCalification;
-
-            typePrice = ruleType.RequirementRules.Value1;
-            amountCalification = decimal.Parse(ruleType.RequirementRules.Value2);
-
-            if (!String.IsNullOrEmpty(typePrice) && amountCalification.HasValue)
-            {
-                int calculationTypeID = CalculationTypes.Where(c => c.Code == typePrice).FirstOrDefault().CalculationTypeID;
-
-                var result = accountKPIsRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID && a.CalculationTypeID == calculationTypeID, null, null, true);
-
-                if (result != null)
-                {
-                    bool isQualified;
-                    isQualified = (result.Value >= amountCalification) ? true : false;
-
-                    IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
-                    var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID, null, null, false);
-
-                    if (activity != null)
-                    {
-                        activity.IsQualified = isQualified;
-                    }
-                    else
-                    {
-                        activitiesRepository.Insert(
-                            new Activities
-                            {
-                                AccountID = Order.AccountID,
-                                ActivityStatusID = 1,
-                                PeriodID = PeriodId,
-                                IsQualified = isQualified
-                            }
-                        );
-                    }
-
-                    unitOfWork_Core.SaveChanges();
-                }
-            }
+            personalIndicatorDetailLogService.Update(detailLog);
         }
         #endregion
 
         #region Actualizar Mongo
-        public void Migrate_AccountInformationByAccountId(PersonalIndicatorLog parentLog, string country)
+        public void Migrate_AccountInformationByAccountId(string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
-            var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationMigrateMongoIndicator");
+            var detailLog = personalIndicatorDetailLogService.Insert(personalIndicatorDetailLogService.Create(PersonalIndicatorLog, "CodeSubProcessCalculationMigrateMongoIndicator"));
 
             IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
             var titles = titlesRepository.GetAll().ToList();
 
-            var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
-            var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId).ToList();
+            var accountsIds = GetAccounts_UpLine(Statistics.Order.AccountID).Select(a => a.AccountID).ToList();
+            var accountsInformations = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(Statistics.PeriodID, accountsIds).ToList();
 
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
-            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses), true);
+            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses), true);
 
-            IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformation, activity);
+            IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformations, activity);
             try
             {
-                if (childLog != null && childLog.EndTime == null)
+                if (detailLog != null && detailLog.EndTime == null)
                 {
                     foreach (var item in result)
                     {
@@ -591,95 +536,10 @@ namespace Belcorp.Encore.Application.Services
             }
             catch (Exception ex)
             {
-                childLog.RealError = "Error";
+                detailLog.RealError = "Error";
             }
 
-            PersonalIndicatorDetailLog_Update(childLog);
-        }
-        #endregion
-
-        #region PersonalIndicatorLog
-        private PersonalIndicatorLog PersonalIndicatorLog_Insert()
-        {
-            IRepository<PersonalIndicatorLog> personalIndicatorLogRepository = unitOfWork_Comm.GetRepository<PersonalIndicatorLog>();
-            var result = PersonalIndicatorLog_GetId();
-            if (result != null)
-            {
-                return result;
-            }
-            else
-            {
-                var log = new PersonalIndicatorLog()
-                {
-                    OrderID = Order.OrderID,
-                    OrderStatusID = Order.OrderStatusID,
-                    TermName = "MainProcessPersonalIndicator",
-                    StarTime = DateTime.Now
-                };
-
-                personalIndicatorLogRepository.Insert(log);
-                unitOfWork_Comm.SaveChanges();
-                return PersonalIndicatorLog_GetId();
-            }
-        }
-
-        private void PersonalIndicatorLog_Update(PersonalIndicatorLog parentLog)
-        {
-            IRepository<PersonalIndicatorLog> personalIndicatorLogRepository = unitOfWork_Comm.GetRepository<PersonalIndicatorLog>();
-            if (parentLog != null)
-            {
-                parentLog.EndTime = DateTime.Now;
-                personalIndicatorLogRepository.Update(parentLog);
-                unitOfWork_Comm.SaveChanges();
-            }
-        }
-
-        private PersonalIndicatorLog PersonalIndicatorLog_GetId()
-        {
-            IRepository<PersonalIndicatorLog> personalIndicatorLogRepository = unitOfWork_Comm.GetRepository<PersonalIndicatorLog>();
-            return personalIndicatorLogRepository.GetFirstOrDefault(l => l.OrderID == Order.OrderID, null, null, false);
-        }
-
-        private PersonalIndicatorDetailLog PersonalIndicatorDetailLog_Insert(PersonalIndicatorLog parentLog, string codeSubProcess)
-        {
-            IRepository<PersonalIndicatorDetailLog> personalIndicatorDetailLogRepository = unitOfWork_Comm.GetRepository<PersonalIndicatorDetailLog>();
-
-            var result = PersonalIndicatorDetailLog_GetId(parentLog, codeSubProcess);
-            if (result != null)
-            {
-                return result;
-            }
-            else
-            {
-                var childLog = new PersonalIndicatorDetailLog()
-                {
-                    PersonalIndicatorLogID = parentLog.PersonalIndicatorLogID,
-                    CodeSubProcess = codeSubProcess,
-                    TermName = codeSubProcess,
-                    StarTime = DateTime.Now
-                };
-
-                personalIndicatorDetailLogRepository.Insert(childLog);
-                unitOfWork_Comm.SaveChanges();
-                return PersonalIndicatorDetailLog_GetId(parentLog, codeSubProcess);
-            }
-        }
-
-        private void PersonalIndicatorDetailLog_Update(PersonalIndicatorDetailLog childLog)
-        {
-            IRepository<PersonalIndicatorDetailLog> personalIndicatorDetailLogRepository = unitOfWork_Comm.GetRepository<PersonalIndicatorDetailLog>();
-            if (childLog != null)
-            {
-                childLog.EndTime = DateTime.Now;
-                personalIndicatorDetailLogRepository.Update(childLog);
-                unitOfWork_Comm.SaveChanges();
-            }
-        }
-
-        private PersonalIndicatorDetailLog PersonalIndicatorDetailLog_GetId(PersonalIndicatorLog parentLog, string codeSubProcess)
-        {
-            IRepository<PersonalIndicatorDetailLog> personalIndicatorDetailLogRepository = unitOfWork_Comm.GetRepository<PersonalIndicatorDetailLog>();
-            return personalIndicatorDetailLogRepository.GetFirstOrDefault(ld => ld.PersonalIndicatorLogID == parentLog.PersonalIndicatorLogID && ld.CodeSubProcess == codeSubProcess, null, null, false);
+            personalIndicatorDetailLogService.Update(detailLog);
         }
         #endregion
     }

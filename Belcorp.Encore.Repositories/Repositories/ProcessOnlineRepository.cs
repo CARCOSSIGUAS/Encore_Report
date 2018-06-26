@@ -26,7 +26,7 @@ namespace Belcorp.Encore.Repositories.Repositories
             var calculaTypesIds = calculationsTypes.Select(c => c.CalculationTypeID);
 
             var result = (
-                            from a in dbCommissions_Context.Accounts join
+                            from a  in dbCommissions_Context.Accounts join
                                  ct in dbCommissions_Context.CalculationTypes on 1 equals 1 join
                                  ak in dbCommissions_Context.AccountKPIs on
                                     new { A = a.AccountID, B = periodId, C = ct.CalculationTypeID } equals new { A = ak.AccountID, B = ak.PeriodID, C = ak.CalculationTypeID }
@@ -52,26 +52,35 @@ namespace Belcorp.Encore.Repositories.Repositories
         }
 
 
-        public decimal GetQV_ByAccount_PorcentRuler(int accountId, int periodId, List<CalculationTypes> calculationTypes, decimal porcentForRuler)
+        public decimal GetQV_ByAccount_PorcentRuler(int accountId, int periodId, decimal porcentForRuler)
         {
-            int calculationType_PQV = calculationTypes.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
-            int calculationType_DQVT = calculationTypes.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
+            int calculationType_PQV =  dbCommissions_Context.CalculationTypes.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
+            int calculationType_DQVT = dbCommissions_Context.CalculationTypes.Where(c => c.Code == "DQVT").FirstOrDefault().CalculationTypeID;
 
-            var result = dbCommissions_Context.AccountKPIs.Where(a => a.AccountID == accountId && a.PeriodID == periodId && a.CalculationTypeID == calculationType_DQVT).ToList();
-            var DQV_Max = result.Select(a => (a.Value * porcentForRuler)/100).FirstOrDefault();
-            var DQV_Final = result.Select(a => a.Value).FirstOrDefault();
+            var titleID = dbCommissions_Context.AccountTitles.Where(at => at.AccountID == accountId &&
+                                                                          at.PeriodID == periodId &&
+                                                                          at.TitleTypeID == 1)
+                                                             .FirstOrDefault().TitleID;
 
-            var DQV_Excess =
-                            (
-                                 from a in dbCommissions_Context.AccountKPIs
-                                 where
-                                 a.AccountID == accountId && a.PeriodID == periodId && a.CalculationTypeID == calculationType_PQV
-                                 select new
-                                 {
-                                     a.AccountID,
-                                     a.Value
-                                 }
-                            ).Concat
+            var DQV_Required = (
+                                   from r in dbCommissions_Context.RequirementTitleCalculations
+                                   join c in dbCommissions_Context.CalculationTypes
+                                        on r.CalculationtypeID equals c.CalculationTypeID
+                                   where c.Code == "DQV" &&
+                                         r.PlanID == 1 &&
+                                         r.TitleID == titleID
+                                   select r.MinValue
+                               ).FirstOrDefault();
+
+            var DQV_Max = ((DQV_Required * porcentForRuler) / 100);
+
+            var consultantPQV = dbCommissions_Context.AccountKPIs.Where(a => a.PeriodID == periodId && 
+                                                                             a.AccountID == accountId && 
+                                                                             a.CalculationTypeID == calculationType_PQV)
+                                                                 .FirstOrDefault().Value;
+
+            var DQVTemporal = consultantPQV > DQV_Max ? DQV_Max : consultantPQV;
+
                             (
                                  from current_account in dbCommissions_Context.SponsorTree
                                  join sponsored_accounts in dbCommissions_Context.SponsorTree on
@@ -86,15 +95,13 @@ namespace Belcorp.Encore.Repositories.Repositories
                                      sponsored_accounts.AccountID,
                                      kpis.Value
                                  }
-                             )
-                             .Where(r => r.Value > DQV_Max)
-                             .Select(r => r.Value)
-                             .DefaultIfEmpty(0)
-                             .Max();
+                             ).ToList()
+                             .ForEach(r =>
+                             {
+                                 DQVTemporal = r.Value <= DQV_Max ? (DQVTemporal + r.Value) : (DQVTemporal + DQV_Max);
+                             });
 
-            DQV_Excess = DQV_Excess == 0 ? 0 : DQV_Excess - DQV_Max;
-
-            return DQV_Final - DQV_Excess;
+            return DQVTemporal;
         }
 
         public decimal GetQV_ByOrder(int orderId)
