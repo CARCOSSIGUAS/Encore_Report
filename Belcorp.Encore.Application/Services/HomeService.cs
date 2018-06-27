@@ -207,12 +207,17 @@ namespace Belcorp.Encore.Application.Services
             return bonusDetails_DTO;
         }
 
-        public List<Accounts_MongoWithAccountsInformation> GetConsultantSearch(string filter, string country)
+        public List<Accounts_MongoWithAccountsInformation> GetConsultantSearch(string filter, int accountID, string country)
         {
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             var period = GetCurrentPeriod(country);
 
+            var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == period.PeriodID, null).FirstOrDefault();
+            if (accountRoot == null)
+            {
+                return null;
+            }
 
             var filter_FirstName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
             var filter_LastName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.LastName, new BsonRegularExpression(filter, "i"));
@@ -222,11 +227,13 @@ namespace Belcorp.Encore.Application.Services
 
             var filterDefinitionAccountInformations = Builders<Accounts_MongoWithAccountsInformation>.Filter.Empty;
             filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Eq(ai => ai.AccountInformation.PeriodID, period.PeriodID);
+            filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Gte(ai => ai.AccountInformation.LeftBower, accountRoot.LeftBower);
+            filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Lte(ai => ai.AccountInformation.RightBower, accountRoot.RightBower);
+
             var limit = 10;
             var result = accountsCollection
                 .Aggregate()
                 .Match(filterDefinitionAccounts)
-                .Limit(limit)
                 .Lookup<Accounts_Mongo, AccountsInformation_Mongo, Accounts_MongoWithAccountsInformation>(
                     accountInformationCollection,
                     a => a.AccountID,
@@ -235,6 +242,7 @@ namespace Belcorp.Encore.Application.Services
                 )
                 .Unwind(a => a.AccountInformation, new AggregateUnwindOptions<Accounts_MongoWithAccountsInformation> { PreserveNullAndEmptyArrays = true })
                 .Match(filterDefinitionAccountInformations)
+                .Limit(limit)
                 .ToList();
 
             if (result == null)

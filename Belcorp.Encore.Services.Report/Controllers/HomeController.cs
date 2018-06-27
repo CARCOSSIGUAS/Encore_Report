@@ -67,9 +67,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("searchconsultant", Name = "GetConsultant")]
-        public IActionResult GetConsultant(string filter, string country = null)
+        public IActionResult GetConsultant(string filter, int accountID, string country = null)
         {
-            var result = homeService.GetConsultantSearch(filter, country);
+            var result = homeService.GetConsultantSearch(filter, accountID, country);
 
             if (result == null)
             {
