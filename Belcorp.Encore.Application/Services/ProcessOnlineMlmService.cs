@@ -1,18 +1,18 @@
 ﻿using Belcorp.Encore.Application.Interfaces;
+using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Data.Contexts;
+using Belcorp.Encore.Entities.Constants;
+using Belcorp.Encore.Entities.Entities.Commissions;
+using Belcorp.Encore.Entities.Entities.Core;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Repositories;
 using Belcorp.Encore.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Belcorp.Encore.Entities.Constants;
-using Belcorp.Encore.Entities.Entities.Core;
-using Belcorp.Encore.Entities.Entities.Commissions;
-using Belcorp.Encore.Entities.Entities.Mongo;
-using Microsoft.Extensions.Options;
-using Belcorp.Encore.Data;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -22,7 +22,7 @@ namespace Belcorp.Encore.Application.Services
         private readonly IUnitOfWork<EncoreCommissions_Context> unitOfWork_Comm;
         private readonly EncoreMongo_Context encoreMongo_Context;
 
-
+        private readonly IMigrateService migrateService;
         private readonly IProcessOnlineRepository processOnlineRepository;
         private readonly IAccountKPIsRepository accountKPIsRepository;
         private readonly IAccountInformationRepository accountsInformationRepository;
@@ -34,25 +34,27 @@ namespace Belcorp.Encore.Application.Services
 
         public ProcessOnlineMlmService
         (
-            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
-            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm, 
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core,
+            IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
+            IMigrateService _migrateService,
             IProcessOnlineRepository _processOnlineRepository, 
             IAccountKPIsRepository _accountKPIsRepository, 
             IAccountInformationRepository _accountsInformationRepository,
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
             unitOfWork_Core = _unitOfWork_Core;
             unitOfWork_Comm = _unitOfWork_Comm;
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
 
+            migrateService = _migrateService;
             processOnlineRepository = _processOnlineRepository;
             accountKPIsRepository = _accountKPIsRepository;
             accountsInformationRepository = _accountsInformationRepository;
             CalculationTypes = GetCalculationTypesByCode();
         }
 
-        public void ProcessMLMOrder(int _orderId)
+        public void ProcessMLMOrder(int _orderId, string country)
         {
             IRepository<Orders> ordersRepository = unitOfWork_Core.GetRepository<Orders>();
             Order = ordersRepository.GetFirstOrDefault(o => o.OrderID == _orderId, null, null, true);
@@ -91,17 +93,18 @@ namespace Belcorp.Encore.Application.Services
 
                 var parentLog = PersonalIndicatorLog_Insert();
 
-                Indicadores_InPersonal(QV, CV, RV, parentLog);
-                Indicadores_InDivision(QV, CV, RV, parentLog);
-                Indicadores_InTableReports(QV, CV, RV, parentLog);
-                Indicadores_InOrderCalculationsOnline(QV, CV, RV, parentLog);
-                Migrate_AccountInformationByAccountId(parentLog);
+                Indicators_InPersonal(QV, CV, RV, parentLog);
+                Indicators_InDivision(QV, CV, RV, parentLog);
+                Indicators_InTableReports(QV, CV, RV, parentLog);
+                Indicators_InOrderCalculationsOnline(QV, CV, RV, parentLog);
+                Execute_Activities(parentLog);
+                Migrate_AccountInformationByAccountId(parentLog, country);
 
                 PersonalIndicatorLog_Update(parentLog);
             }
         }
 
-        public void ProcessMLMLote(int loteId)
+        public void ProcessMLMLote(int loteId, string country)
         {
             IRepository<MonitorLotes> monitorLotesRepository = unitOfWork_Core.GetRepository<MonitorLotes>();
             IRepository<MonitorOrders> monitorOrdersRepository = unitOfWork_Core.GetRepository<MonitorOrders>();
@@ -115,7 +118,7 @@ namespace Belcorp.Encore.Application.Services
                 {
                     try
                     {
-                        ProcessMLMOrder(order.OrderId);
+                        ProcessMLMOrder(order.OrderId, country);
                         order.Process = true;
                         order.DateProcess = DateTime.Now;
 
@@ -184,7 +187,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos Personales
-        public void Indicadores_InPersonal(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InPersonal(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
         {
             int calculationType_PQV = CalculationTypes.Where(c => c.Code == "PQV").FirstOrDefault().CalculationTypeID;
             int calculationType_PCV = CalculationTypes.Where(c => c.Code == "PCV").FirstOrDefault().CalculationTypeID;
@@ -238,7 +241,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos Divison
-        public void Indicadores_InDivision(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InDivision(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
         {
             var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationDivisionIndicator");
             try
@@ -331,7 +334,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Calculos OrdercalculationsOnline
-        public void Indicadores_InOrderCalculationsOnline(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InOrderCalculationsOnline(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
         {
             var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationOrderCalculationIndicator");
 
@@ -397,7 +400,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Actualizar Reportes
-        public void Indicadores_InTableReports(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
+        public void Indicators_InTableReports(decimal QV, decimal CV, decimal RV, PersonalIndicatorLog parentLog)
         {
             var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationTableReportsIndicator");
 
@@ -484,70 +487,104 @@ namespace Belcorp.Encore.Application.Services
 
         #endregion
 
-        #region Actualizar Mongo
-        public void Migrate_AccountInformationByAccountId(PersonalIndicatorLog parentLog)
+        #region Actividades
+        public void Execute_Activities(PersonalIndicatorLog parentLog)
         {
+            var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessExecutionActivities");
+            try
+            {
+                if (childLog != null && childLog.EndTime == null)
+                {
+                    processOnlineRepository.Execute_Activities(Order.OrderID);
+                }
+            }
+            catch (Exception ex)
+            {
+                childLog.RealError = "Error";
+            }
+
+            PersonalIndicatorDetailLog_Update(childLog);
+        }
+
+        public void Update_Activities()
+        {
+            IRepository<RuleTypes> ruleTypesRepository = unitOfWork_Comm.GetRepository<RuleTypes>();
+            var ruleType = ruleTypesRepository.GetFirstOrDefault(rt => rt.Name == "Qualification" && rt.Active == true, null, rt => rt.Include(r => r.RequirementRules), true);
+
+            string typePrice;
+            decimal ? amountCalification;
+
+            typePrice = ruleType.RequirementRules.Value1;
+            amountCalification = decimal.Parse(ruleType.RequirementRules.Value2);
+
+            if (!String.IsNullOrEmpty(typePrice) && amountCalification.HasValue)
+            {
+                int calculationTypeID = CalculationTypes.Where(c => c.Code == typePrice).FirstOrDefault().CalculationTypeID;
+
+                var result = accountKPIsRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID && a.CalculationTypeID == calculationTypeID, null, null, true);
+
+                if (result != null)
+                {
+                    bool isQualified;
+                    isQualified = (result.Value >= amountCalification) ? true : false;
+
+                    IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
+                    var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID, null, null, false);
+
+                    if (activity != null)
+                    {
+                        activity.IsQualified = isQualified;
+                    }
+                    else
+                    {
+                        activitiesRepository.Insert(
+                            new Activities
+                            {
+                                AccountID = Order.AccountID,
+                                ActivityStatusID = 1,
+                                PeriodID = PeriodId,
+                                IsQualified = isQualified
+                            }
+                        );
+                    }
+
+                    unitOfWork_Core.SaveChanges();
+                }
+            }
+        }
+        #endregion
+
+        #region Actualizar Mongo
+        public void Migrate_AccountInformationByAccountId(PersonalIndicatorLog parentLog, string country)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
             var childLog = PersonalIndicatorDetailLog_Insert(parentLog, "CodeSubProcessCalculationMigrateMongoIndicator");
 
             IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
             var titles = titlesRepository.GetAll().ToList();
 
             var accountsId = GetAccounts_UpLine(Order.AccountID).Select(a => a.AccountID).ToList();
-            var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId);
+            var accountsInformation = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(PeriodId, accountsId).ToList();
 
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
             var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == PeriodId && a.AccountID == Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses), true);
 
-            var result = from ai in accountsInformation
-                         join titlesInfo_Career in titles on Int32.Parse(ai.CareerTitle) equals titlesInfo_Career.TitleID
-                         join titlesInfo_Paid in titles on Int32.Parse(ai.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
-                         select new AccountsInformation_Mongo
-                         {
-                             AccountsInformationID = ai.AccountsInformationID,
-
-                             PeriodID = ai.PeriodID,
-                             AccountID = ai.AccountID,
-
-                             AccountNumber = ai.AccountNumber,
-                             AccountName = ai.AccountName,
-                             SponsorID = ai.SponsorID,
-                             SponsorName = ai.SponsorName,
-                             Address = ai.Address,
-                             PostalCode = ai.PostalCode,
-                             City = ai.City,
-                             STATE = ai.STATE,
-
-                             PQV = ai.PQV,
-                             DQV = ai.DQV,
-                             DQVT = ai.DQVT,
-
-                             CareerTitle = ai.CareerTitle,
-                             PaidAsCurrentMonth = ai.PaidAsCurrentMonth,
-                             CareerTitle_Des = titlesInfo_Career.ClientName,
-                             PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
-
-                             JoinDate = ai.JoinDate,
-                             Generation = ai.Generation,
-                             LEVEL = ai.LEVEL,
-                             SortPath = ai.SortPath,
-                             LeftBower = ai.LeftBower,
-                             RightBower = ai.RightBower,
-                             Activity = (Order.AccountID == ai.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : ai.Activity
-                         };
+            IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformation, activity);
             try
             {
                 if (childLog != null && childLog.EndTime == null)
                 {
                     foreach (var item in result)
                     {
-                        var item_Mongo = encoreMongo_Context.AccountsInformationProvider.Find(ai => ai.AccountsInformationID == item.AccountsInformationID).FirstOrDefault();
+                        var item_Mongo = accountInformationCollection.Find(ai => ai.AccountsInformationID == item.AccountsInformationID).FirstOrDefault();
                         if (item_Mongo != null)
                         {
-                            encoreMongo_Context.AccountsInformationProvider.ReplaceOne(ai => ai.AccountsInformationID == item.AccountsInformationID, item, new UpdateOptions { IsUpsert = true });
+                            accountInformationCollection.ReplaceOne(ai => ai.AccountsInformationID == item.AccountsInformationID, item, new UpdateOptions { IsUpsert = true });
                         }
                         else
                         {
-                            encoreMongo_Context.AccountsInformationProvider.InsertOne(item);
+                            accountInformationCollection.InsertOne(item);
                         }
                     }
                 }

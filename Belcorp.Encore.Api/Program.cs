@@ -19,7 +19,8 @@ namespace Belcorp.Encore.Api
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseUrls("http://localhost:3389")
+                .UseUrls("http://localhost:9050") //BRA
+                .UseUrls("http://localhost:9023") //USA
                 .UseStartup<Startup>()
                 .Build();
     }

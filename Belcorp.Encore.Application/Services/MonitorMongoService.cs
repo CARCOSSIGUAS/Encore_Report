@@ -8,6 +8,7 @@ using Belcorp.Encore.Entities.Entities.Core;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -35,17 +36,17 @@ namespace Belcorp.Encore.Application.Services
             IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
             IMonitorRepository _monitorMongoRepository, 
             IAccountsService _accountsService, 
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
             unitOfWork_Core = _unitOfWork_Core;
             unitOfWork_Comm = _unitOfWork_Comm;
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
             monitorMongoRepository = _monitorMongoRepository;
             accountsService = _accountsService;
         }
 
-        public void Migrate()
+        public void Migrate(string country)
         {
             using (unitOfWork_Core)
             {
@@ -56,10 +57,13 @@ namespace Belcorp.Encore.Application.Services
                     switch (item.TableIdPrincipal)
                     {
                         case (int)Constants.MonitorTables.Accounts:
-                            Migrate_AccountsById(item);
+                            MigrateAccountsById(item, country);
                             break;
                         case (int)Constants.MonitorTables.Periods:
-                            Migrate_PeriodsbyId(item);
+                            MigratePeriodsbyId(item, country);
+                            break;
+                        case (int)Constants.MonitorTables.TermTranslations:
+                            MigrateTermTranslationsbyId(item, country);
                             break;
                         default:
                             break;
@@ -73,12 +77,14 @@ namespace Belcorp.Encore.Application.Services
         }
 
         #region Accounts
-        public void Migrate_AccountsById(Monitor monitor)
+        public void MigrateAccountsById(Monitor monitor, string country)
         {
             IRepository<Entities.Entities.Core.Accounts> accountsRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
 
+            IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
+
             var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, a => a.Include(p => p.AccountPhones), true);
-            var account_Mongo = encoreMongo_Context.AccountsProvider.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
+            var account_Mongo = accountCollection.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
 
             Accounts_Mongo registro = new Accounts_Mongo()
             {
@@ -107,11 +113,11 @@ namespace Belcorp.Encore.Application.Services
 
             if (account == null)
             {
-                encoreMongo_Context.AccountsProvider.DeleteOne(a => a.CountryID == 0 && a.AccountID == monitor.RowId);
+                accountCollection.DeleteOne(a => a.CountryID == 0 && a.AccountID == monitor.RowId);
             }
             else if (account_Mongo == null)
             {
-                encoreMongo_Context.AccountsProvider.InsertOne(registro);
+                accountCollection.InsertOne(registro);
             }
             else
             {
@@ -126,7 +132,7 @@ namespace Belcorp.Encore.Application.Services
                 .Set(a => a.EnrollerID, account.EnrollerID)
                 .Set(a => a.EnrollmentDateUTC, account.EnrollmentDateUTC);
 
-                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes);
+                accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes);
             }
 
             if (monitor.MonitorDetails != null && monitor.MonitorDetails.Any(md => md.Process == false))
@@ -137,7 +143,7 @@ namespace Belcorp.Encore.Application.Services
                     {
                         if (detail.TableIdSecundary == (int)Constants.MonitorTables.AccountsPhones)
                         {
-                            Migrate_Phones(account, detail);
+                            MigratePhones(account, detail, country);
                         }
 
                         detail.Process = true;
@@ -147,10 +153,12 @@ namespace Belcorp.Encore.Application.Services
             }
         }
 
-        private void Migrate_Phones(Entities.Entities.Core.Accounts account, MonitorDetails detail)
+        private void MigratePhones(Entities.Entities.Core.Accounts account, MonitorDetails detail, string country)
         {
+            IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
+
             IRepository<AccountPhones> accountPhonesRepository = unitOfWork_Core.GetRepository<AccountPhones>();
-            var account_Mongo = encoreMongo_Context.AccountsProvider.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
+            var account_Mongo = accountCollection.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
 
             var phone = accountPhonesRepository.GetFirstOrDefault(ap => ap.AccountID == account.AccountID && ap.AccountPhoneID == detail.RowDetalleId, null, null, true);
             var phone_Mongo = account_Mongo.AccountPhones == null ? null : account_Mongo.AccountPhones.FirstOrDefault(p => p.AccountPhoneID == detail.RowDetalleId);
@@ -161,7 +169,7 @@ namespace Belcorp.Encore.Application.Services
             if (phone == null && phone_Mongo != null)
             {
                 updatesAttributes = Builders<Accounts_Mongo>.Update.PullFilter(a => a.AccountPhones, builder => builder.AccountPhoneID == detail.RowDetalleId);
-                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
+                accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
             }
             //Si existe en Encore y no existe en Mongo
             else if (phone != null && phone_Mongo == null)
@@ -175,7 +183,7 @@ namespace Belcorp.Encore.Application.Services
                     updatesAttributes = Builders<Accounts_Mongo>.Update.Push(a => a.AccountPhones, phone);
                 }
 
-                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true } );
+                accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true } );
             }
             //Si existe en Encore y si existe en Mongo
             else if (phone != null && phone_Mongo != null)
@@ -185,18 +193,20 @@ namespace Belcorp.Encore.Application.Services
                                              .Set(a => a.AccountPhones[-1].PhoneNumber, phone.PhoneNumber)
                                              .Set(a => a.AccountPhones[-1].PhoneTypeID, phone.PhoneTypeID);
 
-                encoreMongo_Context.AccountsProvider.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
+                accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID && a.AccountPhones.Any(ap => ap.AccountPhoneID == phone_Mongo.AccountPhoneID), updatesAttributes);
             }
         }
         #endregion
 
         #region Periods
-        private void Migrate_PeriodsbyId(Monitor monitor)
+        private void MigratePeriodsbyId(Monitor monitor, string country)
         {
+            IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
+
             IRepository<Periods> periodsRepository = unitOfWork_Comm.GetRepository<Periods>();
 
             var period = periodsRepository.GetFirstOrDefault(p => p.PeriodID == monitor.RowId, null, null, true);
-            var period_Mongo = encoreMongo_Context.PeriodsProvider.Find(p => p.PeriodID == period.PeriodID).FirstOrDefault();
+            var period_Mongo = periodsCollection.Find(p => p.PeriodID == period.PeriodID).FirstOrDefault();
 
             Periods_Mongo registro = new Periods_Mongo()
             {
@@ -217,11 +227,11 @@ namespace Belcorp.Encore.Application.Services
 
             if (period == null)
             {
-                encoreMongo_Context.PeriodsProvider.DeleteOne(p => p.PeriodID == monitor.RowId);
+                periodsCollection.DeleteOne(p => p.PeriodID == monitor.RowId);
             }
             else if (period_Mongo == null)
             {
-                encoreMongo_Context.PeriodsProvider.InsertOne(registro);
+                periodsCollection.InsertOne(registro);
             }
             else
             {
@@ -238,7 +248,49 @@ namespace Belcorp.Encore.Application.Services
                 .Set(p => p.EndDateUTC, period.EndDateUTC)
                 .Set(p => p.LockDate, period.LockDate);
 
-                encoreMongo_Context.PeriodsProvider.UpdateOne(p => p.PeriodID == period.PeriodID, updatesAttributes);
+                periodsCollection.UpdateOne(p => p.PeriodID == period.PeriodID, updatesAttributes);
+            }
+
+        }
+        #endregion
+
+        #region TermTranslations
+        private void MigrateTermTranslationsbyId(Monitor monitor, string country)
+        {
+            IRepository<TermTranslationsMongo> termTranslationsRepository = unitOfWork_Core.GetRepository<TermTranslationsMongo>();
+            IMongoCollection<TermTranslations_Mongo> termTranslationsCollection = encoreMongo_Context.TermTranslationsProvider(country);
+
+            var termTranslations = termTranslationsRepository.GetFirstOrDefault(t => t.TermTranslationID == monitor.RowId, null, t => t.Include(l => l.Languages), true);
+            var termTranslations_Mongo = termTranslationsCollection.Find(t => t.TermTranslationID == termTranslations.TermTranslationID).FirstOrDefault();
+
+            TermTranslations_Mongo registro = new TermTranslations_Mongo()
+            {
+                TermTranslationID = termTranslations.TermTranslationID,
+                LanguageID = termTranslations.LanguageID,
+                Active = termTranslations.Active,
+                LastUpdatedUTC = termTranslations.LastUpdatedUTC,
+                Term = termTranslations.Term,
+                TermName = termTranslations.TermName,
+                LanguageCode = termTranslations.Languages.LanguageCode.ToLower()
+            };
+
+            if (termTranslations == null)
+            {
+                termTranslationsCollection.DeleteOne(t => t.TermTranslationID == monitor.RowId);
+            }
+            else if (termTranslations_Mongo == null)
+            {
+                termTranslationsCollection.InsertOne(registro);
+            }
+            else
+            {
+                var updatesAttributes = Builders<TermTranslations_Mongo>.Update
+                .Set(t => t.Active, termTranslations.Active)
+                .Set(t => t.LastUpdatedUTC, termTranslations.LastUpdatedUTC)
+                .Set(t => t.Term, termTranslations.Term)
+                .Set(t => t.TermName, termTranslations.TermName);
+
+                termTranslationsCollection.UpdateOne(t => t.TermTranslationID == termTranslations.TermTranslationID, updatesAttributes);
             }
 
         }

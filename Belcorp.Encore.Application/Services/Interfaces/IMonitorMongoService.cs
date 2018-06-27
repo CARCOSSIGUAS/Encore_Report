@@ -6,6 +6,6 @@ namespace Belcorp.Encore.Application.Services
 {
     public interface IMonitorMongoService
     {
-        void Migrate();
+        void Migrate(string country);
     }
 }

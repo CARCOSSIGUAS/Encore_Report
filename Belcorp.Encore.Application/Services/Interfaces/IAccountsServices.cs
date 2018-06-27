@@ -9,7 +9,7 @@ namespace Belcorp.Encore.Application.Services
 {
     public interface IAccountsService
     {
-        Task<List<Accounts_Mongo>> GetListAccounts(int accountId);
-        Task<Accounts_Mongo> GetAccountFromSingleSignOnToken(string token, TimeSpan? expiration = null);
+        Task<List<Accounts_Mongo>> GetListAccounts(int accountId, string country);
+        Task<Accounts_Mongo> GetAccountFromSingleSignOnToken(string token, string country, TimeSpan? expiration = null);
     }
 }

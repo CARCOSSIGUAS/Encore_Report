@@ -1,33 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Belcorp.Encore.Application.Services;
+using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Services.Report.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace Belcorp.Encore.Services.Report.Controllers
 {
     [Produces("application/json")]
-    [Route("api/security")]
+    [Route("api/language")]
     [ServiceFilter(typeof(FilterActionProxy))]
-
-    public class SecurityController : Controller
+    public class LanguageController : Controller
     {
-        private readonly IAccountsService accountsService;
+        private readonly ITermTranslationsService TermTranslationsService;
 
-        public SecurityController(IAccountsService _accountsService)
+        public LanguageController(ITermTranslationsService _TermTranslationsService)
         {
-            accountsService = _accountsService;
+            TermTranslationsService = _TermTranslationsService;
         }
 
-        [HttpGet("singlesignon")]
-        public async Task<IActionResult> SingleSignOn(string token, string country = null)
+        [HttpGet("{languageID}", Name = "GetLanguage")]
+        public IActionResult GetLanguage(int languageID, string country = null)
         {
-            var result = await accountsService.GetAccountFromSingleSignOnToken(token, country);
+            var result = TermTranslationsService.GetLanguage(languageID, country);
             if (result == null)
             {
                 return NotFound();

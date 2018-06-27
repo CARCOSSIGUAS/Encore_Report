@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
+using Belcorp.Encore.Services.Report.Filters;
 using Belcorp.Encore.Services.Report.InstancesProvider;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +38,7 @@ namespace Belcorp.Encore.Services.Report
             });
 
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.AddScoped<FilterActionProxy>();
 
             services.AddScoped<IUrlHelper>(implementationFactory =>
             {
@@ -53,7 +55,7 @@ namespace Belcorp.Encore.Services.Report
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
 			app.UseCors(builder =>
-						builder.WithOrigins("http://localhost:3000", "http://10.12.9.41", "http://10.12.9.83:3392", "http://relatoriosqas.lbel.com.br", "http://relatorios.lbel.com.br")
+						builder.WithOrigins("http://localhost:3000", "http://10.12.9.41", "http://10.12.9.83:3392", "http://relatoriosqas.lbel.com.br", "http://relatorios.lbel.com.br", "http://reportsqas.lbelusa.com", "http://activity.lbelusa.com")
                         .AllowAnyHeader());
 
 			if (env.IsDevelopment())

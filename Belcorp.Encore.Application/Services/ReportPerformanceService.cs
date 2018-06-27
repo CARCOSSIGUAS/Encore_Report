@@ -3,6 +3,7 @@ using Belcorp.Encore.Application.ViewModel;
 using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.Mongo;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System.Collections.Generic;
@@ -17,26 +18,30 @@ namespace Belcorp.Encore.Application.Services
 
         public ReportPerformanceService
         (
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
-        public async Task<AccountsInformation_Mongo> GetPerformance_AccountInformation(int accountId, int periodId)
+        public async Task<AccountsInformation_Mongo> GetPerformance_AccountInformation(int accountId, int periodId, string country)
         {
-            var result = await encoreMongo_Context.AccountsInformationProvider.Find(p => p.AccountID == accountId && p.PeriodID == periodId).FirstOrDefaultAsync();
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
+            var result = await accountInformationCollection.Find(p => p.AccountID == accountId && p.PeriodID == periodId).FirstOrDefaultAsync();
             return result;
         }
 
-        public async Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId)
+        public async Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId, string country)
         {
 
             List<ReportPerformance_DetailModel> reportPerformanceDetailModel = new List<ReportPerformance_DetailModel>();
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
 
-            var detailWA = (from ai in encoreMongo_Context.AccountsInformationProvider.AsQueryable()
+            var detailWA = (from ai in accountInformationCollection.AsQueryable()
                             join
-                            a in encoreMongo_Context.AccountsProvider.AsQueryable() on
+                            a in accountCollection.AsQueryable() on
                             ai.SponsorID equals a.AccountID
                             where (ai.PeriodID == periodId && (ai.SponsorID == accountId))
                             select new
