@@ -246,10 +246,7 @@ namespace Belcorp.Encore.Application.Services
                 if (detailLog != null && detailLog.EndTime == null)
                 {
                     IndicadoresInDivision_Initialize();
-                    if (Statistics.Order.OrderTypeID != (short)Constants.OrderType.ReturnOrder)
-                    {
-                        IndicadoresInDivision_UpdateValue();
-                    }
+                    IndicadoresInDivision_UpdateValue();
                 }
             }
             catch (Exception ex)
