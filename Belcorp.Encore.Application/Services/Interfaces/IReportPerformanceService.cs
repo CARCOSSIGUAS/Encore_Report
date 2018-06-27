@@ -9,7 +9,7 @@ namespace Belcorp.Encore.Application.Services.Interfaces
 {
     public interface IReportPerformanceService
     {
-        Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId);
-        Task<AccountsInformation_Mongo> GetPerformance_AccountInformation(int accountId, int periodId);
+        Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId, string country);
+        Task<AccountsInformation_Mongo> GetPerformance_AccountInformation(int accountId, int periodId, string country);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Belcorp.Encore.Api.InstanceProviders;
+﻿using Belcorp.Encore.Api.Filters;
+using Belcorp.Encore.Api.InstanceProviders;
 using Belcorp.Encore.Application;
 using Belcorp.Encore.Application.Interfaces;
 using Belcorp.Encore.Application.Services;
@@ -28,11 +29,17 @@ namespace Belcorp.Encore.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-			services.AddHangfire(config =>
+            var connection = Configuration.GetSection("Encore:ConnectionStringPrincipal").Value;
+
+            services.AddSingleton<IConfiguration>(Configuration);
+            services.AddScoped<FilterActionProxy>();
+
+
+            services.AddHangfire(config =>
             {
                 // Read DefaultConnection string from appsettings.json
-                var connectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
-                var databaseName = Configuration.GetSection("Encore_Mongo:Database_HangFire").Value;
+                var connectionString = Configuration.GetSection("Encore_Mongo:" + connection).Value;
+                var databaseName = Configuration.GetSection("Encore_Mongo:Database_HangFire").Value + "_" + Configuration.GetSection("Encore:Country").Value;
 
                 var storageOptions = new MongoStorageOptions
                 {
@@ -58,26 +65,26 @@ namespace Belcorp.Encore.Api
             #region Mongo
             services.Configure<Settings>(options =>
             {
-                options.ConnectionString = Configuration.GetSection("Encore_Mongo:ConnectionString").Value;
-                options.Database = Configuration.GetSection("Encore_Mongo:Database").Value;
+                options.ConnectionString = Configuration.GetSection("Encore_Mongo:" + connection).Value;
+                options.Database = Configuration.GetSection("Encore_Mongo:Database").Value + Configuration.GetSection("Encore:Country").Value;
             });
             #endregion
 
             services.RegisterServices();
 
             #region HangFire_Jobs
-            JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:ConnectionString").Value, Configuration.GetSection("Encore_Mongo:Database_HangFire").Value);
+
+            JobStorage.Current = new MongoStorage(Configuration.GetSection("Encore_Mongo:" + connection).Value, Configuration.GetSection("Encore_Mongo:Database_HangFire").Value + "_" + Configuration.GetSection("Encore:Country").Value);
             var provider = services.BuildServiceProvider();
             IMigrateService migrateService = provider.GetService<IMigrateService>();
             IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();
             IProcessOnlineMlmService processOnlineMlmService = provider.GetService<IProcessOnlineMlmService>();
 
             //Todos los dias a las 03:00
-            RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => migrateService.MigrateAccountInformationByPeriod(null), "0 3 * * *");
+            RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => migrateService.MigrateAccountInformationByPeriod(null, Configuration.GetSection("Encore:Country").Value), Configuration.GetSection("Encore:ScheduleTask").Value);
 
             //Todos los dias, cada 10 minutos
-            RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(), Cron.MinuteInterval(10));
-
+            RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(Configuration.GetSection("Encore:Country").Value), Cron.MinuteInterval(int.Parse(Configuration.GetSection("Encore:ScheduleTaskDaily").Value)));
             #endregion
 
             services.AddMvc();
@@ -86,11 +93,7 @@ namespace Belcorp.Encore.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-			app.UseCors(builder =>
-						builder.WithOrigins("http://localhost:3000")
-						.AllowAnyHeader());
-
-			app.UseHangfireServer(new BackgroundJobServerOptions
+            app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 HeartbeatInterval = new System.TimeSpan(0, 5, 0),
                 ServerCheckInterval = new System.TimeSpan(0, 5, 0),

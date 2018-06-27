@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities.Commissions;
+using Microsoft.EntityFrameworkCore;
+using System.Data.SqlClient;
 
 namespace Belcorp.Encore.Repositories.Repositories
 {
@@ -118,6 +120,18 @@ namespace Belcorp.Encore.Repositories.Repositories
         public decimal GetCV_ByOrder(int orderId)
         {
             throw new NotImplementedException();
+        }
+
+        public void Execute_Activities(int orderId)
+        {
+            try
+            {
+                var pOrderId = new SqlParameter("@OrderID", orderId);
+                dbCommissions_Context.Database.ExecuteSqlCommand("Exec SPOnLine_Activities @OrderID", pOrderId);
+            }
+            catch (Exception ex)
+            {
+            }
         }
     }
 }

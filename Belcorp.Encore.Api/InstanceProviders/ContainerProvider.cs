@@ -25,6 +25,8 @@
             services.AddScoped<ISponsorTreeRepository, SponsorTreeRepository>();
 
             services.AddScoped<IAccountsRepository, AccountsRepository>();
+            services.AddScoped<IAccountKPIsDetailsRepository, AccountsKPIDetailsRepository>();
+            services.AddScoped<IBonusDetailsRepository, BonusDetailsRepository>();
             services.AddScoped<IAccountsService, AccountsService>();
 
             services.AddScoped<ITitlesRepository, TitlesRepository>();

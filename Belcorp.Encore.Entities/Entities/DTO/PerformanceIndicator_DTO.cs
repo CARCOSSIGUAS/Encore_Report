@@ -7,9 +7,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
     public class PerformanceIndicator_DTO
     {
         public decimal? PQV { get; set; }
-
         public decimal? DQV { get; set; }
-  
         public decimal? DQVT { get; set; }
 
         public string CareerTitle { get; set; }
@@ -17,6 +15,5 @@ namespace Belcorp.Encore.Entities.Entities.DTO
 
         public string PaidTitle { get; set; }
         public string PaidTitle_Desc { get; set; }
-
     }
 }

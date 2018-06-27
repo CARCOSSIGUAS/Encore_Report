@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Application.Services.Interfaces;
+using Belcorp.Encore.Services.Report.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
 {
     [Produces("application/json")]
     [Route("api/language")]
+    [ServiceFilter(typeof(FilterActionProxy))]
     public class LanguageController : Controller
     {
         private readonly ITermTranslationsService TermTranslationsService;
@@ -20,10 +22,10 @@ namespace Belcorp.Encore.Services.Report.Controllers
             TermTranslationsService = _TermTranslationsService;
         }
 
-        [HttpGet("language/{LanguageId}", Name = "GetLanguage")]
-        public IActionResult GetHeader(int LanguageId)
+        [HttpGet("{languageID}", Name = "GetLanguage")]
+        public IActionResult GetLanguage(int languageID, string country = null)
         {
-            var result = TermTranslationsService.GetLanguage(LanguageId);
+            var result = TermTranslationsService.GetLanguage(languageID, country);
             if (result == null)
             {
                 return NotFound();

@@ -1,15 +1,12 @@
-﻿using Belcorp.Encore.Data;
-using Belcorp.Encore.Data.Contexts;
-using Belcorp.Encore.Entities.Entities.Core;
+﻿using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
-using Belcorp.Encore.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using MongoDB.Bson;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Belcorp.Encore.Application.Services
@@ -22,34 +19,44 @@ namespace Belcorp.Encore.Application.Services
         public AccountsService
         (
             IAuthenticationService _authenticationService,
-            IOptions<Settings> settings
+            IConfiguration configuration
         )
         {
-            encoreMongo_Context = new EncoreMongo_Context(settings);
+            encoreMongo_Context = new EncoreMongo_Context(configuration);
             authenticationService = _authenticationService;
         }
 
-        public async Task<List<Accounts_Mongo>> GetListAccounts(int accountId)
+        public async Task<List<Accounts_Mongo>> GetListAccounts(int accountId, string country)
         {
-            var result = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountId).Project(Builders<Accounts_Mongo>.Projection.Exclude("_id")).As<Accounts_Mongo>().ToListAsync();
+            IMongoCollection<Accounts_Mongo> accountColletion = encoreMongo_Context.AccountsProvider(country);
+
+            var result = await accountColletion.Find(a => a.AccountID == accountId).Project(Builders<Accounts_Mongo>.Projection.Exclude("_id")).As<Accounts_Mongo>().ToListAsync();
             return result;
         }
 
 
-        public async Task<Accounts_Mongo> GetAccountFromSingleSignOnToken(string token, TimeSpan? expiration = null)
+        public async Task<Accounts_Mongo> GetAccountFromSingleSignOnToken(string token, string country, TimeSpan? expiration = null)
         {
             try
             {
                 var ssoModel = new SingleSignOnModel_DTO();
                 ssoModel.EncodedText = token;
                 authenticationService.Decode(ssoModel);
-
+                List<string> data = ssoModel.DecodedText.Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
                 int n;
-                bool isNumeric = int.TryParse(ssoModel.DecodedText, out n);
+                bool isNumeric = int.TryParse(data[0], out n);
 
                 int accountID = isNumeric == true && (expiration == null || ssoModel.TimeStamp.Add(expiration.Value) >= DateTime.Now) ? n : 0;
+                int countryID = 0;
+                if (data.Count > 1)
+                {
+                    isNumeric = int.TryParse(data[0], out n);
+                    countryID = n;
+                }
 
-                var result = await encoreMongo_Context.AccountsProvider.Find(a => a.AccountID == accountID).FirstOrDefaultAsync();
+                IMongoCollection<Accounts_Mongo> accountColletion = encoreMongo_Context.AccountsProvider(country);
+
+                var result = await accountColletion.Find(a => a.AccountID == accountID).FirstOrDefaultAsync();
                 return result;
             }
             catch (Exception ex)
