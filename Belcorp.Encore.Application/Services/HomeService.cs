@@ -19,7 +19,7 @@ namespace Belcorp.Encore.Application.Services
     {
         private readonly EncoreMongo_Context encoreMongo_Context;
 
-        public HomeService (IConfiguration configuration)
+        public HomeService(IConfiguration configuration)
         {
             encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
@@ -41,16 +41,16 @@ namespace Belcorp.Encore.Application.Services
 
                     AccountHomeHeader_DTO accountHomeHeader_DTO = new AccountHomeHeader_DTO()
                     {
-                         account = account,
-                         periodStartDateUTC = period == null ? null : period.StartDateUTC,
-                         periodEndDateUTC = period == null ? null : period.EndDateUTC,
-                         periodDescription = period == null ? "" : period.Description,
-                         periodId = period == null ? 0 : period.PeriodID,
-                         cantFinalPeriodo = TimeLimitEndPeriod(period == null ? null : period.EndDateUTC)
+                        account = account,
+                        periodStartDateUTC = period == null ? null : period.StartDateUTC,
+                        periodEndDateUTC = period == null ? null : period.EndDateUTC,
+                        periodDescription = period == null ? "" : period.Description,
+                        periodId = period == null ? 0 : period.PeriodID,
+                        cantFinalPeriodo = TimeLimitEndPeriod(period == null ? null : period.EndDateUTC)
                     };
 
                     var result = accountInformationCollection.Find(ai => ai.PeriodID == period.PeriodID && ai.AccountID == account.AccountID).FirstOrDefault();
-                    if(result != null)
+                    if (result != null)
                     {
                         accountHomeHeader_DTO.CareerTitle = result.CareerTitle;
                         accountHomeHeader_DTO.CareerTitle_Des = result.CareerTitle_Des;
@@ -84,8 +84,8 @@ namespace Belcorp.Encore.Application.Services
                         result = endDate.Value.ToString("dd/MM/yyyy");
                         break;
                     default:
-                            result = diffDays.ToString() + " días";
-                            break;
+                        result = diffDays.ToString() + " días";
+                        break;
                 };
 
                 return result;
@@ -105,15 +105,15 @@ namespace Belcorp.Encore.Application.Services
             var result = await accountInformationCollection.Find(ai => ai.AccountID == accountId && ai.PeriodID == period.PeriodID).ToListAsync();
 
             return result.Select(ai => new PerformanceIndicator_DTO
-                                        {
-                                            PQV = ai.PQV,
-                                            DQV = ai.DQV,
-                                            DQVT = ai.DQVT,
-                                            CareerTitle = ai.CareerTitle,
-                                            CareerTitle_Desc = ai.CareerTitle_Des,
-                                            PaidTitle = ai.PaidAsCurrentMonth,
-                                            PaidTitle_Desc = ai.PaidAsCurrentMonth_Des
-                                        }
+            {
+                PQV = Math.Round(ai.PQV.Value),
+                DQV = Math.Round(ai.DQV ?? 0),
+                DQVT = Math.Round(ai.DQVT ?? 0),
+                CareerTitle = ai.CareerTitle,
+                CareerTitle_Desc = ai.CareerTitle_Des,
+                PaidTitle = ai.PaidAsCurrentMonth,
+                PaidTitle_Desc = ai.PaidAsCurrentMonth_Des
+            }
                                 ).FirstOrDefault();
         }
 
@@ -186,10 +186,10 @@ namespace Belcorp.Encore.Application.Services
             {
                 return new BonusIndicator_DTO
                 {
-                    PayoutAmount = result.Sum(x=>x.PayoutAmount),
-                    PayoutAmountLevel = result.Where(x=> levelCode.Split(",").Any(q=>q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount),
-                    PayoutAmountGeneration = result.Where(x => generationCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount),
-                    PayoutAmountBonus = result.Where(x => bonusCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount)
+                    PayoutAmount = Math.Round(result.Sum(x => x.PayoutAmount) ?? 0),
+                    PayoutAmountLevel = Math.Round(result.Where(x => levelCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount) ?? 0),
+                    PayoutAmountGeneration = Math.Round(result.Where(x => generationCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount) ?? 0),
+                    PayoutAmountBonus = Math.Round(result.Where(x => bonusCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount) ?? 0)
                 };
             }
             return bonusDetails_DTO;
@@ -210,7 +210,7 @@ namespace Belcorp.Encore.Application.Services
 
             var filterDefinitionAccountInformations = Builders<Accounts_MongoWithAccountsInformation>.Filter.Empty;
             filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Eq(ai => ai.AccountInformation.PeriodID, period.PeriodID);
-            var limit = 10;
+            var limit = 4;
             var result = accountsCollection
                 .Aggregate()
                 .Match(filterDefinitionAccounts)

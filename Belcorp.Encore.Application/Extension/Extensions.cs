@@ -14,7 +14,7 @@ namespace Belcorp.Encore.Application.Extension
             var result = list.Select(ai => new ReportAccount_DTO()
             {
                 AccountID = ai.AccountID,
-                AccountName = ai.AccountName,
+                AccountName = ai.AccountName.ToLower(),
                 AccountNumber = ai.AccountNumber,
                 Activity = ai.Activity,
                 CareerTitle = ai.CareerTitle_Des,
@@ -31,7 +31,7 @@ namespace Belcorp.Encore.Application.Extension
                 PQV = ai.PQV,
                 SponsorEmailAddress = ai.Sponsor != null ? ai.Sponsor.EmailAddress : "",
                 SponsorID = ai.SponsorID,
-                SponsorName = ai.SponsorName,
+                SponsorName = ai.SponsorName.ToLower(),
                 SponsorPhones = ai.Sponsor != null ? String.Join(" - ", ai.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : ""
             }).ToList();
 
@@ -83,7 +83,7 @@ namespace Belcorp.Encore.Application.Extension
             var result = new ReportAccount_DTO()
             {
                 AccountID = item.AccountID,
-                AccountName = item.AccountName,
+                AccountName = item.AccountName.ToLower(),
                 AccountNumber = item.AccountNumber,
                 Activity = item.Activity,
                 CareerTitle = item.CareerTitle_Des,
@@ -100,7 +100,7 @@ namespace Belcorp.Encore.Application.Extension
                 PQV = item.PQV,
                 SponsorEmailAddress = item.Sponsor != null ? item.Sponsor.EmailAddress : "",
                 SponsorID = item.SponsorID,
-                SponsorName = item.SponsorName,
+                SponsorName = item.SponsorName.ToLower(),
                 SponsorPhones = item.Sponsor != null ? String.Join(" - ", item.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : ""
             };
 
@@ -113,7 +113,7 @@ namespace Belcorp.Encore.Application.Extension
             {
                 PhotoURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT38n3CrP_ImhTcMxK2N8gwLnfHHVQaunUSS235Pk-JbFP6xkjw8w",
                 AccountID = ai.AccountID,
-                AccountName = ai.FirstName + " " + ai.LastName,
+                AccountName = ai.FirstName.ToLower() + " " + ai.LastName.ToLower(),
                 CareerTitle = ai.AccountInformation != null ? ai.AccountInformation.CareerTitle_Des : "",
             }).ToList();
 
