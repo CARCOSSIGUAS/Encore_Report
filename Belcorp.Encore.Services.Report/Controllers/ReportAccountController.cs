@@ -174,6 +174,24 @@ namespace Belcorp.Encore.Services.Report.Controllers
 
             return Ok(result.ToReportAccount_DTO());
         }
+
+        [HttpGet("consultantthree", Name = "GetConsultantThree")]
+        public IActionResult GetConsultantThree(int periodId, int accountId, string country = null)
+        {
+            if (accountId == 0 && periodId == 0)
+            {
+                return BadRequest();
+            }
+
+            var result = reportAccountService.GetConsultantThree(periodId, accountId, country);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result.ToReportAccount_DTO());
+        }
     }
 }
 

@@ -256,6 +256,42 @@ namespace Belcorp.Encore.Application
             }
             return result;
         }
+
+        public AccountsInformation_MongoWithAccountAndSponsor GetConsultantThree(int periodId, int accountId, string country = null)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
+
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
+
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodId);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountId);
+
+            var result = accountInformationCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                    accountsCollection,
+                    ai => ai.AccountID,
+                    a => a.AccountID,
+                    r => r.Account
+                )
+                .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                    accountsCollection,
+                    ai => ai.SponsorID,
+                    s => s.AccountID,
+                    r => r.Sponsor
+                )
+                .Unwind(a => a.Sponsor, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                .FirstOrDefault();
+
+            if (result == null)
+            {
+                return new AccountsInformation_MongoWithAccountAndSponsor();
+            }
+            return result;
+        }
     }
 
         
