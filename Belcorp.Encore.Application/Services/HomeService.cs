@@ -94,27 +94,33 @@ namespace Belcorp.Encore.Application.Services
             return "";
         }
 
-        public async Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, string country)
+        public async Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, int? periodID, string country)
         {
             var datetimeNow = DateTime.Now;
             IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
-
-            var period = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
-
-            var result = await accountInformationCollection.Find(ai => ai.AccountID == accountId && ai.PeriodID == period.PeriodID).ToListAsync();
-
-            return result.Select(ai => new PerformanceIndicator_DTO
+            Periods_Mongo period = new Periods_Mongo();
+            if (periodID == 0 || periodID == null)
             {
-                PQV = Math.Round(ai.PQV.Value),
-                DQV = Math.Round(ai.DQV ?? 0),
-                DQVT = Math.Round(ai.DQVT ?? 0),
-                CareerTitle = ai.CareerTitle,
-                CareerTitle_Desc = ai.CareerTitle_Des,
-                PaidTitle = ai.PaidAsCurrentMonth,
-                PaidTitle_Desc = ai.PaidAsCurrentMonth_Des
+                period = GetCurrentPeriod(country);
+                periodID = period.PeriodID;
             }
-                                ).FirstOrDefault();
+               
+            var result = await accountInformationCollection.Find(ai => ai.AccountID == accountId && ai.PeriodID == periodID).ToListAsync();
+
+            var res = result.Select(ai => new PerformanceIndicator_DTO
+                {
+                    PQV = Math.Round(ai.PQV.Value),
+                    DQV = Math.Round(ai.DQV ?? 0),
+                    DQVT = Math.Round(ai.DQVT ?? 0),
+                    CareerTitle = ai.CareerTitle,
+                    CareerTitle_Desc = ai.CareerTitle_Des,
+                    PaidTitle = ai.PaidAsCurrentMonth,
+                    PaidTitle_Desc = ai.PaidAsCurrentMonth_Des
+                }
+            ).FirstOrDefault();
+
+            return res;
         }
 
         public KpisIndicator_DTO GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country)

@@ -31,9 +31,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("performanceindicator", Name = "GetPerformanceIndicator")]
-        public IActionResult GetPerformanceIndicator(int accountId, string country = null)
+        public IActionResult GetPerformanceIndicator(int accountId, int? periodID, string country = null)
         {
-            var result = homeService.GetPerformanceIndicator(accountId, country);
+            var result = homeService.GetPerformanceIndicator(accountId, periodID, country);
             if (result == null)
             {
                 return NotFound();
