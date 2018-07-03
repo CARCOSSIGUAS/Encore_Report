@@ -1,4 +1,5 @@
 using Belcorp.Encore.Application.Services;
+using Belcorp.Encore.Application.Services.Interfaces;
 using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Constants;
@@ -21,12 +22,15 @@ namespace Belcorp.Encore.Application
     public class ReportAccountService : IReportAccountService
     {
         private readonly EncoreMongo_Context encoreMongo_Context;
+        private readonly IHomeService homeService;
 
         public ReportAccountService
         (
-            IConfiguration configuration
+            IConfiguration configuration,
+            IHomeService _homeService
         )
         {
+            homeService = _homeService;
             encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
@@ -34,6 +38,8 @@ namespace Belcorp.Encore.Application
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
+
+            filter.PeriodId = filter.PeriodId == null ? homeService.GetCurrentPeriod(country).PeriodID : filter.PeriodId;
 
             var accountRoot = accountInformationCollection.Find(a => a.AccountID == filter.AccountId && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
             if (accountRoot == null)
@@ -51,9 +57,6 @@ namespace Belcorp.Encore.Application
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
 
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
-
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression("^((?!TempName).)*$", "i"));
 
             if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
             {
@@ -64,6 +67,9 @@ namespace Belcorp.Encore.Application
             {
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountRoot.AccountID);
             }
+
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression("^((?!TempName).)*$", "i"));
 
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Where(ai =>
                                                                                         (ai.PQV >= filter.PQVFrom && ai.PQV <= filter.PQVTo) &&
@@ -136,16 +142,13 @@ namespace Belcorp.Encore.Application
                 switch (filter.OrderBy)
                 {
                     case "1":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.CareerTitle).Ascending(ai => ai.AccountName);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.AccountName);
                         break;
                     case "2":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.PaidAsCurrentMonth).Ascending(ai => ai.AccountName);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.AccountName);
                         break;
                     case "3":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.PQV).Ascending(ai => ai.AccountName);
-                        break;
-                    case "4":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.JoinDate).Ascending(ai => ai.AccountName);
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ((int)ai.LEVEL));
                         break;
                 };
             }
@@ -184,11 +187,8 @@ namespace Belcorp.Encore.Application
 
         public async Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods(string country)
         {
-            var date = DateTime.Now;
             IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
-
-
-            var periodCurrent = await periodsCollection.Find(p => date >= p.StartDateUTC && date <= p.EndDateUTC && p.PlanID == 1).FirstOrDefaultAsync();
+            var periodCurrent = homeService.GetCurrentPeriod(country);
 
             if (periodCurrent != null)
             {

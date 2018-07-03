@@ -84,32 +84,8 @@ namespace Belcorp.Encore.Application.Services
             IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
 
             var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, a => a.Include(p => p.AccountPhones), true);
-            var account_Mongo = accountCollection.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
+            var account_Mongo = accountCollection.Find(a => a.CountryID == 0 && a.AccountID == monitor.RowId).FirstOrDefault();
 
-            Accounts_Mongo registro = new Accounts_Mongo()
-            {
-                CountryID = 0,
-                AccountID = account.AccountID,
-
-                AccountNumber = account.AccountNumber,
-                AccountTypeID = account.AccountTypeID,
-                FirstName = account.FirstName,
-                MiddleName = account.MiddleName,
-                LastName = account.LastName,
-                EmailAddress = account.EmailAddress,
-                SponsorID = account.SponsorID,
-                EnrollerID = account.EnrollerID,
-                EnrollmentDateUTC = account.EnrollmentDateUTC,
-                IsEntity = account.IsEntity,
-                AccountStatusChangeReasonID = account.AccountStatusChangeReasonID,
-                AccountStatusID = account.AccountStatusID,
-                EntityName = account.EntityName,
-
-                BirthdayUTC = account.BirthdayUTC,
-                TerminatedDateUTC = account.TerminatedDateUTC,
-
-                AccountPhones = account.AccountPhones
-            };
 
             if (account == null)
             {
@@ -117,6 +93,31 @@ namespace Belcorp.Encore.Application.Services
             }
             else if (account_Mongo == null)
             {
+                Accounts_Mongo registro = new Accounts_Mongo()
+                {
+                    CountryID = 0,
+                    AccountID = account.AccountID,
+
+                    AccountNumber = account.AccountNumber,
+                    AccountTypeID = account.AccountTypeID,
+                    FirstName = account.FirstName,
+                    MiddleName = account.MiddleName,
+                    LastName = account.LastName,
+                    EmailAddress = account.EmailAddress,
+                    SponsorID = account.SponsorID,
+                    EnrollerID = account.EnrollerID,
+                    EnrollmentDateUTC = account.EnrollmentDateUTC,
+                    IsEntity = account.IsEntity,
+                    AccountStatusChangeReasonID = account.AccountStatusChangeReasonID,
+                    AccountStatusID = account.AccountStatusID,
+                    EntityName = account.EntityName,
+
+                    BirthdayUTC = account.BirthdayUTC,
+                    TerminatedDateUTC = account.TerminatedDateUTC,
+
+                    AccountPhones = account.AccountPhones
+                };
+
                 accountCollection.InsertOne(registro);
             }
             else
@@ -143,7 +144,10 @@ namespace Belcorp.Encore.Application.Services
                     {
                         if (detail.TableIdSecundary == (int)Constants.MonitorTables.AccountsPhones)
                         {
-                            MigratePhones(account, detail, country);
+                            if (account != null)
+                            {
+                                MigratePhones(account, detail, country);
+                            }
                         }
 
                         detail.Process = true;

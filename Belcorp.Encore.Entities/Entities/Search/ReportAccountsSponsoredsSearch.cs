@@ -25,7 +25,7 @@ namespace Belcorp.Encore.Entities.Entities.Search
         }
 
         public int AccountId { get; set; }
-        public int PeriodId { get; set; }
+        public int? PeriodId { get; set; }
 
         public int? AccountNumberSearch { get; set; }
         public string AccountNameSearch { get; set; } 

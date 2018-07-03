@@ -238,7 +238,7 @@ namespace Belcorp.Encore.Application.Services
             return result;
         }
 
-        private Periods_Mongo GetCurrentPeriod(string country)
+        public Periods_Mongo GetCurrentPeriod(string country)
         {
             var datetimeNow = DateTime.Now;
             IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
