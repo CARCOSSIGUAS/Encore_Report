@@ -50,6 +50,7 @@ namespace Belcorp.Encore.Entities.Entities.Search
         public decimal DQVFrom { get; set; }
         public decimal DQVTo { get; set; }
 
+        public string StringSearch { get; set; }
         public string OrderBy { get; set; }
     }
 }

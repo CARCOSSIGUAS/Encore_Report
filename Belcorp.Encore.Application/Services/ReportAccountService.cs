@@ -107,6 +107,14 @@ namespace Belcorp.Encore.Application
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression(filter.AccountNameSearch, "i"));
             }
 
+            if (!String.IsNullOrEmpty(filter.StringSearch))
+            {
+                var filter_AccountName = Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression(filter.StringSearch, "i"));
+                var filter_AccountNumber = Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountNumber, new BsonRegularExpression(filter.StringSearch, "i"));
+
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Or(filter_AccountName, filter_AccountNumber);
+            }
+
             if (filter.SponsorNumberSearch.HasValue && filter.SponsorNumberSearch > 0)
             {
                 var accountSponsor = accountInformationCollection.Find(a =>
@@ -167,13 +175,13 @@ namespace Belcorp.Encore.Application
                     r => r.Account
                 )
                 .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true } )
-                .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
-                    accountsCollection,
-                    ai => ai.SponsorID,
-                    s => s.AccountID,
-                    r => r.Sponsor
-                )
-                .Unwind(a => a.Sponsor, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                //.Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                //    accountsCollection,
+                //    ai => ai.SponsorID,
+                //    s => s.AccountID,
+                //    r => r.Sponsor
+                //)
+                //.Unwind(a => a.Sponsor, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .ToList();
 
             result.ForEach(a =>
