@@ -164,6 +164,9 @@ namespace Belcorp.Encore.Application.Services
                 periodId = GetCurrentPeriod();
             }
 
+            IRepository<BonusTypes> bonusTypesRepository = unitOfWork_Comm.GetRepository<BonusTypes>();
+            var bonusTypes = bonusTypesRepository.GetAll().ToList();
+
             var total = bonusDetailsRepository.GetPagedList(b => b.PeriodID == periodId, null, null, 0, 10000, true);
             int ii = total.TotalPages;
 
@@ -172,44 +175,45 @@ namespace Belcorp.Encore.Application.Services
             for (int i = 0; i < ii; i++)
             {
                 var bonusDetails = bonusDetailsRepository.GetPagedList(b => b.PeriodID == periodId, b => b.OrderBy(o => o.BonusDetailID), null, i, 10000, true).Items;
-                IEnumerable<BonusDetails_Mongo> result = GetBonusDetails(bonusDetails);
+                IEnumerable<BonusDetails_Mongo> result = GetBonusDetails(bonusDetails, bonusTypes);
 
                 bonusDetailsCollection.InsertMany(result);
             }
         }
 
-        private IEnumerable<BonusDetails_Mongo> GetBonusDetails(IList<BonusDetails> bonusDetails)
+        private IEnumerable<BonusDetails_Mongo> GetBonusDetails(IList<BonusDetails> bonusDetails, IList<BonusTypes> bonusTypes)
         {
-            return from accountsInfo in bonusDetails
+            return from bonusDetailsInfo in bonusDetails
                    select new BonusDetails_Mongo
                    {
-                        BonusDetailID = accountsInfo.BonusDetailID,
-                        SponsorID =accountsInfo.SponsorID,
-                        SponsorName =accountsInfo.SponsorName ,
-                        DownlineID =accountsInfo.DownlineID,
-                        DownlineName =accountsInfo.DownlineName,
-                        BonusTypeID =accountsInfo.BonusTypeID,
-                        BonusCode =accountsInfo.BonusCode,
-                        OrderID =accountsInfo.OrderID,
-                        QV =accountsInfo.QV,
-                        CV =accountsInfo.CV,
-                        Percentage =accountsInfo.Percentage,
-                        OriginalAmount =accountsInfo.OriginalAmount,
-                        Adjustment =accountsInfo.Adjustment,
-                        PayoutAmount =accountsInfo.PayoutAmount,
-                        CurrencyTypeID =accountsInfo.CurrencyTypeID,
-                        AccountSponsorTypeID =accountsInfo.AccountSponsorTypeID,
-                        TreeLevel =accountsInfo.TreeLevel,
-                        PeriodID =accountsInfo.PeriodID,
-                        ParentOrderID =accountsInfo.ParentOrderID,
-                        CorpOriginalAmount =accountsInfo.CorpOriginalAmount,
-                        CorpAdjustment =accountsInfo.CorpAdjustment,
-                        CorpPayoutAmount =accountsInfo.CorpPayoutAmount,
-                        CorpCurrencyTypeID =accountsInfo.CorpCurrencyTypeID,
-                        DateModified =accountsInfo.DateModified,
-                        INDICATORPAYMENT =accountsInfo.INDICATORPAYMENT,
-                        PERIODIDPAYMENT =accountsInfo.PERIODIDPAYMENT
-                    };
+                        BonusDetailID = bonusDetailsInfo.BonusDetailID,
+                        SponsorID = bonusDetailsInfo.SponsorID,
+                        SponsorName = bonusDetailsInfo.SponsorName ,
+                        DownlineID = bonusDetailsInfo.DownlineID,
+                        DownlineName = bonusDetailsInfo.DownlineName,
+                        BonusTypeID = bonusDetailsInfo.BonusTypeID,
+                        BonusCode = bonusDetailsInfo.BonusCode,
+                        OrderID = bonusDetailsInfo.OrderID ==  null ? 0 : bonusDetailsInfo.OrderID,
+                        QV = bonusDetailsInfo.QV,
+                        CV = bonusDetailsInfo.CV,
+                        Percentage = bonusDetailsInfo.Percentage,
+                        OriginalAmount = bonusDetailsInfo.OriginalAmount,
+                        Adjustment = bonusDetailsInfo.Adjustment,
+                        PayoutAmount = bonusDetailsInfo.PayoutAmount,
+                        CurrencyTypeID = bonusDetailsInfo.CurrencyTypeID,
+                        AccountSponsorTypeID = bonusDetailsInfo.AccountSponsorTypeID,
+                        TreeLevel = bonusDetailsInfo.TreeLevel,
+                        PeriodID = bonusDetailsInfo.PeriodID,
+                        ParentOrderID = bonusDetailsInfo.ParentOrderID,
+                        CorpOriginalAmount = bonusDetailsInfo.CorpOriginalAmount,
+                        CorpAdjustment = bonusDetailsInfo.CorpAdjustment,
+                        CorpPayoutAmount = bonusDetailsInfo.CorpPayoutAmount,
+                        CorpCurrencyTypeID = bonusDetailsInfo.CorpCurrencyTypeID,
+                        DateModified = bonusDetailsInfo.DateModified,
+                        INDICATORPAYMENT = bonusDetailsInfo.INDICATORPAYMENT,
+                        PERIODIDPAYMENT = bonusDetailsInfo.PERIODIDPAYMENT,
+                        BonusClass = bonusTypes.Where(b => b.BonusTypeID == bonusDetailsInfo.BonusTypeID).FirstOrDefault() == null ? "" : bonusTypes.Where(b => b.BonusTypeID == bonusDetailsInfo.BonusTypeID).FirstOrDefault().BonusClass
+                   };
         }
 
         public void MigrateAccounts(string country)

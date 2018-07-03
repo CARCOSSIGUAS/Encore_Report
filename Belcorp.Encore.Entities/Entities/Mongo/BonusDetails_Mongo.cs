@@ -56,5 +56,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public DateTime? DateModified { get; set; }
         public string INDICATORPAYMENT { get; set; }
         public int? PERIODIDPAYMENT { get; set; }
+
+        public string BonusClass { get; set; }
     }
 }

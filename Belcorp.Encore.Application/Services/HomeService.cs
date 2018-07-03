@@ -166,30 +166,37 @@ namespace Belcorp.Encore.Application.Services
             return new KpisIndicator_DTO();
         }
 
-        public BonusIndicator_DTO GetBonusIndicator(int SponsorID, string country)
+        public BonusIndicator_DTO GetBonusIndicator(int sponsorID, string country)
         {
-            var datetimeNow = DateTime.Now;
+            var period = GetCurrentPeriod(country);
 
-            IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
-            var period = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
+            var filter_Payments = Builders<BonusDetails_Mongo>.Filter.Empty;
+            filter_Payments &= Builders<BonusDetails_Mongo>.Filter.Eq(b => b.INDICATORPAYMENT, "P");
+            filter_Payments &= Builders<BonusDetails_Mongo>.Filter.Eq(b => b.PERIODIDPAYMENT, period.PeriodID);
 
+            var filter_NoPayments = Builders<BonusDetails_Mongo>.Filter.Empty;
+            filter_NoPayments &= Builders<BonusDetails_Mongo>.Filter.Eq(b => b.PeriodID, period.PeriodID);
+            filter_NoPayments &= Builders<BonusDetails_Mongo>.Filter.Eq(b => b.OrderID, 0);
+
+            var filterDefinition = Builders<BonusDetails_Mongo>.Filter.Empty;
+            filterDefinition &= Builders<BonusDetails_Mongo>.Filter.Eq(b => b.SponsorID, sponsorID);
+            filterDefinition &= Builders<BonusDetails_Mongo>.Filter.Or(filter_Payments, filter_NoPayments);
+
+            IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
+            var result = bonusDetailsCollection.Aggregate()
+                                               .Match(filterDefinition)
+                                               .ToList();
 
             BonusIndicator_DTO bonusDetails_DTO = new BonusIndicator_DTO();
-            IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
-            var result = bonusDetailsCollection.Find(b => b.PeriodID == period.PeriodID && b.SponsorID == SponsorID).ToList();
-            var levelCode = "Level1,Level2,Level3,Level4";
-            var generationCode = "Generation1Title7,Generation2Title7,Generation3Title7,Generation4Title7,Generation5Title7,Generation1Title10,Generation2Title10";
-            var bonusCode = "TurboInfinityBonus,FastStartBonus,CoachingBonus,TeamBuildingBonus,AdvancementBonus,MatchingAdvacementBonus,ConsistencyBonus,SubsidyBonus,RetailProfitBonus,2DaySizzlePromotion,30 % Discount Adjustment, Ambassador Payout Subsidy,BA3 Advancement Bonus,BA3 MatchAdvancementBonus,BM Advancement Bonus,BMMatchAdvancementBonus,Bonus Adjustment,Fast Cash Bonus,FoundersClubPool,GenerationOverrides,Generations,Group Commission,GroupVolumeOverrides,LCMAdvancementBonus,Level1 - 3Overrides,  MatchAdvancementBonus,MatchingMentorBonus,Leadership,BusinessmanForm,FormingBusinessman,Group Commission,Generation1Trans,Generation2Trans,Generation4Trans,MentorBonus,PowerSellerBonus,Productivity - AddBonus,RankAdvAddBonus,Rank MaintainAddBonus,Rank Maintenance - BD,Retail Profit Commission,Generation3Trans,ExtraBonusPack";
-
 
             if (result != null)
             {
                 return new BonusIndicator_DTO
                 {
                     PayoutAmount = Math.Round(result.Sum(x => x.PayoutAmount) ?? 0),
-                    PayoutAmountLevel = Math.Round(result.Where(x => levelCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount) ?? 0),
-                    PayoutAmountGeneration = Math.Round(result.Where(x => generationCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount) ?? 0),
-                    PayoutAmountBonus = Math.Round(result.Where(x => bonusCode.Split(",").Any(q => q.Equals(x.BonusCode))).Sum(e => e.PayoutAmount) ?? 0)
+                    PayoutAmountLevel = Math.Round(result.Where(x => x.BonusClass == "L").Sum(e => e.PayoutAmount) ?? 0),
+                    PayoutAmountGeneration = Math.Round(result.Where(x => (x.BonusClass == "M" || x.BonusClass == "G")).Sum(e => e.PayoutAmount) ?? 0),
+                    PayoutAmountBonus = Math.Round(result.Where(x => (x.BonusClass == "I" || x.BonusClass == "" || x.BonusClass == null)).Sum(e => e.PayoutAmount) ?? 0)
                 };
             }
             return bonusDetails_DTO;
