@@ -11,7 +11,7 @@ namespace Belcorp.Encore.Application.Services.Interfaces
     public interface IHomeService
     {
         Task<AccountHomeHeader_DTO> GetHeader(int accountId, string country);
-        Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, string country);
+        Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, int? periodID, string country);
         KpisIndicator_DTO GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country);
         BonusIndicator_DTO GetBonusIndicator(int SponsorID, string country);
         List<Accounts_MongoWithAccountsInformation> GetConsultantSearch(string filter, int accountId, string country);

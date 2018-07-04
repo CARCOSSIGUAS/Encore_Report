@@ -158,7 +158,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("consultantdetails", Name = "GetConsultantDetails")]
-        public IActionResult GetConsultantDetails(int periodId, int accountId, string country = null)
+        public IActionResult GetConsultantDetails(int? periodId, int accountId, string country = null)
         {
             if (accountId == 0 && periodId == 0)
             {

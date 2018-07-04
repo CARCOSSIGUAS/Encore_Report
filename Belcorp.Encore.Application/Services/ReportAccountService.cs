@@ -229,10 +229,12 @@ namespace Belcorp.Encore.Application
             return result;
         }
 
-        public AccountsInformation_MongoWithAccountAndSponsor GetConsultantDetails(int periodId, int accountId, string country = null)
+        public AccountsInformation_MongoWithAccountAndSponsor GetConsultantDetails(int? periodId, int accountId, string country = null)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
+
+            periodId = periodId.HasValue ? periodId : homeService.GetCurrentPeriod(country).PeriodID;
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
