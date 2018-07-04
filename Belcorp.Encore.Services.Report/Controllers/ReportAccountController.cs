@@ -57,16 +57,30 @@ namespace Belcorp.Encore.Services.Report.Controllers
             return Ok(outputModel);
         }
 
-        [HttpGet("periods", Name = "GetReportAccountsPeriods")]
-        public IActionResult GetReportAccountsPeriods(string country)
+        [HttpGet("sponsoredsthree", Name = "GetReportAccountsSponsoredsThree")]
+        public IActionResult GetReportAccountsSponsoredsThree(ReportAccountsSponsoredsSearch filter, string country = null)
         {
-            var result = reportAccountService.GetReportAccountsPeriods(country);
+            if (filter == null)
+            {
+                return BadRequest();
+            }
+
+            var result = reportAccountService.GetReportAccountsSponsoredsThree(filter, country);
+
             if (result == null)
             {
                 return NotFound();
             }
 
-            return Ok(result);
+            Response.Headers.Add("X-Pagination", result.GetHeader().ToJson());
+
+            var outputModel = new ReportAccountsSponsoredsPaging
+            {
+                Paging = result.GetHeader(),
+                Items = result.List.ToReportAccount_DTO()
+            };
+
+            return Ok(outputModel);
         }
 
         [HttpGet("exportexcel")]
@@ -173,6 +187,18 @@ namespace Belcorp.Encore.Services.Report.Controllers
             }
 
             return Ok(result.ToReportAccount_DTO());
+        }
+
+        [HttpGet("periods", Name = "GetReportAccountsPeriods")]
+        public IActionResult GetReportAccountsPeriods(string country)
+        {
+            var result = reportAccountService.GetReportAccountsPeriods(country);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
         }
     }
 }
