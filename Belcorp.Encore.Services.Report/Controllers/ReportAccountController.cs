@@ -72,15 +72,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return NotFound();
             }
 
-            Response.Headers.Add("X-Pagination", result.GetHeader().ToJson());
-
-            var outputModel = new ReportAccountsSponsoredsPaging
-            {
-                Paging = result.GetHeader(),
-                Items = result.List.ToReportAccount_DTO()
-            };
-
-            return Ok(outputModel);
+            return Ok(result.ToReportAccount_DTO());
         }
 
         [HttpGet("exportexcel")]

@@ -174,7 +174,7 @@ namespace Belcorp.Encore.Application
             return new PagedList<AccountsInformation_MongoWithAccountAndSponsor>(result, totalItems, filter.PageNumber, filter.PageSize);
         }
 
-        public PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoredsThree(ReportAccountsSponsoredsSearch filter, string country)
+        public List<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoredsThree(ReportAccountsSponsoredsSearch filter, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
@@ -192,7 +192,7 @@ namespace Belcorp.Encore.Application
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.SponsorID, accountRoot.AccountID);
 
-            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
+            List<string> accountStatusExcluded = new List<string>() { "BegunEnrollment", "Terminated", "BegunEnrollment", "Cessada", "Cadastrada" };
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
 
             if (!String.IsNullOrEmpty(filter.StringSearch))
@@ -228,7 +228,7 @@ namespace Belcorp.Encore.Application
                 a.Generation = a.Generation - accountRoot.Generation;
             });
 
-            return new PagedList<AccountsInformation_MongoWithAccountAndSponsor>(result, totalItems, filter.PageNumber, filter.PageSize);
+            return result;
         }
 
         public async Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods(string country)
