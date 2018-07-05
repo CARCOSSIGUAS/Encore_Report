@@ -32,10 +32,10 @@ namespace Belcorp.Encore.Application.Services
 
         public MonitorService
         (
-            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core,
             IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
-            IMonitorRepository _monitorMongoRepository, 
-            IAccountsService _accountsService, 
+            IMonitorRepository _monitorMongoRepository,
+            IAccountsService _accountsService,
             IConfiguration configuration
         )
         {
@@ -84,32 +84,8 @@ namespace Belcorp.Encore.Application.Services
             IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
 
             var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, a => a.Include(p => p.AccountPhones), true);
-            var account_Mongo = accountCollection.Find(a => a.CountryID == 0 && a.AccountID == account.AccountID).FirstOrDefault();
+            var account_Mongo = accountCollection.Find(a => a.CountryID == 0 && a.AccountID == monitor.RowId).FirstOrDefault();
 
-            Accounts_Mongo registro = new Accounts_Mongo()
-            {
-                CountryID = 0,
-                AccountID = account.AccountID,
-
-                AccountNumber = account.AccountNumber,
-                AccountTypeID = account.AccountTypeID,
-                FirstName = account.FirstName,
-                MiddleName = account.MiddleName,
-                LastName = account.LastName,
-                EmailAddress = account.EmailAddress,
-                SponsorID = account.SponsorID,
-                EnrollerID = account.EnrollerID,
-                EnrollmentDateUTC = account.EnrollmentDateUTC,
-                IsEntity = account.IsEntity,
-                AccountStatusChangeReasonID = account.AccountStatusChangeReasonID,
-                AccountStatusID = account.AccountStatusID,
-                EntityName = account.EntityName,
-
-                BirthdayUTC = account.BirthdayUTC,
-                TerminatedDateUTC = account.TerminatedDateUTC,
-
-                AccountPhones = account.AccountPhones
-            };
 
             if (account == null)
             {
@@ -117,6 +93,31 @@ namespace Belcorp.Encore.Application.Services
             }
             else if (account_Mongo == null)
             {
+                Accounts_Mongo registro = new Accounts_Mongo()
+                {
+                    CountryID = 0,
+                    AccountID = account.AccountID,
+
+                    AccountNumber = account.AccountNumber,
+                    AccountTypeID = account.AccountTypeID,
+                    FirstName = account.FirstName,
+                    MiddleName = account.MiddleName,
+                    LastName = account.LastName,
+                    EmailAddress = account.EmailAddress,
+                    SponsorID = account.SponsorID,
+                    EnrollerID = account.EnrollerID,
+                    EnrollmentDateUTC = account.EnrollmentDateUTC,
+                    IsEntity = account.IsEntity,
+                    AccountStatusChangeReasonID = account.AccountStatusChangeReasonID,
+                    AccountStatusID = account.AccountStatusID,
+                    EntityName = account.EntityName,
+
+                    BirthdayUTC = account.BirthdayUTC,
+                    TerminatedDateUTC = account.TerminatedDateUTC,
+
+                    AccountPhones = account.AccountPhones
+                };
+
                 accountCollection.InsertOne(registro);
             }
             else
@@ -143,7 +144,10 @@ namespace Belcorp.Encore.Application.Services
                     {
                         if (detail.TableIdSecundary == (int)Constants.MonitorTables.AccountsPhones)
                         {
-                            MigratePhones(account, detail, country);
+                            if (account != null)
+                            {
+                                MigratePhones(account, detail, country);
+                            }
                         }
 
                         detail.Process = true;
@@ -176,14 +180,14 @@ namespace Belcorp.Encore.Application.Services
             {
                 if (account_Mongo.AccountPhones == null)
                 {
-                    updatesAttributes = Builders<Accounts_Mongo>.Update.Set(a => a.AccountPhones, new List<AccountPhones> { phone } );
+                    updatesAttributes = Builders<Accounts_Mongo>.Update.Set(a => a.AccountPhones, new List<AccountPhones> { phone });
                 }
                 else
                 {
                     updatesAttributes = Builders<Accounts_Mongo>.Update.Push(a => a.AccountPhones, phone);
                 }
 
-                accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true } );
+                accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true });
             }
             //Si existe en Encore y si existe en Mongo
             else if (phone != null && phone_Mongo != null)
