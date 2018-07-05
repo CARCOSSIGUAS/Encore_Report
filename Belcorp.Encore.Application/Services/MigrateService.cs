@@ -75,7 +75,8 @@ namespace Belcorp.Encore.Application.Services
             return from accountsInfo in accountsInformation
                    join titlesInfo_Career in titles on Int32.Parse(accountsInfo.CareerTitle) equals titlesInfo_Career.TitleID
                    join titlesInfo_Paid in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
-                   select new AccountsInformation_Mongo
+                   where !accountsInfo.AccountName.Contains("TempName")
+            select new AccountsInformation_Mongo
                    {
                        AccountsInformationID = accountsInfo.AccountsInformationID,
                        PeriodID = accountsInfo.PeriodID,

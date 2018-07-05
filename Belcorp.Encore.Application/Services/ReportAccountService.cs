@@ -54,7 +54,6 @@ namespace Belcorp.Encore.Application
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
-            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
 
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
 
@@ -68,14 +67,21 @@ namespace Belcorp.Encore.Application
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountRoot.AccountID);
             }
 
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression("^((?!TempName).)*$", "i"));
 
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Where(ai =>
-                                                                                        (ai.PQV >= filter.PQVFrom && ai.PQV <= filter.PQVTo) &&
-                                                                                        (ai.DQV >= filter.DQVFrom && ai.DQV <= filter.DQVTo)
+            if(filter.PQVFrom.HasValue)
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.PQV, filter.PQVFrom);
 
-                                                                                 );
+            if (filter.PQVTo.HasValue)
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.PQV, filter.PQVTo);
+
+            if (filter.DQVFrom.HasValue)
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.DQV, filter.DQVFrom);
+
+            if (filter.DQVTo.HasValue)
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.DQV, filter.DQVTo);
+
             if (listLevelIds.Count > 0)
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.LEVEL, listLevelIds);
 
@@ -98,37 +104,12 @@ namespace Belcorp.Encore.Application
                 };
             }
 
-            if (filter.AccountNumberSearch.HasValue && filter.AccountNumberSearch != 0)
-            {
-                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, filter.AccountNumberSearch);
-            }
-            if (!String.IsNullOrEmpty(filter.AccountNameSearch))
-            {
-                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression(filter.AccountNameSearch, "i"));
-            }
-
             if (!String.IsNullOrEmpty(filter.StringSearch))
             {
                 var filter_AccountName = Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression(filter.StringSearch, "i"));
                 var filter_AccountNumber = Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountNumber, new BsonRegularExpression(filter.StringSearch, "i"));
 
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Or(filter_AccountName, filter_AccountNumber);
-            }
-
-            if (filter.SponsorNumberSearch.HasValue && filter.SponsorNumberSearch > 0)
-            {
-                var accountSponsor = accountInformationCollection.Find(a =>
-                                            a.AccountID == filter.SponsorNumberSearch &&
-                                            a.PeriodID == filter.PeriodId, null
-                                            ).FirstOrDefault();
-
-                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountSponsor.LeftBower);
-                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountSponsor.RightBower);
-            }
-
-            if (!String.IsNullOrEmpty(filter.SponsorNameSearch))
-            {
-                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.SponsorName, new BsonRegularExpression(filter.SponsorNameSearch, "i"));
             }
 
             if (filter.JoinDateFrom.HasValue)
@@ -143,7 +124,7 @@ namespace Belcorp.Encore.Application
 
             var totalItems = (int)accountInformationCollection.Find(filterDefinition).Count();
 
-            var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ((int)ai.LEVEL)).Ascending(ai => ai.AccountName);
+            var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.AccountName);
 
             if (!String.IsNullOrEmpty(filter.OrderBy))
             {
@@ -183,6 +164,63 @@ namespace Belcorp.Encore.Application
                 //)
                 //.Unwind(a => a.Sponsor, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .ToList();
+
+            result.ForEach(a =>
+            {
+                a.LEVEL = a.LEVEL - accountRoot.LEVEL;
+                a.Generation = a.Generation - accountRoot.Generation;
+            });
+
+            return new PagedList<AccountsInformation_MongoWithAccountAndSponsor>(result, totalItems, filter.PageNumber, filter.PageSize);
+        }
+
+        public PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoredsThree(ReportAccountsSponsoredsSearch filter, string country)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
+
+            filter.PeriodId = filter.PeriodId == null ? homeService.GetCurrentPeriod(country).PeriodID : filter.PeriodId;
+
+            var accountRoot = accountInformationCollection.Find(a => a.AccountID == filter.AccountId && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
+            if (accountRoot == null)
+            {
+                return null;
+            }
+
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
+
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.SponsorID, accountRoot.AccountID);
+
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+
+            if (!String.IsNullOrEmpty(filter.StringSearch))
+            {
+                var filter_AccountName = Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression(filter.StringSearch, "i"));
+                var filter_AccountNumber = Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountNumber, new BsonRegularExpression(filter.StringSearch, "i"));
+
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Or(filter_AccountName, filter_AccountNumber);
+            }
+
+            var totalItems = (int)accountInformationCollection.Find(filterDefinition).Count();
+
+            var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ((int)ai.LEVEL));
+
+            var result = new List<AccountsInformation_MongoWithAccountAndSponsor>();
+
+            result = accountInformationCollection
+                    .Aggregate()
+                    .Match(filterDefinition)
+                    .Sort(orderDefinition)
+                    .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                        accountsCollection,
+                        ai => ai.AccountID,
+                        a => a.AccountID,
+                        r => r.Account
+                    )
+                    .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                    .ToList();
 
             result.ForEach(a =>
             {

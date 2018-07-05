@@ -16,19 +16,13 @@ namespace Belcorp.Encore.Entities.Entities.Search
             GenerationIds = "";
             TitleIds = "";
             AccountStatusIds = "";
-
-            PQVFrom = 0;
-            PQVTo = decimal.MaxValue;
-
-            DQVFrom = 0;
-            DQVTo = decimal.MaxValue;
         }
 
-        public int AccountId { get; set; }
         public int? PeriodId { get; set; }
+        public int AccountId { get; set; }
 
         public int? AccountNumberSearch { get; set; }
-        public string AccountNameSearch { get; set; } 
+        public string AccountNameSearch { get; set; }
 
         public int? SponsorNumberSearch { get; set; }
         public string SponsorNameSearch { get; set; }
@@ -41,14 +35,14 @@ namespace Belcorp.Encore.Entities.Entities.Search
 
         public string AccountStatusIds { get; set; }
 
-        public DateTime ? JoinDateFrom { get; set; }
-        public DateTime ? JoinDateTo { get; set; }
+        public DateTime? JoinDateFrom { get; set; }
+        public DateTime? JoinDateTo { get; set; }
 
-        public decimal PQVFrom { get; set; }
-        public decimal PQVTo { get; set; }
+        public decimal? PQVFrom { get; set; }
+        public decimal? PQVTo { get; set; }
 
-        public decimal DQVFrom { get; set; }
-        public decimal DQVTo { get; set; }
+        public decimal? DQVFrom { get; set; }
+        public decimal? DQVTo { get; set; }
 
         public string StringSearch { get; set; }
         public string OrderBy { get; set; }
