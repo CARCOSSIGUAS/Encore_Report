@@ -267,12 +267,18 @@ namespace Belcorp.Encore.Application
             return result;
         }
 
-        public AccountsInformation_MongoWithAccountAndSponsor GetConsultantDetails(int? periodId, int accountId, string country = null)
+        public AccountsInformation_MongoWithAccountAndSponsor GetConsultantDetails(int? periodId, int accountId, int accountIdCurrent, string country = null)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
 
             periodId = periodId.HasValue ? periodId : homeService.GetCurrentPeriod(country).PeriodID;
+
+            var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountIdCurrent && a.PeriodID == periodId, null).FirstOrDefault();
+            if (accountRoot == null)
+            {
+                return null;
+            }          
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
@@ -302,16 +308,15 @@ namespace Belcorp.Encore.Application
             {
                 return new AccountsInformation_MongoWithAccountAndSponsor();
             }
+
+            result.LEVEL = result.LEVEL - accountRoot.LEVEL;
             return result;
         }
     }
-
         
     public class AccountsInformation_MongoWithAccountAndSponsor : AccountsInformation_Mongo
     {
         public Accounts_Mongo Account { get; set; }
         public Accounts_Mongo Sponsor { get; set; }
-    }
-
-    
+    }    
 }

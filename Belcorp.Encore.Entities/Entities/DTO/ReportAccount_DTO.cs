@@ -37,5 +37,8 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public string SponsorName { get; set; }
         public string SponsorEmailAddress { get; set; }
         public string SponsorPhones { get; set; }
+        public int? ActiveDownline { get; set; }
+        public int? ConsultActive { get; set; }
+        public string Birthday { get; set; }
     }
 }

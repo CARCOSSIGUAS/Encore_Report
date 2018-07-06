@@ -96,7 +96,6 @@ namespace Belcorp.Encore.Application.Services
 
         public async Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, int? periodID, string country)
         {
-            var datetimeNow = DateTime.Now;
             IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             Periods_Mongo period = new Periods_Mongo();
@@ -113,6 +112,8 @@ namespace Belcorp.Encore.Application.Services
                     PQV = Math.Round(ai.PQV.Value),
                     DQV = Math.Round(ai.DQV ?? 0),
                     DQVT = Math.Round(ai.DQVT ?? 0),
+                    CQL = Math.Round(ai.CQL ?? 0),
+                    PaidAsCurrentMonth = ai.PaidAsCurrentMonth ,
                     CareerTitle = ai.CareerTitle,
                     CareerTitle_Desc = ai.CareerTitle_Des,
                     PaidTitle = ai.PaidAsCurrentMonth,
