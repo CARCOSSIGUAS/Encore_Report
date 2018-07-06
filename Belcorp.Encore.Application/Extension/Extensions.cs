@@ -1,9 +1,8 @@
 ﻿using Belcorp.Encore.Entities.Entities.DTO;
-using Belcorp.Encore.Entities.Entities.Mongo;
+using Belcorp.Encore.Entities.Entities.Mongo.Extension;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Belcorp.Encore.Application.Services.HomeService;
 
 namespace Belcorp.Encore.Application.Extension
 {

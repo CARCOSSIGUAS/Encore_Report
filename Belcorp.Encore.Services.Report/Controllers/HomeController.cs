@@ -1,5 +1,6 @@
 ﻿using Belcorp.Encore.Application.Extension;
 using Belcorp.Encore.Application.Services.Interfaces;
+using Belcorp.Encore.Entities.Entities.Search;
 using Belcorp.Encore.Services.Report.Filters;
 using Microsoft.AspNetCore.Mvc;
 
@@ -76,6 +77,19 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return NotFound();
             }
             return Json(new { items = result.toAccountsAutocomplete_DTO() });
+        }
+
+        [HttpGet("consultantlower", Name = "GetConsultantLowerPerformance")]
+        public IActionResult GetConsultantLowerPerformance(int? periodID, int accountID, string country = null)
+        {
+            var result = homeService.GetConsultantLowerPerformance(periodID, accountID, country);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result.ToReportAccount_DTO());
         }
     }
 }
