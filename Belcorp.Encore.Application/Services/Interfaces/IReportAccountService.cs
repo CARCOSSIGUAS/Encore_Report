@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Belcorp.Encore.Entities.Entities.DTO;
-using Belcorp.Encore.Entities.Entities.Mongo;
+using Belcorp.Encore.Entities.Entities.Mongo.Extension;
 using Belcorp.Encore.Entities.Entities.Search;
 using Belcorp.Encore.Entities.Entities.Search.Paging;
 

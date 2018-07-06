@@ -1,17 +1,15 @@
 ﻿using Belcorp.Encore.Application.Services.Interfaces;
-using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using Belcorp.Encore.Entities.Entities.Mongo.Extension;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -256,17 +254,64 @@ namespace Belcorp.Encore.Application.Services
             return result;
         }
 
+        public List<AccountsInformation_MongoWithAccountAndSponsor> GetConsultantLowerPerformance(int? periodID, int accountID, string country)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
+
+            periodID = periodID == null ? GetCurrentPeriod(country).PeriodID : periodID;
+
+            List<AccountsInformation_MongoWithAccountAndSponsor> result = new List<AccountsInformation_MongoWithAccountAndSponsor>();
+
+            var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == periodID, null).FirstOrDefault();
+            if (accountRoot == null)
+            {
+                return result;
+            }
+
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
+
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodID);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.SponsorID, accountRoot.AccountID);
+
+            List<string> accountStatusExcluded = new List<string>() { "BegunEnrollment", "Terminated", "BegunEnrollment", "Cessada", "Cadastrada" };
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+
+            var totalItems = (int)accountInformationCollection.Find(filterDefinition).Count();
+
+            var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ((int)ai.DQVT));
+
+            result = new List<AccountsInformation_MongoWithAccountAndSponsor>();
+
+            result = accountInformationCollection
+                    .Aggregate()
+                    .Match(filterDefinition)
+                    .Limit(1)
+                    .Sort(orderDefinition)
+                    .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                        accountsCollection,
+                        ai => ai.AccountID,
+                        a => a.AccountID,
+                        r => r.Account
+                    )
+                    .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                    .ToList();
+
+            result.ForEach(a =>
+            {
+                a.LEVEL = a.LEVEL - accountRoot.LEVEL;
+                a.Generation = a.Generation - accountRoot.Generation;
+            });
+
+            return result;
+        }
+
         public Periods_Mongo GetCurrentPeriod(string country)
         {
             var datetimeNow = DateTime.Now;
             IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
             var period = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
             return period;
-        }
-
-        public class Accounts_MongoWithAccountsInformation : Accounts_Mongo
-        {
-            public AccountsInformation_Mongo AccountInformation { get; set; }
         }
     }
 }

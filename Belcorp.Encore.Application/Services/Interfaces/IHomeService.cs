@@ -1,10 +1,8 @@
 ﻿using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
-using System;
+using Belcorp.Encore.Entities.Entities.Mongo.Extension;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using static Belcorp.Encore.Application.Services.HomeService;
 
 namespace Belcorp.Encore.Application.Services.Interfaces
 {
@@ -15,6 +13,7 @@ namespace Belcorp.Encore.Application.Services.Interfaces
         KpisIndicator_DTO GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country);
         BonusIndicator_DTO GetBonusIndicator(int SponsorID, string country);
         List<Accounts_MongoWithAccountsInformation> GetConsultantSearch(string filter, int accountId, string country);
+        List<AccountsInformation_MongoWithAccountAndSponsor> GetConsultantLowerPerformance(int? periodID, int accountID, string country);
         Periods_Mongo GetCurrentPeriod(string country);
     }
 }

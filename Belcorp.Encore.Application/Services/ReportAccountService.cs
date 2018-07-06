@@ -1,14 +1,12 @@
 using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Application.Services.Interfaces;
-using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
-using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
+using Belcorp.Encore.Entities.Entities.Mongo.Extension;
 using Belcorp.Encore.Entities.Entities.Search;
 using Belcorp.Encore.Entities.Entities.Search.Paging;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
@@ -313,10 +311,4 @@ namespace Belcorp.Encore.Application
             return result;
         }
     }
-        
-    public class AccountsInformation_MongoWithAccountAndSponsor : AccountsInformation_Mongo
-    {
-        public Accounts_Mongo Account { get; set; }
-        public Accounts_Mongo Sponsor { get; set; }
-    }    
 }
