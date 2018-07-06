@@ -94,6 +94,7 @@ namespace Belcorp.Encore.Application.Services
 
         public async Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, int? periodID, string country)
         {
+            PerformanceIndicator_DTO res = new PerformanceIndicator_DTO();
             IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             Periods_Mongo period = new Periods_Mongo();
@@ -105,7 +106,7 @@ namespace Belcorp.Encore.Application.Services
                
             var result = await accountInformationCollection.Find(ai => ai.AccountID == accountId && ai.PeriodID == periodID).ToListAsync();
 
-            var res = result.Select(ai => new PerformanceIndicator_DTO
+            res = result.Select(ai => new PerformanceIndicator_DTO
                 {
                     PQV = Math.Round(ai.PQV.Value),
                     DQV = Math.Round(ai.DQV ?? 0),
