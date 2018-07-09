@@ -9,10 +9,10 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public decimal? PQV { get; set; }
         public decimal? DQV { get; set; }
         public decimal? DQVT { get; set; }
-
+        public decimal? CQL { get; set; }
+        public string PaidAsCurrentMonth { get; set; }
         public string CareerTitle { get; set; }
         public string CareerTitle_Desc { get; set; }
-
         public string PaidTitle { get; set; }
         public string PaidTitle_Desc { get; set; }
     }

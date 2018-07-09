@@ -92,15 +92,18 @@ namespace Belcorp.Encore.Application.Extension
                 Generation = item.Generation,
                 JoinDate = item.JoinDate.HasValue ? item.JoinDate.Value.ToString("dd/MM/yyyy") : "",
                 LEVEL = item.LEVEL,
-                MainAddress = item.Account != null ? item.Account.Addresses.Where(a => a.AddressTypeID == 1).Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault():"",
+                MainAddress = item.Account != null ? item.Account.Addresses.Where(a => a.AddressTypeID == 1).Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() : "",
                 PaidAsCurrentMonth = item.PaidAsCurrentMonth_Des,
                 PCV = item.PCV,
-                Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()):"",
+                Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
                 PQV = item.PQV,
                 SponsorEmailAddress = item.Sponsor != null ? item.Sponsor.EmailAddress : "",
                 SponsorID = item.SponsorID,
                 SponsorName = item.SponsorName.ToLower(),
-                SponsorPhones = item.Sponsor != null ? String.Join(" - ", item.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : ""
+                SponsorPhones = item.Sponsor != null ? String.Join(" - ", item.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                ActiveDownline = item.ActiveDownline != null ? item.ActiveDownline : 0,
+                ConsultActive = item.ConsultActive != null ? item.ConsultActive : 0,
+                Birthday = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
             };
 
             return result;

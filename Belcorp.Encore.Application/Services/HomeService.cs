@@ -94,7 +94,7 @@ namespace Belcorp.Encore.Application.Services
 
         public async Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, int? periodID, string country)
         {
-            var datetimeNow = DateTime.Now;
+            PerformanceIndicator_DTO res = new PerformanceIndicator_DTO();
             IMongoCollection<Periods_Mongo> periodsCollection = encoreMongo_Context.PeriodsProvider(country);
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             Periods_Mongo period = new Periods_Mongo();
@@ -106,11 +106,13 @@ namespace Belcorp.Encore.Application.Services
                
             var result = await accountInformationCollection.Find(ai => ai.AccountID == accountId && ai.PeriodID == periodID).ToListAsync();
 
-            var res = result.Select(ai => new PerformanceIndicator_DTO
+            res = result.Select(ai => new PerformanceIndicator_DTO
                 {
                     PQV = Math.Round(ai.PQV.Value),
                     DQV = Math.Round(ai.DQV ?? 0),
                     DQVT = Math.Round(ai.DQVT ?? 0),
+                    CQL = Math.Round(ai.CQL ?? 0),
+                    PaidAsCurrentMonth = ai.PaidAsCurrentMonth ,
                     CareerTitle = ai.CareerTitle,
                     CareerTitle_Desc = ai.CareerTitle_Des,
                     PaidTitle = ai.PaidAsCurrentMonth,
@@ -225,12 +227,15 @@ namespace Belcorp.Encore.Application.Services
             var AccountNumber = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.AccountNumber, new BsonRegularExpression(filter, "i"));
             var filterDefinitionAccounts = Builders<Accounts_Mongo>.Filter.Empty;
             filterDefinitionAccounts &= Builders<Accounts_Mongo>.Filter.Or(filter_FirstName, filter_LastName, AccountNumber);
-
+            
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             var filterDefinitionAccountInformations = Builders<Accounts_MongoWithAccountsInformation>.Filter.Empty;
+            filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Nin(ai => ai.AccountInformation.Activity, accountStatusExcluded);
             filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Eq(ai => ai.AccountInformation.PeriodID, period.PeriodID);
             filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Gte(ai => ai.AccountInformation.LeftBower, accountRoot.LeftBower);
             filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Lte(ai => ai.AccountInformation.RightBower, accountRoot.RightBower);
-
+            
+            var orderDefinition = Builders<Accounts_MongoWithAccountsInformation>.Sort.Ascending(ai => ai.AccountInformation.AccountName);
             var limit = 10;
             result = accountsCollection
                 .Aggregate()
@@ -243,6 +248,7 @@ namespace Belcorp.Encore.Application.Services
                 )
                 .Unwind(a => a.AccountInformation, new AggregateUnwindOptions<Accounts_MongoWithAccountsInformation> { PreserveNullAndEmptyArrays = true })
                 .Match(filterDefinitionAccountInformations)
+                .Sort(orderDefinition)
                 .Limit(limit)
                 .ToList();
 
