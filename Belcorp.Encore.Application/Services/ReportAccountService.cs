@@ -72,13 +72,13 @@ namespace Belcorp.Encore.Application
             if(filter.PQVFrom.HasValue)
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.PQV, filter.PQVFrom);
 
-            if (filter.PQVTo.HasValue)
+            if (filter.PQVTo.HasValue && filter.PQVTo < 10000)
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.PQV, filter.PQVTo);
 
             if (filter.DQVFrom.HasValue)
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.DQV, filter.DQVFrom);
 
-            if (filter.DQVTo.HasValue)
+            if (filter.DQVTo.HasValue && filter.DQVTo < 5000000)
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.DQV, filter.DQVTo);
 
             if (listLevelIds.Count > 0)
