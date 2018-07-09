@@ -75,6 +75,22 @@ namespace Belcorp.Encore.Services.Report.Controllers
             return Ok(result.ToReportAccount_DTO());
         }
 
+
+        [HttpGet("sponsoredbySponsor", Name = "GetReportAccountsBySponsored")]
+        public IActionResult GetReportAccountsSponsoredsThree(int sponsorID, int accountID, string country = null)
+        {
+
+            var result = reportAccountService.GetReportAccountsBySponsored(sponsorID, accountID, country);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+
+
         [HttpGet("exportexcel")]
         public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter, string language, string country = null)
         {

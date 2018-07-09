@@ -1,5 +1,6 @@
 using Belcorp.Encore.Application.Services;
 using Belcorp.Encore.Application.Services.Interfaces;
+using Belcorp.Encore.Application.Utilities;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
@@ -228,6 +229,24 @@ namespace Belcorp.Encore.Application
 
             return result;
         }
+
+        public IEnumerable<AccountsInformation_Mongo> GetReportAccountsBySponsored(int sponsor, int accountID, string country)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
+
+            var period = homeService.GetCurrentPeriod(country).PeriodID;
+
+
+            var accountRoot= AccountsUtils.Recursivo(accountInformationCollection, period, sponsor, accountID);
+            if (accountRoot == null)
+            {
+                return null;
+            }
+
+            return accountRoot;
+        }
+
 
         public async Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods(string country)
         {
