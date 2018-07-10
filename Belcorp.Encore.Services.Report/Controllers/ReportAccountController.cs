@@ -79,7 +79,6 @@ namespace Belcorp.Encore.Services.Report.Controllers
         [HttpGet("sponsoredbySponsor", Name = "GetReportAccountsBySponsored")]
         public IActionResult GetReportAccountsSponsoredsThree(int sponsorID, int accountID, string country = null)
         {
-
             var result = reportAccountService.GetReportAccountsBySponsored(sponsorID, accountID, country);
 
             if (result == null)
@@ -87,7 +86,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return NotFound();
             }
 
-            return Ok(result);
+            return Ok(result.ToTopologyList());
         }
 
 
