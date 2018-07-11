@@ -76,7 +76,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
             {
                 return NotFound();
             }
-            return Json(new { items = result.toAccountsAutocomplete_DTO() });
+            return Json(new { items = result.toAccountsAutocomplete_DTO(), word = filter });
         }
 
         [HttpGet("consultantlower", Name = "GetConsultantLowerPerformance")]

@@ -20,15 +20,25 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string EmailAddress { get; set; }
         public int? SponsorID { get; set; }
         public int? EnrollerID { get; set; }
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? EnrollmentDateUTC { get; set; }
+
         public bool IsEntity { get; set; }
         public int CountryID { get; set; }
         public int? AccountStatusChangeReasonID { get; set; }
         public int? AccountStatusID { get; set; }
         public string EntityName { get; set; }
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? BirthdayUTC { get; set; }
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? TerminatedDateUTC { get; set; }
+
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? ActivationDateUTC { get; set; }
+
         public int? ActivationPeriodID { get; set; }
         
         public List<AccountPhones> AccountPhones = new List<AccountPhones>();
