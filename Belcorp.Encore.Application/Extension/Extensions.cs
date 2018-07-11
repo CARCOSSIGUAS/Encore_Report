@@ -1,4 +1,5 @@
 ﻿using Belcorp.Encore.Entities.Entities.DTO;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Entities.Entities.Mongo.Extension;
 using System;
 using System.Collections.Generic;
@@ -103,23 +104,48 @@ namespace Belcorp.Encore.Application.Extension
                 SponsorPhones = item.Sponsor != null ? String.Join(" - ", item.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
                 ActiveDownline = item.ActiveDownline != null ? item.ActiveDownline : 0,
                 ConsultActive = item.ConsultActive != null ? item.ConsultActive : 0,
-                Birthday = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
+                Birthday = item.Account.BirthdayUTC.HasValue ? item.Account.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
             };
 
             return result;
         }
 
-        public static List<AccountsAutoComplete_DTO> toAccountsAutocomplete_DTO(this List<Accounts_MongoWithAccountsInformation> list)
+        public static List<AccountsAutoComplete_DTO> toAccountsAutocomplete_DTO(this List<AccountsInformation_Mongo> list)
         {
             var result = list.Select(ai => new AccountsAutoComplete_DTO()
             {
                 PhotoURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT38n3CrP_ImhTcMxK2N8gwLnfHHVQaunUSS235Pk-JbFP6xkjw8w",
                 AccountID = ai.AccountID,
-                AccountName = ai.FirstName.ToLower() + " " + ai.LastName.ToLower(),
-                CareerTitle = ai.AccountInformation != null ? ai.AccountInformation.CareerTitle_Des : "",
+                AccountName = ai.AccountName.ToLower(),
+                CareerTitle = ai.CareerTitle_Des ?? "",
             }).ToList();
 
             return result;
         }
+
+        public static List<ReportAccount_DTO> ToTopologyList(this IEnumerable<AccountsInformation_Mongo> list)
+        {
+            var result = list.Select(ai => new ReportAccount_DTO()
+            {
+                AccountID = ai.AccountID,
+                AccountName = ai.AccountName.ToLower(),
+                AccountNumber = ai.AccountNumber,
+                Activity = ai.Activity,
+                CareerTitle = ai.CareerTitle_Des,
+                DQV = ai.DQV,
+                DQVT = ai.DQVT,
+                EmailAddress = ai.EmailAddress,
+                Generation = ai.Generation,
+                JoinDate = ai.JoinDate.HasValue ? ai.JoinDate.Value.ToString("dd/MM/yyyy") : "",
+                LEVEL = ai.LEVEL,
+                PCV = ai.PCV,
+                PQV = ai.PQV,
+                SponsorID = ai.SponsorID,
+                SponsorName = ai.SponsorName.ToLower(),
+            }).ToList();
+
+            return result;
+        }
+
     }
 }
