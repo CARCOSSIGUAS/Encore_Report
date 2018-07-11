@@ -208,13 +208,14 @@ namespace Belcorp.Encore.Application.Services
             return bonusDetails_DTO;
         }
 
-        public List<Accounts_MongoWithAccountsInformation> GetConsultantSearch(string filter, int accountID, string country)
+        public List<AccountsInformation_Mongo> GetConsultantSearch(string filter, int accountID, string country)
         {
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             var period = GetCurrentPeriod(country);
 
-            var result = new List<Accounts_MongoWithAccountsInformation>();
+            //var result = new List<Accounts_MongoWithAccountsInformation>();
+            var result = new List<AccountsInformation_Mongo>();
 
             var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == period.PeriodID, null).FirstOrDefault();
             if (accountRoot == null)
@@ -222,36 +223,45 @@ namespace Belcorp.Encore.Application.Services
                 return result;
             }
 
-            var filter_FirstName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
-            var filter_LastName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.LastName, new BsonRegularExpression(filter, "i"));
-            var AccountNumber = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.AccountNumber, new BsonRegularExpression(filter, "i"));
-            var filterDefinitionAccounts = Builders<Accounts_Mongo>.Filter.Empty;
-            filterDefinitionAccounts &= Builders<Accounts_Mongo>.Filter.Or(filter_FirstName, filter_LastName, AccountNumber);
-            
+            //var filter_FirstName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
+            //var filter_LastName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.LastName, new BsonRegularExpression(filter, "i"));
+            //var AccountNumber = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.AccountNumber, new BsonRegularExpression(filter, "i"));
+            //var filterDefinitionAccounts = Builders<Accounts_Mongo>.Filter.Empty;
+            //filterDefinitionAccounts &= Builders<Accounts_Mongo>.Filter.Or(filter_FirstName, filter_LastName, AccountNumber);
+
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
-            var filterDefinitionAccountInformations = Builders<Accounts_MongoWithAccountsInformation>.Filter.Empty;
-            filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Nin(ai => ai.AccountInformation.Activity, accountStatusExcluded);
-            filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Eq(ai => ai.AccountInformation.PeriodID, period.PeriodID);
-            filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Gte(ai => ai.AccountInformation.LeftBower, accountRoot.LeftBower);
-            filterDefinitionAccountInformations &= Builders<Accounts_MongoWithAccountsInformation>.Filter.Lte(ai => ai.AccountInformation.RightBower, accountRoot.RightBower);
+            var filter_FullName = Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression(filter, "i"));
+            var AccountNumber = Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountNumber, new BsonRegularExpression(filter, "i"));            
+            var filterDefinitionAccountInformations = Builders<AccountsInformation_Mongo>.Filter.Empty;
+
+            filterDefinitionAccountInformations &= Builders<AccountsInformation_Mongo>.Filter.Or(filter_FullName, AccountNumber);
+            filterDefinitionAccountInformations &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+            filterDefinitionAccountInformations &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, period.PeriodID);
+            filterDefinitionAccountInformations &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountRoot.LeftBower);
+            filterDefinitionAccountInformations &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);
             
-            var orderDefinition = Builders<Accounts_MongoWithAccountsInformation>.Sort.Ascending(ai => ai.AccountInformation.AccountName);
+            var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.AccountName);
             var limit = 10;
-            result = accountsCollection
+            //result = accountsCollection
+            //    .Aggregate()
+            //    //.Match(filterDefinitionAccounts)
+            //    .Lookup<Accounts_Mongo, AccountsInformation_Mongo, Accounts_MongoWithAccountsInformation>(
+            //        accountInformationCollection,
+            //        a => a.AccountID,
+            //        ai => ai.AccountID,
+            //        r => r.AccountInformation
+            //    )
+            //    .Unwind(a => a.AccountInformation, new AggregateUnwindOptions<Accounts_MongoWithAccountsInformation> { PreserveNullAndEmptyArrays = true })
+            //    .Match(filterDefinitionAccountInformations)
+            //    .Sort(orderDefinition)
+            //    .Limit(limit)
+            //    .ToList();
+            result = accountInformationCollection
                 .Aggregate()
-                .Match(filterDefinitionAccounts)
-                .Lookup<Accounts_Mongo, AccountsInformation_Mongo, Accounts_MongoWithAccountsInformation>(
-                    accountInformationCollection,
-                    a => a.AccountID,
-                    ai => ai.AccountID,
-                    r => r.AccountInformation
-                )
-                .Unwind(a => a.AccountInformation, new AggregateUnwindOptions<Accounts_MongoWithAccountsInformation> { PreserveNullAndEmptyArrays = true })
-                .Match(filterDefinitionAccountInformations)
+                .Match(filterDefinitionAccountInformations)               
                 .Sort(orderDefinition)
                 .Limit(limit)
                 .ToList();
-
             return result;
         }
 
@@ -287,7 +297,7 @@ namespace Belcorp.Encore.Application.Services
             result = accountInformationCollection
                     .Aggregate()
                     .Match(filterDefinition)
-                    .Limit(1)
+                    .Limit(5)
                     .Sort(orderDefinition)
                     .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
                         accountsCollection,
