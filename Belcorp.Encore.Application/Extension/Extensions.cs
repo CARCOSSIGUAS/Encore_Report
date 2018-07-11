@@ -122,5 +122,30 @@ namespace Belcorp.Encore.Application.Extension
 
             return result;
         }
+
+        public static List<ReportAccount_DTO> ToTopologyList(this IEnumerable<AccountsInformation_Mongo> list)
+        {
+            var result = list.Select(ai => new ReportAccount_DTO()
+            {
+                AccountID = ai.AccountID,
+                AccountName = ai.AccountName.ToLower(),
+                AccountNumber = ai.AccountNumber,
+                Activity = ai.Activity,
+                CareerTitle = ai.CareerTitle_Des,
+                DQV = ai.DQV,
+                DQVT = ai.DQVT,
+                EmailAddress = ai.EmailAddress,
+                Generation = ai.Generation,
+                JoinDate = ai.JoinDate.HasValue ? ai.JoinDate.Value.ToString("dd/MM/yyyy") : "",
+                LEVEL = ai.LEVEL,
+                PCV = ai.PCV,
+                PQV = ai.PQV,
+                SponsorID = ai.SponsorID,
+                SponsorName = ai.SponsorName.ToLower(),
+            }).ToList();
+
+            return result;
+        }
+
     }
 }
