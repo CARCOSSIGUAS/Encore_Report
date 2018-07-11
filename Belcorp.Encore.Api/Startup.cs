@@ -80,10 +80,10 @@ namespace Belcorp.Encore.Api
             IMonitorMongoService monitorMongoService = provider.GetService<IMonitorMongoService>();
             IProcessOnlineMlmService processOnlineMlmService = provider.GetService<IProcessOnlineMlmService>();
 
-            //Todos los dias a las 03:00
+            //Todos los dias a las xxx:xx
             RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => migrateService.MigrateAccountInformationByPeriod(null, Configuration.GetSection("Encore:Country").Value), Configuration.GetSection("Encore:ScheduleTask").Value);
 
-            //Todos los dias, cada 10 minutos
+            //Todos los dias, cada xx minutos
             RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(Configuration.GetSection("Encore:Country").Value), Cron.MinuteInterval(int.Parse(Configuration.GetSection("Encore:ScheduleTaskDaily").Value)));
             #endregion
 
