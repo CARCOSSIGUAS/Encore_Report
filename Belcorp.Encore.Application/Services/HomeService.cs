@@ -297,7 +297,7 @@ namespace Belcorp.Encore.Application.Services
             result = accountInformationCollection
                     .Aggregate()
                     .Match(filterDefinition)
-                    .Limit(1)
+                    .Limit(5)
                     .Sort(orderDefinition)
                     .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
                         accountsCollection,
