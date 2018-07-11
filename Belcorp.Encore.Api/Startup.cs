@@ -81,10 +81,12 @@ namespace Belcorp.Encore.Api
             IProcessOnlineMlmService processOnlineMlmService = provider.GetService<IProcessOnlineMlmService>();
 
             //Todos los dias a las xxx:xx
-            RecurringJob.AddOrUpdate("Monitor_CloseDaily", () => migrateService.MigrateAccountInformationByPeriod(null, Configuration.GetSection("Encore:Country").Value), Configuration.GetSection("Encore:ScheduleTask").Value);
+            RecurringJob.AddOrUpdate("Monitor_CloseDaily_Information", () => migrateService.MigrateAccountInformationByPeriod(null, Configuration.GetSection("Encore:Country").Value), Configuration.GetSection("Encore:ScheduleTask").Value);
+            RecurringJob.AddOrUpdate("Monitor_CloseDaily_Bonus", () => migrateService.MigrateBonusDetailsByPeriod(null, Configuration.GetSection("Encore:Country").Value), Configuration.GetSection("Encore:ScheduleTask").Value);
+            RecurringJob.AddOrUpdate("Monitor_CloseDaily_Kpis", () => migrateService.MigrateAccountKPIsDetailsByPeriod(null, Configuration.GetSection("Encore:Country").Value), Configuration.GetSection("Encore:ScheduleTask").Value);
 
             //Todos los dias, cada xx minutos
-            RecurringJob.AddOrUpdate("Monitor_Tabla_Maestras", () => monitorMongoService.Migrate(Configuration.GetSection("Encore:Country").Value), Cron.MinuteInterval(int.Parse(Configuration.GetSection("Encore:ScheduleTaskDaily").Value)));
+            RecurringJob.AddOrUpdate("Monitor_Migrate", () => monitorMongoService.Migrate(Configuration.GetSection("Encore:Country").Value), Cron.MinuteInterval(int.Parse(Configuration.GetSection("Encore:ScheduleTaskDaily").Value)));
             #endregion
 
             services.AddMvc();
