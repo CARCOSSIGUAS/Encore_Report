@@ -83,9 +83,8 @@ namespace Belcorp.Encore.Application.Services
 
             IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
 
-            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, a => a.Include(p => p.AccountPhones), true);
+            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, a => a.Include(p => p.AccountPhones).Include(p => p.AccountAddresses).ThenInclude(p => p.Addresses), true);
             var account_Mongo = accountCollection.Find(a => a.CountryID == 0 && a.AccountID == monitor.RowId).FirstOrDefault();
-
 
             if (account == null)
             {
@@ -115,8 +114,10 @@ namespace Belcorp.Encore.Application.Services
                     BirthdayUTC = account.BirthdayUTC,
                     TerminatedDateUTC = account.TerminatedDateUTC,
 
-                    AccountPhones = account.AccountPhones
-                };
+                    AccountPhones = account.AccountPhones,
+                    Addresses = account.AccountAddresses.Select(a => a.Addresses).Where(a => a.AddressTypeID == 1).ToList()
+
+            };
 
                 accountCollection.InsertOne(registro);
             }
