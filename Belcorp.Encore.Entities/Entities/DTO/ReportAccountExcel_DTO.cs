@@ -48,5 +48,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public string SponsorPhone_5 { get; set; }
         public string SponsorPhone_6 { get; set; }
         public string SponsorPhone_7 { get; set; }
+
+        public string PostalCode { get; set; }
     }
 }
