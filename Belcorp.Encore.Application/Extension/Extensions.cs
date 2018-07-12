@@ -52,7 +52,11 @@ namespace Belcorp.Encore.Application.Extension
                 Generation = ai.Generation,
                 JoinDate = ai.JoinDate.HasValue ? ai.JoinDate.Value.ToString("dd/MM/yyyy") : "",
                 LEVEL = ai.LEVEL,
-                MainAddress = ai.Account != null ? ai.Account.Addresses.Where(a => a.AddressTypeID == 1).Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() : "",
+                MainAddress = ai.Account != null ? ai.Account.Addresses
+                                                         .Where(a => a.AddressTypeID == 1)
+                                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() + " " +
+                                                   ai.PostalCode.Substring(0, 5) + "-" + ai.PostalCode.Substring(5)
+                                                 : "",
                 PaidAsCurrentMonth = ai.PaidAsCurrentMonth_Des,
                 PCV = ai.PCV,
                 AccountPhone_1 = ai.Sponsor != null ? ai.Account.AccountPhones.Where(p => p.AccountPhoneID == 1).Select(p => p.PhoneNumber).FirstOrDefault() : "",
@@ -93,7 +97,11 @@ namespace Belcorp.Encore.Application.Extension
                 Generation = item.Generation,
                 JoinDate = item.JoinDate.HasValue ? item.JoinDate.Value.ToString("dd/MM/yyyy") : "",
                 LEVEL = item.LEVEL,
-                MainAddress = item.Account != null ? item.Account.Addresses.Where(a => a.AddressTypeID == 1).Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() : "",
+                MainAddress = item.Account != null ? item.Account.Addresses
+                                                         .Where(a => a.AddressTypeID == 1)
+                                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() + " " + 
+                                                     item.PostalCode.Substring(0, 5) + "-" + item.PostalCode.Substring(5)
+                                                   : "",
                 PaidAsCurrentMonth = item.PaidAsCurrentMonth_Des,
                 PCV = item.PCV,
                 Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
