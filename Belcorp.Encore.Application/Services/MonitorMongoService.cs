@@ -32,10 +32,10 @@ namespace Belcorp.Encore.Application.Services
 
         public MonitorService
         (
-            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core, 
+            IUnitOfWork<EncoreCore_Context> _unitOfWork_Core,
             IUnitOfWork<EncoreCommissions_Context> _unitOfWork_Comm,
-            IMonitorRepository _monitorMongoRepository, 
-            IAccountsService _accountsService, 
+            IMonitorRepository _monitorMongoRepository,
+            IAccountsService _accountsService,
             IConfiguration configuration
         )
         {
@@ -181,14 +181,14 @@ namespace Belcorp.Encore.Application.Services
             {
                 if (account_Mongo.AccountPhones == null)
                 {
-                    updatesAttributes = Builders<Accounts_Mongo>.Update.Set(a => a.AccountPhones, new List<AccountPhones> { phone } );
+                    updatesAttributes = Builders<Accounts_Mongo>.Update.Set(a => a.AccountPhones, new List<AccountPhones> { phone });
                 }
                 else
                 {
                     updatesAttributes = Builders<Accounts_Mongo>.Update.Push(a => a.AccountPhones, phone);
                 }
 
-                accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true } );
+                accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true });
             }
             //Si existe en Encore y si existe en Mongo
             else if (phone != null && phone_Mongo != null)

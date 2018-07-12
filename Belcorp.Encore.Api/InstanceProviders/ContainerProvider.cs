@@ -41,6 +41,12 @@
             services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             services.AddScoped<IMigrateService, MigrateService>();
+            services.AddScoped<ICalculationTypesService, CalculationTypesService>();
+            services.AddScoped<IOrderCalculationTypesService, OrderCalculationTypesService>();
+
+            services.AddScoped<IPersonalIndicatorLogService, PersonalIndicatorLogService>();
+            services.AddScoped<IPersonalIndicatorDetailLogService, PersonalIndicatorDetailLogService>();
+
         }
     }
 }
