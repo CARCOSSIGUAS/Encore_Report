@@ -79,9 +79,9 @@ namespace Belcorp.Encore.Application
             var listGenerationIds = GetIdsFromString(filter.GenerationIds).Select(s => int.Parse(s) + accountRoot.Generation).ToList();
             var listTitleIds = GetIdsFromString(filter.TitleIds);
             var listAccountStatusIds = GetIdsFromString(filter.AccountStatusIds);
+            var listAccountEstadoIds = GetIdsFromString(filter.AccountEstadoIds);
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
-
 
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
 
@@ -118,6 +118,9 @@ namespace Belcorp.Encore.Application
 
             if (listAccountStatusIds.Count > 0)
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.Activity, listAccountStatusIds);
+
+            if (listAccountEstadoIds.Count > 0)
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.STATE, listAccountEstadoIds);
 
             if (listTitleIds.Count > 0)
             {
