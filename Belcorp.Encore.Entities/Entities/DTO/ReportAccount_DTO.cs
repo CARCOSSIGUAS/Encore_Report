@@ -40,5 +40,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public int? ActiveDownline { get; set; }
         public int? ConsultActive { get; set; }
         public string Birthday { get; set; }
+
+        public string PostalCode { get; set; }
     }
 }

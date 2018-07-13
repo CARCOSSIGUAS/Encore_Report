@@ -56,7 +56,8 @@ namespace Belcorp.Encore.Application.Extension
                 //                                         .Where(a => a.AddressTypeID == 1)
                 //                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() + " " +
                 //                                   ai.PostalCode.Substring(0, 5) + "-" + ai.PostalCode.Substring(5)
-                //                                 : "",
+             s   //                                 : "",
+                PostalCode = ai.PostalCode != null ? ai.PostalCode.Substring(0, 5) + "-" + ai.PostalCode.Substring(5) : "",
                 PaidAsCurrentMonth = ai.PaidAsCurrentMonth_Des,
                 PCV = ai.PCV,
                 AccountPhone_1 = ai.Account != null ? ai.Account.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(p => p.PhoneNumber).FirstOrDefault() : "",
@@ -99,9 +100,8 @@ namespace Belcorp.Encore.Application.Extension
                 LEVEL = item.LEVEL,
                 MainAddress = item.Account != null ? item.Account.Addresses
                                                          .Where(a => a.AddressTypeID == 1)
-                                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() + " " + 
-                                                     item.PostalCode.Substring(0, 5) + "-" + item.PostalCode.Substring(5)
-                                                   : "",
+                                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() : "",
+                PostalCode = item.PostalCode != null ? item.PostalCode.Substring(0, 5) + "-" + item.PostalCode.Substring(5) : "",
                 PaidAsCurrentMonth = item.PaidAsCurrentMonth_Des,
                 PCV = item.PCV,
                 Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
@@ -113,6 +113,7 @@ namespace Belcorp.Encore.Application.Extension
                 ActiveDownline = item.ActiveDownline != null ? item.ActiveDownline : 0,
                 ConsultActive = item.ConsultActive != null ? item.ConsultActive : 0,
                 Birthday = item.Account.BirthdayUTC.HasValue ? item.Account.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
+                
             };
 
             return result;
