@@ -32,10 +32,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("getStatesByPeriods", Name = "GetStatesByPeriods")]
-        public IActionResult GetStatesByPeriods(int periodID, string country = null)
+        public IActionResult GetStatesByPeriods(int accountID, int periodID, string country = null)
         {
-
-            var result = reportAccountService.GetStatesByPeriods(periodID, country);
+            var result = reportAccountService.GetStatesByPeriods(accountID, periodID, country);
 
             if (result == null)
             {

@@ -33,13 +33,15 @@ namespace Belcorp.Encore.Application
             encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
-        public IEnumerable<Dictionary<string, string>> GetStatesByPeriods(int periodID, string country)
+        public IEnumerable<Dictionary<string, string>> GetStatesByPeriods(int accountID, int periodID, string country)
         {
             List<Dictionary<string, string>> list = new List<Dictionary<string, string>>();
             Dictionary<string, string> dic = null;
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
-            var accountRoot = accountInformationCollection.AsQueryable().Where(x => x.PeriodID == periodID).GroupBy(c => c.STATE).ToList();
+            periodID = periodID == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodID;
+
+            var accountRoot = accountInformationCollection.AsQueryable().Where(x => x.PeriodID == periodID && x.AccountID == accountID).GroupBy(c => c.STATE).ToList();
 
             if (accountRoot == null)
             {
