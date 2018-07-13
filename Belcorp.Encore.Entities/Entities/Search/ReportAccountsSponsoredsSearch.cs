@@ -16,6 +16,7 @@ namespace Belcorp.Encore.Entities.Entities.Search
             GenerationIds = "";
             TitleIds = "";
             AccountStatusIds = "";
+            AccountEstadoIds = "";
         }
 
         public int? PeriodId { get; set; }
@@ -34,7 +35,7 @@ namespace Belcorp.Encore.Entities.Entities.Search
         public string TitleIds { get; set; }
 
         public string AccountStatusIds { get; set; }
-
+        public string AccountEstadoIds { get; set; }
         public DateTime? JoinDateFrom { get; set; }
         public DateTime? JoinDateTo { get; set; }
 
