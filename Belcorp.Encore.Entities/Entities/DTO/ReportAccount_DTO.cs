@@ -28,7 +28,9 @@ namespace Belcorp.Encore.Entities.Entities.DTO
 
         public string CareerTitle { get; set; }
 
+        public string PaidAsCurrentMonthDesc { get; set; }
         public string PaidAsCurrentMonth { get; set; }
+        public string PaidAsTitle { get; set; }
 
         public string MainAddress { get; set; }
         public string Phones { get; set; }

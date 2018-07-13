@@ -252,7 +252,7 @@ namespace Belcorp.Encore.Application
 
             result.ForEach(a =>
             {
-                a.LEVEL = a.LEVEL - accountRoot.LEVEL;
+                //a.LEVEL = a.LEVEL - accountRoot.LEVEL;
                 a.Generation = a.Generation - accountRoot.Generation;
             });
 
