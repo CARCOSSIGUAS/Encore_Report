@@ -31,6 +31,19 @@ namespace Belcorp.Encore.Services.Report.Controllers
             termTranslationsService = _termTranslationsService;
         }
 
+        [HttpGet("getStatesByPeriods", Name = "GetStatesByPeriods")]
+        public IActionResult GetStatesByPeriods(int accountID, int periodID, string country = null)
+        {
+            var result = reportAccountService.GetStatesByPeriods(accountID, periodID, country);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+
         [HttpGet("sponsoreds", Name = "GetReportAccountsSponsoreds")]
         public IActionResult GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string country = null)
         {
