@@ -33,7 +33,34 @@ namespace Belcorp.Encore.Application
             encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
-        public PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string  country)
+        public IEnumerable<Dictionary<string, string>> GetStatesByPeriods(int periodID, string country)
+        {
+            List<Dictionary<string, string>> list = new List<Dictionary<string, string>>();
+            Dictionary<string, string> dic = null;
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
+            var accountRoot = accountInformationCollection.AsQueryable().Where(x => x.PeriodID == periodID).GroupBy(c => c.STATE).ToList();
+
+            if (accountRoot == null)
+            {
+                return null;
+            }
+
+            foreach (var item in accountRoot)
+            {
+                dic = new Dictionary<string, string>();
+                if (item.Key != null)
+                {
+                    dic.Add("value", item.Key);
+                    list.Add(dic);
+                }
+            }
+
+            return list;
+        }
+
+
+        public PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
@@ -69,7 +96,7 @@ namespace Belcorp.Encore.Application
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
 
-            if(filter.PQVFrom.HasValue)
+            if (filter.PQVFrom.HasValue)
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.PQV, filter.PQVFrom);
 
             if (filter.PQVTo.HasValue && filter.PQVTo < 10000)
@@ -154,7 +181,7 @@ namespace Belcorp.Encore.Application
                     a => a.AccountID,
                     r => r.Account
                 )
-                .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true } )
+                .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 //.Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
                 //    accountsCollection,
                 //    ai => ai.SponsorID,
@@ -238,7 +265,7 @@ namespace Belcorp.Encore.Application
             var period = homeService.GetCurrentPeriod(country).PeriodID;
 
 
-            var accountRoot= AccountsUtils.Recursivo(accountInformationCollection, period, sponsor, accountID);
+            var accountRoot = AccountsUtils.Recursivo(accountInformationCollection, period, sponsor, accountID);
             if (accountRoot == null)
             {
                 return null;
@@ -262,7 +289,7 @@ namespace Belcorp.Encore.Application
                 if (periods != null)
                 {
                     List<Options_DTO> list = new List<Options_DTO>();
-                    periods.ForEach(a => 
+                    periods.ForEach(a =>
                         list.Add(new Options_DTO() { ID = a.PeriodID, Name = a.Description })
                     );
 
@@ -295,7 +322,7 @@ namespace Belcorp.Encore.Application
             if (accountRoot == null)
             {
                 return null;
-            }          
+            }
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
