@@ -26,6 +26,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public decimal? DQVT { get; set; }
         public decimal? DQV { get; set; }
 
+        public string CareerTitleDes { get; set; }
         public string CareerTitle { get; set; }
 
         public string PaidAsCurrentMonthDesc { get; set; }

@@ -41,7 +41,7 @@ namespace Belcorp.Encore.Application
 
             periodID = periodID == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodID;
 
-            var accountRoot = accountInformationCollection.AsQueryable().Where(x => x.PeriodID == periodID && x.AccountID == accountID).GroupBy(c => c.STATE).ToList();
+            var accountRoot = accountInformationCollection.AsQueryable().Where(x => x.PeriodID == periodID && x.SponsorID == accountID).GroupBy(c => c.STATE).ToList();
 
             if (accountRoot == null)
             {
@@ -213,6 +213,7 @@ namespace Belcorp.Encore.Application
             filter.PeriodId = filter.PeriodId == null ? homeService.GetCurrentPeriod(country).PeriodID : filter.PeriodId;
 
             var accountRoot = accountInformationCollection.Find(a => a.AccountID == filter.AccountId && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
+            var accountRootPrincipal = accountInformationCollection.Find(a => a.AccountID == filter.SponsorNumberSearch && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
             if (accountRoot == null)
             {
                 return null;
@@ -255,7 +256,7 @@ namespace Belcorp.Encore.Application
 
             result.ForEach(a =>
             {
-                //a.LEVEL = a.LEVEL - accountRoot.LEVEL;
+                a.LEVEL = a.LEVEL - accountRootPrincipal.LEVEL;
                 a.Generation = a.Generation - accountRoot.Generation;
             });
 
