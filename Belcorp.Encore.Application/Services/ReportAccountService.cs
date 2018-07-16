@@ -33,32 +33,109 @@ namespace Belcorp.Encore.Application
             encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
-        public IEnumerable<Dictionary<string, string>> GetStatesByPeriods(int accountID, int periodID, string country)
+        public dataForFilter_DTO GetDataForFilterByPeriods(int accountID, int periodID, string country)
         {
-            List<Dictionary<string, string>> list = new List<Dictionary<string, string>>();
-            Dictionary<string, string> dic = null;
+            dataForFilter_DTO list = new dataForFilter_DTO();
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
             periodID = periodID == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodID;
 
-            var accountRoot = accountInformationCollection.AsQueryable().Where(x => x.PeriodID == periodID && x.SponsorID == accountID).GroupBy(c => c.STATE).ToList();
-
+            var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == periodID, null).FirstOrDefault();
             if (accountRoot == null)
             {
                 return null;
             }
 
-            foreach (var item in accountRoot)
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodID);
+
+            if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
             {
-                dic = new Dictionary<string, string>();
-                if (item.Key != null)
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountRoot.LeftBower);
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);
+            }
+            else
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountRoot.AccountID);
+            }
+
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+
+            var orderDefinitionState = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.STATE);
+            var orderDefinitionGeneration = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.Generation);
+            var orderDefinitionLevel = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.LEVEL);
+
+            var resultS = accountInformationCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Sort(orderDefinitionState)
+                .Group(
+                    x => x.STATE,
+                    g => new { State = g.Select(x => x.STATE).Max() })
+                .ToList();
+
+            var resultG = accountInformationCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Sort(orderDefinitionGeneration)
+                .Group(
+                    x => x.Generation,
+                    g => new { Generation = g.Select(x => x.Generation).Max() })
+                .ToList();
+
+            var resultN = accountInformationCollection
+               .Aggregate()
+               .Match(filterDefinition)
+               .Sort(orderDefinitionLevel)
+               .Group(
+                   x => x.LEVEL,
+                   g => new { Level = g.Select(x => x.LEVEL).Max() })
+               .ToList();
+
+            list.state = new List<stateFilter>();
+            list.generation = new List<generationFilter>();
+            list.level = new List<levelFilter>();
+            foreach (var item in resultS)
+            {
+                if (item.State != null)
                 {
-                    dic.Add("value", item.Key);
-                    list.Add(dic);
+                    list.state.Add(new stateFilter()
+                    {
+                        state = item.State.ToString()
+                    });
+                        
                 }
             }
 
-            return list;
+            foreach (var item in resultG)
+            {
+                if (item.Generation != null)
+                {
+                    list.generation.Add(new generationFilter()
+                    {
+                        generation = Convert.ToInt32(item.Generation)
+                    });
+
+                }
+            }
+
+            foreach (var item in resultN)
+            {
+                if (item.Level != null)
+                {
+                    list.level.Add(new levelFilter()
+                    {
+                        level = Convert.ToInt32(item.Level)
+                    });
+
+                }
+            }
+
+        list.state = list.state.OrderBy(x => x.state).ToList();
+        list.generation = list.generation.OrderBy(x=>x.generation).ToList();
+        list.level = list.level.OrderBy(x => x.level).ToList();
+        return list;
         }
 
 

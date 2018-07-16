@@ -34,7 +34,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
         [HttpGet("getStatesByPeriods", Name = "GetStatesByPeriods")]
         public IActionResult GetStatesByPeriods(int accountID, int periodID, string country = null)
         {
-            var result = reportAccountService.GetStatesByPeriods(accountID, periodID, country);
+            var result = reportAccountService.GetDataForFilterByPeriods(accountID, periodID, country);
 
             if (result == null)
             {
