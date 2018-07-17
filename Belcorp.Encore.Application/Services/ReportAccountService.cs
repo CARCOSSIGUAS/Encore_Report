@@ -45,6 +45,8 @@ namespace Belcorp.Encore.Application
             {
                 return null;
             }
+            var generation = accountRoot.Generation;
+            var level = accountRoot.LEVEL;
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodID);
@@ -114,7 +116,7 @@ namespace Belcorp.Encore.Application
                 {
                     list.generation.Add(new generationFilter()
                     {
-                        generation = Convert.ToInt32(item.Generation)
+                        generation = Convert.ToInt32(item.Generation??0) - generation??0
                     });
 
                 }
@@ -126,7 +128,7 @@ namespace Belcorp.Encore.Application
                 {
                     list.level.Add(new levelFilter()
                     {
-                        level = Convert.ToInt32(item.Level)
+                        level = Convert.ToInt32(item.Level??0) - level??0
                     });
 
                 }
@@ -291,10 +293,11 @@ namespace Belcorp.Encore.Application
 
             var accountRoot = accountInformationCollection.Find(a => a.AccountID == filter.AccountId && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
             var accountRootPrincipal = accountInformationCollection.Find(a => a.AccountID == filter.SponsorNumberSearch && a.PeriodID == filter.PeriodId, null).FirstOrDefault();
+           
             if (accountRoot == null)
             {
                 return null;
-            }
+            }            
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
@@ -333,8 +336,15 @@ namespace Belcorp.Encore.Application
 
             result.ForEach(a =>
             {
+                string[] FirstName = (a.Account.FirstName).Split(" ");
+                string[] LastName = (a.Account.LastName).Split(" ");
+
                 a.LEVEL = a.LEVEL - accountRootPrincipal.LEVEL;
                 a.Generation = a.Generation - accountRoot.Generation;
+                a.country = country;
+                a.Account.FirstName = FirstName[0];
+                a.LastName1 = LastName.Length > 1 ? LastName[0] : " ";
+                a.LastName2 = LastName.Length > 1 ? LastName[1] : " ";
             });
 
             return result;
@@ -353,6 +363,19 @@ namespace Belcorp.Encore.Application
             {
                 return null;
             }
+
+            accountRoot.ToList().ForEach(a =>
+            {
+                string[] FullName = (a.AccountName).Split(" ");
+                string[] SPFullName = (a.SponsorName).Split(" ");
+                a.Name1 = FullName.Length > 1 ? FullName[0] : " ";
+                a.Name2 = FullName.Length > 1 ? FullName[1] : " ";
+                a.LastName1 = FullName.Length > 1 ? FullName[2] : " ";
+                a.LastName2 = FullName.Length > 1 ? FullName[3] : " ";
+                a.country = country;
+                a.SPName = SPFullName.Length > 1 ? SPFullName[0] : " ";
+                a.SPLastName = SPFullName.Length > 1 ? SPFullName[1] : " ";
+            });
 
             return accountRoot;
         }

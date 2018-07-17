@@ -72,7 +72,7 @@ namespace Belcorp.Encore.Application.Services
 
         public IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int ? AccountID = null)
         {
-            return from accountsInfo in accountsInformation
+            var result = from accountsInfo in accountsInformation
                    join titlesInfo_Career in titles on Int32.Parse(accountsInfo.CareerTitle) equals titlesInfo_Career.TitleID
                    join titlesInfo_Paid in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
                    where !accountsInfo.AccountName.Contains("TempName")
@@ -154,6 +154,7 @@ namespace Belcorp.Encore.Application.Services
 
                        Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity
                    };
+            return result;
         }
 
         public void MigrateBonusDetailsByPeriod(int? periodId = null, string country = null)

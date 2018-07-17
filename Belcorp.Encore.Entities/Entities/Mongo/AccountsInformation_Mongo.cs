@@ -103,5 +103,12 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string CareerTitle_Des { get; set; }
         public string PaidAsCurrentMonth_Des { get; set; }
 
+        public string Name1 { get; set; }
+        public string Name2 { get; set; }
+        public string LastName1 { get; set; }
+        public string LastName2 { get; set; }
+        public string country { get; set; }
+        public string SPName { get; set; }
+        public string SPLastName { get; set; }
     }
 }

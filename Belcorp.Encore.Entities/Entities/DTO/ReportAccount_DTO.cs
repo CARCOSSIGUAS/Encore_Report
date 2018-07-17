@@ -45,5 +45,12 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public string Birthday { get; set; }
 
         public string PostalCode { get; set; }
+        
+        public string FirstName { get; set; }
+        public string LastName1 { get; set; }
+        public string LastName2 { get; set; }
+        public string country { get; set; }
+        public string SPName { get; set; }
+        public string SPLastName { get; set; }
     }
 }
