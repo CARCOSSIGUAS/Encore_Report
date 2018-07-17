@@ -14,8 +14,7 @@ namespace Belcorp.Encore.Application.Extension
             var result = list.Select(ai => new ReportAccount_DTO()
             {
                 AccountID = ai.AccountID,
-                //AccountName = ai.AccountName.ToLower(),
-                AccountName = ai.country == "BRA" ? (ai.Account.FirstName + " " + ai.LastName2).ToLower() : (ai.Account.FirstName + " " + ai.LastName1).ToLower(),
+                AccountName = ai.AccountName.ToLower(),
                 AccountNumber = ai.AccountNumber,
                 Activity = ai.Activity,
                 CareerTitleDes = ai.CareerTitle_Des,
@@ -139,8 +138,7 @@ namespace Belcorp.Encore.Application.Extension
             var result = list.Select(ai => new ReportAccount_DTO()
             {
                 AccountID = ai.AccountID,
-                //AccountName = ai.AccountName.ToLower(),
-                AccountName = ai.country == "BRA" ? (ai.Name1 + " " + ai.LastName2).ToLower() : (ai.Name1 + " " + ai.LastName1).ToLower(),
+                AccountName = ai.AccountName.ToLower(),
                 AccountNumber = ai.AccountNumber,
                 Activity = ai.Activity,
                 CareerTitle = ai.CareerTitle_Des,
@@ -153,8 +151,7 @@ namespace Belcorp.Encore.Application.Extension
                 PCV = ai.PCV,
                 PQV = ai.PQV,
                 SponsorID = ai.SponsorID,
-                //SponsorName = ai.SponsorName.ToLower(),
-                SponsorName = (ai.SPName + " " + ai.SPLastName).ToLower(),
+                SponsorName = ai.SponsorName.ToLower(),
             }).ToList();
 
             return result;
