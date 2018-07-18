@@ -510,7 +510,7 @@ namespace Belcorp.Encore.Application.Services
             var accountsInformations = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(Statistics.PeriodID, accountsIds).ToList();
 
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
-            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses), true);
+            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses).Include(aa=>aa.AccountConsistencyStatuses), true);
 
             IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformations, activity, AccountID);
             try
