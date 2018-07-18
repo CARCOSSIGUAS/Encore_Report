@@ -1,6 +1,7 @@
 ﻿using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Belcorp.Encore.Entities.Entities.Mongo.Extension;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,5 +16,7 @@ namespace Belcorp.Encore.Application.Services.Interfaces
         List<AccountsInformation_Mongo> GetConsultantSearch(string filter, int accountId, string country);
         List<AccountsInformation_MongoWithAccountAndSponsor> GetConsultantLowerPerformance(int? periodID, int accountID, string country);
         Periods_Mongo GetCurrentPeriod(string country);
+        string GetLastTransaction(string country);
     }
 }
+

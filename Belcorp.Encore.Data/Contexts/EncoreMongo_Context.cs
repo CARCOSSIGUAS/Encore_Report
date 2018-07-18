@@ -150,6 +150,29 @@ namespace Belcorp.Encore.Data.Contexts
             }
 
         }
+
+        public IMongoCollection<TransactionMonitor_Mongo> TransactionMonitorProvider(string country)
+        {
+            string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + country);
+            string database = _configuration.GetValue<string>("Encore_Mongo:Database" + country);
+
+            var client = new MongoClient(connectionString);
+
+            IMongoDatabase _database;
+
+            if (client != null)
+            {
+                _database = client.GetDatabase(database);
+
+                return _database.GetCollection<TransactionMonitor_Mongo>("TransactionMonitor");
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
         #endregion
     }
 }

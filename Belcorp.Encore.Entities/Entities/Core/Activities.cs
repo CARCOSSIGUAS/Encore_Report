@@ -18,5 +18,6 @@ namespace Belcorp.Encore.Entities.Entities.Core
         public bool ? HasContinuity { get; set; }
 
         public ActivityStatuses ActivityStatuses { get; set; }
+        public AccountConsistencyStatuses AccountConsistencyStatuses { get; set; }
     }
 }
