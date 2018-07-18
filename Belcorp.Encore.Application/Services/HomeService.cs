@@ -241,7 +241,7 @@ namespace Belcorp.Encore.Application.Services
             filterDefinitionAccountInformations &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);
             
             var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.AccountName);
-            var limit = 10;
+            var limit = 1000005;
             //result = accountsCollection
             //    .Aggregate()
             //    //.Match(filterDefinitionAccounts)
