@@ -103,5 +103,9 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string CareerTitle_Des { get; set; }
         public string PaidAsCurrentMonth_Des { get; set; }
 
+        [BsonRepresentation(BsonType.Double)]
+        public decimal? NCWP { get; set; }
+
+        public int? UplineLeader0 { get; set; }
     }
 }

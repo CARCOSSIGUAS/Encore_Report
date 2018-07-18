@@ -228,7 +228,10 @@ namespace Belcorp.Encore.Application.Services
 
             for (int i = 0; i < ii; i++)
             {
-                var accounts = accountsRepository.GetPagedList(null, a => a.OrderBy(o => o.AccountID), a => a.Include(p => p.AccountPhones).Include(p => p.AccountAddresses).ThenInclude(p => p.Addresses), i, 5000, true).Items;
+                var accounts = accountsRepository.GetPagedList(null, a => a.OrderBy(o => o.AccountID), a => a.Include(p => p.AccountPhones)
+                                                                                                             .Include(p => p.AccountAddresses).ThenInclude(p => p.Addresses)
+                                                                                                             .Include(p => p.AccountAdditionalTitulars)
+                                                                                                     , i, 5000, true).Items;
 
                 List<Accounts_Mongo> accounts_Mongo = new List<Accounts_Mongo>();
                 foreach (var account in accounts)
@@ -257,6 +260,7 @@ namespace Belcorp.Encore.Application.Services
 
                     account_Mongo.AccountPhones = account.AccountPhones;
                     account_Mongo.Addresses = account.AccountAddresses.Select(a => a.Addresses).Where(a => a.AddressTypeID == 1).ToList();
+                    account_Mongo.AccountAdditionalTitulars = account.AccountAdditionalTitulars.ToList();
 
                     accounts_Mongo.Add(account_Mongo);
                 }

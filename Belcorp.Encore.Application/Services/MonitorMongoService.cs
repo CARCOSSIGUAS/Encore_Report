@@ -83,7 +83,11 @@ namespace Belcorp.Encore.Application.Services
 
             IMongoCollection<Accounts_Mongo> accountCollection = encoreMongo_Context.AccountsProvider(country);
 
-            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, a => a.Include(p => p.AccountPhones).Include(p => p.AccountAddresses).ThenInclude(p => p.Addresses), true);
+            var account = accountsRepository.GetFirstOrDefault(a => a.AccountID == monitor.RowId, null, a => a.Include(p => p.AccountPhones)
+                                                                                                              .Include(p => p.AccountAddresses).ThenInclude(p => p.Addresses)
+                                                                                                              .Include(p => p.AccountAdditionalTitulars)
+                                                                                                      , true);
+
             var account_Mongo = accountCollection.Find(a => a.CountryID == 0 && a.AccountID == monitor.RowId).FirstOrDefault();
 
             if (account == null)
@@ -115,8 +119,8 @@ namespace Belcorp.Encore.Application.Services
                     TerminatedDateUTC = account.TerminatedDateUTC,
 
                     AccountPhones = account.AccountPhones,
-                    Addresses = account.AccountAddresses.Select(a => a.Addresses).Where(a => a.AddressTypeID == 1).ToList()
-
+                    Addresses = account.AccountAddresses.Select(a => a.Addresses).Where(a => a.AddressTypeID == 1).ToList(),
+                    AccountAdditionalTitulars = account.AccountAdditionalTitulars.ToList()
             };
 
                 accountCollection.InsertOne(registro);
@@ -132,9 +136,23 @@ namespace Belcorp.Encore.Application.Services
                 .Set(a => a.EmailAddress, account.EmailAddress)
                 .Set(a => a.SponsorID, account.SponsorID)
                 .Set(a => a.EnrollerID, account.EnrollerID)
-                .Set(a => a.EnrollmentDateUTC, account.EnrollmentDateUTC);
+                .Set(a => a.EnrollmentDateUTC, account.EnrollmentDateUTC)
+                .PullFilter(a => a.AccountAdditionalTitulars, aa => aa.AccountAdditionalTitularID > 1)
+                .PullFilter(a => a.Addresses, aa => aa.AddressID > 1);
 
                 accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes);
+
+                if (account.AccountAdditionalTitulars != null)
+                {
+                    updatesAttributes = Builders<Accounts_Mongo>.Update.PushEach(a => a.AccountAdditionalTitulars, account.AccountAdditionalTitulars);
+                    accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true });
+                }
+
+                if (account.AccountAddresses != null)
+                {
+                    updatesAttributes = Builders<Accounts_Mongo>.Update.PushEach(a => a.Addresses, account.AccountAddresses.Select(a => a.Addresses).Where(a => a.AddressTypeID == 1));
+                    accountCollection.UpdateOne(a => a.CountryID == 0 && a.AccountID == account.AccountID, updatesAttributes, new UpdateOptions { IsUpsert = true });
+                }
             }
 
             if (monitor.MonitorDetails != null && monitor.MonitorDetails.Any(md => md.Process == false))
