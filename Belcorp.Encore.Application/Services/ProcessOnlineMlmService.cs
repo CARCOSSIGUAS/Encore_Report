@@ -111,7 +111,7 @@ namespace Belcorp.Encore.Application.Services
                 Indicators_InOrderCalculationsOnline();
                 Execute_Activities();
                 Migrate_AccountInformationByAccountId(Statistics.Order.AccountID, country);
-
+                UpdateTransactionDate(1, country);
                 PersonalIndicatorLog = personalIndicatorLogService.Update(PersonalIndicatorLog);
             }
         }
@@ -537,6 +537,21 @@ namespace Belcorp.Encore.Application.Services
             }
 
             personalIndicatorDetailLogService.Update(detailLog);
+        }
+        #endregion
+
+        #region TransactionDate
+        public void UpdateTransactionDate(int typeTransaction, string country)
+        {
+            TransactionMonitor_Mongo item = new TransactionMonitor_Mongo
+            {
+                TransactionMonitorID = typeTransaction,
+                 TransactionDate = DateTime.Now
+            };
+
+            IMongoCollection<TransactionMonitor_Mongo> transactionMonitorCollection = encoreMongo_Context.TransactionMonitorProvider(country);
+
+            transactionMonitorCollection.ReplaceOne(ai => ai.TransactionMonitorID == typeTransaction, item, new UpdateOptions { IsUpsert = true });
         }
         #endregion
     }

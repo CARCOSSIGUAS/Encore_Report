@@ -324,5 +324,12 @@ namespace Belcorp.Encore.Application.Services
             var period = periodsCollection.Find(p => datetimeNow >= p.StartDateUTC && datetimeNow <= p.EndDateUTC && p.PlanID == 1).FirstOrDefault();
             return period;
         }
+
+        public string GetLastTransaction(string country)
+        {
+            IMongoCollection<TransactionMonitor_Mongo> periodsCollection = encoreMongo_Context.TransactionMonitorProvider(country);
+            var item =  periodsCollection.AsQueryable().OrderByDescending(x=>x.TransactionDate).FirstOrDefault();
+            return item != null ? item.TransactionDate.ToString("dd/MM/yyyy hh:mm:ss") : "";
+        }
     }
 }

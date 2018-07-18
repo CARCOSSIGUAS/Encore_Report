@@ -68,6 +68,7 @@ namespace Belcorp.Encore.Application.Services
 
                 accountInformationCollection.InsertMany(result);
             }
+            UpdateTransactionDate(2, country);
         }
 
         public IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int? AccountID = null)
@@ -395,5 +396,20 @@ namespace Belcorp.Encore.Application.Services
             periodId = result.PeriodID;
             return periodId;
         }
+
+        #region TransactionDate
+        public void UpdateTransactionDate(int typeTransaction, string country)
+        {
+            TransactionMonitor_Mongo item = new TransactionMonitor_Mongo
+            {
+                TransactionMonitorID = typeTransaction,
+                TransactionDate = DateTime.Now
+            };
+
+            IMongoCollection<TransactionMonitor_Mongo> transactionMonitorCollection = encoreMongo_Context.TransactionMonitorProvider(country);
+
+            transactionMonitorCollection.ReplaceOne(ai => ai.TransactionMonitorID == typeTransaction, item, new UpdateOptions { IsUpsert = true });
+        }
+        #endregion
     }
 }

@@ -31,6 +31,19 @@ namespace Belcorp.Encore.Services.Report.Controllers
             return Ok(result);
         }
 
+        [HttpGet("getTransactionDate", Name = "GetTransactionDate")]
+        public IActionResult GetTransactionDate(string country = null)
+        {
+            var contextCountry = country;
+            var result = homeService.GetLastTransaction(country);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+
         [HttpGet("performanceindicator", Name = "GetPerformanceIndicator")]
         public IActionResult GetPerformanceIndicator(int accountId, int? periodID, string country = null)
         {
