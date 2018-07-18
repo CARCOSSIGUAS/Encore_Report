@@ -140,6 +140,117 @@ namespace Belcorp.Encore.Application
         return list;
         }
 
+        public List<AccountsInformation_Mongo> GetDataBirthday(int accountID, int? periodID, string country)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
+            periodID = periodID == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodID;
+           
+            var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == periodID, null).FirstOrDefault();
+            if (accountRoot == null)
+            {
+                return null;
+            }
+
+            var Hoy = DateTime.Now;
+            int Day = Hoy.Day;
+            int Month = Hoy.Month;
+            int Year = Hoy.Year;
+            var LastDay = DateTime.DaysInMonth(Year, Month);
+
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodID);
+
+            if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountRoot.LeftBower);
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);
+            }
+            else
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountRoot.AccountID);
+            }
+
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+
+            var orderDefinitionAccountName = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.AccountName);
+
+            var result = new List<AccountsInformation_Mongo>();
+
+            result = accountInformationCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Limit(200)
+                .Sort(orderDefinitionAccountName)
+                .ToList();
+
+            List<AccountsInformation_Mongo> list = new List<AccountsInformation_Mongo>();
+            foreach (var item in result)
+            {
+                if (item.BirthdayUTC.Value.Month == Month && item.BirthdayUTC.Value.Day >= Day && item.BirthdayUTC.Value.Day <= LastDay)
+                {
+                    list.Add(new AccountsInformation_Mongo()
+                    {
+                        AccountID = item.AccountID,
+                        AccountName = item.AccountName,
+                        BirthdayUTC = item.BirthdayUTC,
+                        AccountNumber = item.AccountNumber,
+                        AccountsInformationID = item.AccountsInformationID,
+                        ActiveDownline = item.ActiveDownline,
+                        Activity = item.Activity,
+                        Address = item.Address,
+                        CareerTitle = item.CareerTitle,
+                        CareerTitle_Des = item.CareerTitle_Des,
+                        City = item.City,
+                        ConsultActive = item.ConsultActive,
+                        country = item.country,
+                        CQL = item.CQL,
+                        CreditAvailable = item.CreditAvailable,
+                        DCV = item.DCV,
+                        DebtsToExpire = item.DebtsToExpire,
+                        DQV = item.DQV,
+                        DQVT = item.DQVT,
+                        EmailAddress = item.EmailAddress,
+                        ExpiredDebts = item.ExpiredDebts,
+                        GCV = item.GCV,
+                        Generation = item.Generation,
+                        GenerationM3 = item.GenerationM3,
+                        GQV = item.GQV,
+                        IsCommissionQualified = item.IsCommissionQualified,
+                        JoinDate = item.JoinDate,
+                        LastName1 = item.LastName1,
+                        LastName2 = item.LastName2,
+                        LastOrderDate = item.LastOrderDate,
+                        LeftBower = item.LeftBower,
+                        LEVEL = item.LEVEL,
+                        Name1 = item.Name1,
+                        Name2 = item.Name2,
+                        PaidAsCurrentMonth = item.PaidAsCurrentMonth,
+                        PaidAsCurrentMonth_Des = item.PaidAsCurrentMonth_Des,
+                        NewStatus = item.NewStatus,
+                        PaidAsLastMonth = item.PaidAsLastMonth,
+                        PCV = item.PCV,
+                        PeriodID = item.PeriodID,
+                        PQV = item.PQV,
+                        PostalCode = item.PostalCode,
+                        Region = item.Region,
+                        RightBower = item.RightBower,
+                        SortPath = item.SortPath,
+                        SPLastName = item.SPLastName,
+                        SPName = item.SPName,
+                        SponsorID = item.SponsorID,
+                        SponsorName = item.SponsorName,
+                        STATE = item.STATE,
+                        TotalDownline = item.TotalDownline,
+                        VolumeForCareerTitle = item.VolumeForCareerTitle
+                    });
+
+                }
+            }
+            list = list.Take(5).ToList();
+            return list;
+        }
 
         public PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string country)
         {
@@ -358,7 +469,6 @@ namespace Belcorp.Encore.Application
 
             return accountRoot;
         }
-
 
         public async Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods(string country)
         {

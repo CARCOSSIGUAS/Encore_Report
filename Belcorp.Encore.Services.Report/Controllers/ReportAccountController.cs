@@ -88,7 +88,6 @@ namespace Belcorp.Encore.Services.Report.Controllers
             return Ok(result.ToReportAccount_DTO());
         }
 
-
         [HttpGet("sponsoredbySponsor", Name = "GetReportAccountsBySponsored")]
         public IActionResult GetReportAccountsSponsoredsThree(int sponsorID, int accountID, string country = null)
         {
@@ -101,7 +100,6 @@ namespace Belcorp.Encore.Services.Report.Controllers
 
             return Ok(result.ToTopologyList());
         }
-
 
         [HttpGet("exportexcel")]
         public IActionResult ExportExcelAccounts(ReportAccountsSponsoredsSearch filter, string language, string country = null)
@@ -213,6 +211,18 @@ namespace Belcorp.Encore.Services.Report.Controllers
         public IActionResult GetReportAccountsPeriods(string country)
         {
             var result = reportAccountService.GetReportAccountsPeriods(country);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet("birthday", Name = "GetDataBirthday")]
+        public IActionResult GetDataBirthday(int accountID, int periodID, string country)
+        {
+            var result = reportAccountService.GetDataBirthday(accountID, periodID, country);
             if (result == null)
             {
                 return NotFound();

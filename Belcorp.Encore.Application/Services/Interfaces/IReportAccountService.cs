@@ -17,5 +17,6 @@ namespace Belcorp.Encore.Application.Services
         Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods(string country);
         AccountsInformation_MongoWithAccountAndSponsor GetConsultantDetails(int? periodId, int accountId, int accountIdCurrent, string country = null);
         dataForFilter_DTO GetDataForFilterByPeriods(int accountID, int periodID, string country);
+        List<AccountsInformation_Mongo> GetDataBirthday(int accountID, int? periodID, string country);
     }
 }

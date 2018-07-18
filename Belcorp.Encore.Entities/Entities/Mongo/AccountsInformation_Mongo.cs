@@ -81,6 +81,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public decimal? CQL { get; set; }
         public DateTime? LastOrderDate { get; set; }
         public bool? IsCommissionQualified { get; set; }
+        [BsonRepresentation(BsonType.DateTime)]
         public DateTime? BirthdayUTC { get; set; }
         public int? UplineLeaderM3 { get; set; }
         public string UplineLeaderM3Name { get; set; }
