@@ -143,6 +143,8 @@ namespace Belcorp.Encore.Application
         public List<AccountsInformation_Mongo> GetDataBirthday(int accountID, int? periodID, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
+            
 
             periodID = periodID == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodID;
 
@@ -178,22 +180,48 @@ namespace Belcorp.Encore.Application
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
 
-            var orderDefinitionAccountName = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.AccountName);
+            //var orderDefinitionAccountName = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.AccountName);
 
-            var result = new List<AccountsInformation_Mongo>();
+            var result = new List<AccountsInformation_MongoWithAccountAndSponsor>();
 
             result = accountInformationCollection
                 .Aggregate()
                 .Match(filterDefinition)
+                .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                    accountsCollection,
+                    ai => ai.AccountID,
+                    a => a.AccountID,
+                    r => r.Account
+                )
+                .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 //.Limit(200)
-                .Sort(orderDefinitionAccountName)
+                //.Sort(orderDefinitionAccountName)
                 .ToList();
 
             List<AccountsInformation_Mongo> list = new List<AccountsInformation_Mongo>();
             foreach (var item in result)
             {
-                if (item.BirthdayUTC.Value.Month == Month && item.BirthdayUTC.Value.Day >= Day && item.BirthdayUTC.Value.Day <= LastDay)
+                if(item.Account.AccountAdditionalTitulars!=null&&item.Account.AccountAdditionalTitulars.Count>0)
                 {
+                    foreach (var titular in item.Account.AccountAdditionalTitulars)
+                    {
+                        if (titular.Brithday.Value.Month == Month && titular.Brithday.Value.Day >= Day && titular.Brithday.Value.Day <= LastDay)
+                        {
+                            list.Add(new AccountsInformation_Mongo()
+                            {
+                                AccountID = titular.AccountID,
+                                AccountName = titular.FirstName + " " + titular.LastName,
+                                BirthdayUTC = titular.Brithday,
+                                Generation = -1,
+                                LEVEL = -1,
+                                HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
+                            });
+                        }
+                    }
+                }
+
+                if (item.BirthdayUTC.Value.Month == Month && item.BirthdayUTC.Value.Day >= Day && item.BirthdayUTC.Value.Day <= LastDay)
+                { 
                     list.Add(new AccountsInformation_Mongo()
                     {
                         AccountID = item.AccountID,
