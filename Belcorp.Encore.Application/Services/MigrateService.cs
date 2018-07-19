@@ -85,6 +85,7 @@ namespace Belcorp.Encore.Application.Services
                     UplineLeader0 = sponsor.UplineLeader0 ?? 0;
                 }
             }
+
             var result = from accountsInfo in accountsInformation
                          join titlesInfo_Career in titles on Int32.Parse(string.IsNullOrEmpty(accountsInfo.CareerTitle) ? "0" : accountsInfo.CareerTitle) equals titlesInfo_Career.TitleID
                          join titlesInfo_Paid in titles on Int32.Parse(string.IsNullOrEmpty(accountsInfo.PaidAsCurrentMonth) ? "0" : accountsInfo.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
@@ -169,6 +170,8 @@ namespace Belcorp.Encore.Application.Services
                              NCWP = accountsInfo.NCWP,
                              UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0
                          };
+
+            return result;
         }
 
         public void MigrateBonusDetailsByPeriod(int? periodId = null, string country = null)
