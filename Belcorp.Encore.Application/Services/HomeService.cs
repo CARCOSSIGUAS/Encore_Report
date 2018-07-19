@@ -265,6 +265,71 @@ namespace Belcorp.Encore.Application.Services
             return result;
         }
 
+        public ConsultantNewStatus_DTO GetNewConsultantSearch(int accountID, int periodoID, string country)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
+            var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == periodoID, null).FirstOrDefault();
+            if (accountRoot == null)
+            {
+                return null;
+            }
+
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodoID);
+
+            if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountRoot.LeftBower);
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);   
+            }
+            else
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountRoot.AccountID);
+            }
+
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+
+            //HasContinuity
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.HasContinuity, true);
+            //var totalItems = (int)accountInformationCollection.Find(filterDefinition).Count();
+
+            var resultContinuity = accountInformationCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Group(
+                    x => x.NewStatus,
+                    g => new NewStatus_DTO { NewStatus = g.Key,  QtyHasContinuity = g.Count() })
+                .ToList();
+
+            //IsQualified
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.IsQualified, true);
+
+            var resultQualified = accountInformationCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Group(
+                    x => x.NewStatus,
+                    g => new NewStatus_DTO { NewStatus = g.Key, QtyQualified = g.Count() })
+                .ToList();
+
+            ConsultantNewStatus_DTO result = new ConsultantNewStatus_DTO(); ;
+            result.nueva0_Total = resultContinuity.Where(x => x.NewStatus == $"New 0" || x.NewStatus == $"Nova 0").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.nueva1_Total = resultContinuity.Where(x => x.NewStatus == $"New 1" || x.NewStatus == $"Nova 1").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.nueva2_Total = resultContinuity.Where(x => x.NewStatus == $"New 2" || x.NewStatus == $"Nova 2").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.nueva3_Total = resultContinuity.Where(x => x.NewStatus == $"New 3" || x.NewStatus == $"Nova 3").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.nueva4_Total = resultContinuity.Where(x => x.NewStatus == $"New 4" || x.NewStatus == $"Nova 4").Select(x => x.QtyHasContinuity).FirstOrDefault();
+
+            result.nueva0_Activa = resultQualified.Where(x => x.NewStatus == $"New 0" || x.NewStatus == $"Nova 0").Select(x => x.QtyQualified).FirstOrDefault();
+            result.nueva1_Activa = resultQualified.Where(x => x.NewStatus == $"New 1" || x.NewStatus == $"Nova 1").Select(x => x.QtyQualified).FirstOrDefault();
+            result.nueva2_Activa = resultQualified.Where(x => x.NewStatus == $"New 2" || x.NewStatus == $"Nova 2").Select(x => x.QtyQualified).FirstOrDefault();
+            result.nueva3_Activa = resultQualified.Where(x => x.NewStatus == $"New 3" || x.NewStatus == $"Nova 3").Select(x => x.QtyQualified).FirstOrDefault();
+            result.nueva4_Activa = resultQualified.Where(x => x.NewStatus == $"New 4" || x.NewStatus == $"Nova 4").Select(x => x.QtyQualified).FirstOrDefault();
+
+            return result;
+        }
+
         public List<AccountsInformation_MongoWithAccountAndSponsor> GetConsultantLowerPerformance(int? periodID, int accountID, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);

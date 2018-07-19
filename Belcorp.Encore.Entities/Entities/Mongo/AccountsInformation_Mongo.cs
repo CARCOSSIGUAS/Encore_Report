@@ -103,5 +103,8 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string CareerTitle_Des { get; set; }
         public string PaidAsCurrentMonth_Des { get; set; }
 
+        public bool? IsQualified { get; set; }
+        public bool? HasContinuity { get; set; }
+
     }
 }

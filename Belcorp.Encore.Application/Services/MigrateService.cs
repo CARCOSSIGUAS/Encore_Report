@@ -90,7 +90,7 @@ namespace Belcorp.Encore.Application.Services
                        City = accountsInfo.City,
                        STATE = accountsInfo.STATE,
                        Region = accountsInfo.Region,
-                       NewStatus = accountsInfo.NewStatus,
+                       NewStatus = accountsInfo.NewStatus.Trim(),
                        TimeLimitToBeDemote = accountsInfo.TimeLimitToBeDemote,
                        CareerTitle = accountsInfo.CareerTitle,
                        PaidAsCurrentMonth = accountsInfo.PaidAsCurrentMonth,
@@ -152,8 +152,10 @@ namespace Belcorp.Encore.Application.Services
                        CareerTitle_Des = titlesInfo_Career.ClientName,
                        PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
 
-                       Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity
-                   };
+                       Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity,
+                       IsQualified = accountsInfo.IsQualified,
+                       HasContinuity = accountsInfo.HasContinuity
+            };
         }
 
         public void MigrateBonusDetailsByPeriod(int? periodId = null, string country = null)

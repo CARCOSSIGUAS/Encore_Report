@@ -83,5 +83,7 @@ namespace Belcorp.Encore.Entities.Entities.Commissions
         public decimal? NineMonthsGQV { get; set; }
         public decimal? NineMonthsDQV { get; set; }
         public int? ConsultActive { get; set; }
+        public bool? IsQualified { get; set; }
+        public bool? HasContinuity { get; set; }
     }
 }
