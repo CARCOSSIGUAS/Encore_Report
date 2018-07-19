@@ -60,6 +60,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public int UplineLeader0ID { get; set; }
         public string UplineLeader0Name { get; set; }
         public string UplineLeader0EmailAddress { get; set; }
+        public string UplineLeader0Phones { get; set; }
 
         public int UplineLeaderM3ID { get; set; }
         public string UplineLeaderM3Name { get; set; }
