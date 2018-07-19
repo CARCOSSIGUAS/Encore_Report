@@ -106,7 +106,7 @@ namespace Belcorp.Encore.Application
                     {
                         state = item.State.ToString()
                     });
-                        
+
                 }
             }
 
@@ -116,7 +116,7 @@ namespace Belcorp.Encore.Application
                 {
                     list.generation.Add(new generationFilter()
                     {
-                        generation = Convert.ToInt32(item.Generation??0) - generation??0
+                        generation = Convert.ToInt32(item.Generation ?? 0) - generation ?? 0
                     });
 
                 }
@@ -128,16 +128,16 @@ namespace Belcorp.Encore.Application
                 {
                     list.level.Add(new levelFilter()
                     {
-                        level = Convert.ToInt32(item.Level??0) - level??0
+                        level = Convert.ToInt32(item.Level ?? 0) - level ?? 0
                     });
 
                 }
             }
 
-        list.state = list.state.OrderBy(x => x.state).ToList();
-        list.generation = list.generation.OrderBy(x=>x.generation).ToList();
-        list.level = list.level.OrderBy(x => x.level).ToList();
-        return list;
+            list.state = list.state.OrderBy(x => x.state).ToList();
+            list.generation = list.generation.OrderBy(x => x.generation).ToList();
+            list.level = list.level.OrderBy(x => x.level).ToList();
+            return list;
         }
 
         public List<AccountsInformation_Mongo> GetDataBirthday(int accountID, int? periodID, string country)
@@ -145,7 +145,7 @@ namespace Belcorp.Encore.Application
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
             periodID = periodID == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodID;
-           
+
             var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == periodID, null).FirstOrDefault();
             if (accountRoot == null)
             {
@@ -553,6 +553,13 @@ namespace Belcorp.Encore.Application
                     r => r.Leader0
                 )
                 .Unwind(a => a.Leader0, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                 .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                    accountsCollection,
+                    ai => ai.UplineLeaderM3,
+                    q => q.AccountID,
+                    d => d.LeaderM3
+                )
+                .Unwind(a => a.LeaderM3, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .FirstOrDefault();
 
             if (result == null)
