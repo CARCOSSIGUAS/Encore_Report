@@ -124,7 +124,12 @@ namespace Belcorp.Encore.Application.Extension
 
                 UplineLeader0ID = item.Leader0 != null ? item.Leader0.AccountID : 0,
                 UplineLeader0Name = item.Leader0 != null ? item.Leader0.FirstName + " " + item.Leader0.LastName : "",
-                UplineLeader0EmailAddress = item.Leader0 != null ? item.Leader0.EmailAddress : ""
+                UplineLeader0EmailAddress = item.Leader0 != null ? item.Leader0.EmailAddress : "",
+
+                UplineLeaderM3ID = item.LeaderM3 != null ? item.LeaderM3.AccountID : 0,
+                UplineLeaderM3Name = item.LeaderM3 != null ? item.LeaderM3.FirstName + " " + item.LeaderM3.LastName : "",
+                UplineLeaderM3EmailAddress = item.LeaderM3 != null ? item.LeaderM3.EmailAddress : "",
+
             };
 
             return result;
