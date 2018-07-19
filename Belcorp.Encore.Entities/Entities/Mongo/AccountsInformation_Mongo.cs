@@ -83,6 +83,15 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public bool? IsCommissionQualified { get; set; }
         [BsonRepresentation(BsonType.DateTime)]
         public DateTime? BirthdayUTC { get; set; }
+        public int BirthDayMonth
+        {
+            get
+            {
+                return BirthdayUTC.HasValue ? BirthdayUTC.Value.Month : 0;
+            }
+        }
+
+
         public int? UplineLeaderM3 { get; set; }
         public string UplineLeaderM3Name { get; set; }
         public int? UplineLeaderL1 { get; set; }
