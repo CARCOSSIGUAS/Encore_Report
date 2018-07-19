@@ -552,7 +552,7 @@ namespace Belcorp.Encore.Application
                     l => l.AccountID,
                     r => r.Leader0
                 )
-                .Unwind(a => a.Sponsor, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                .Unwind(a => a.Leader0, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .FirstOrDefault();
 
             if (result == null)
