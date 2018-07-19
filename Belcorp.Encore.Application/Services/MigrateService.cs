@@ -165,10 +165,10 @@ namespace Belcorp.Encore.Application.Services
                              CareerTitle_Des = titlesInfo_Career.ClientName,
                              PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
 
-                       Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity,
-                       NCWP = accountsInfo.NCWP,
-                       UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0
-            };
+                             Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity,
+                             NCWP = accountsInfo.NCWP,
+                             UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0
+                         };
         }
 
         public void MigrateBonusDetailsByPeriod(int? periodId = null, string country = null)
