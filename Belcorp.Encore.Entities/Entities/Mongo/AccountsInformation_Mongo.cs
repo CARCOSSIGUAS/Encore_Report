@@ -111,5 +111,6 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string country { get; set; }
         public string SPName { get; set; }
         public string SPLastName { get; set; }
+        public string HB { get; set; }
     }
 }

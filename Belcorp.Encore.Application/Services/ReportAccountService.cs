@@ -157,8 +157,10 @@ namespace Belcorp.Encore.Application
             int Month = Hoy.Month;
             int Year = Hoy.Year;
             var LastDay = DateTime.DaysInMonth(Year, Month);
-
+            var GenerationIds = "0,1";
+            var listGenerationIds = GetIdsFromString(GenerationIds).Select(s => int.Parse(s) + accountRoot.Generation).ToList();
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
+
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodID);
 
             if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
@@ -171,6 +173,8 @@ namespace Belcorp.Encore.Application
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountRoot.AccountID);
             }
 
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.Generation, listGenerationIds);
+
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
 
@@ -181,7 +185,7 @@ namespace Belcorp.Encore.Application
             result = accountInformationCollection
                 .Aggregate()
                 .Match(filterDefinition)
-                .Limit(200)
+                //.Limit(200)
                 .Sort(orderDefinitionAccountName)
                 .ToList();
 
@@ -193,8 +197,8 @@ namespace Belcorp.Encore.Application
                     list.Add(new AccountsInformation_Mongo()
                     {
                         AccountID = item.AccountID,
-                        AccountName = item.AccountName,
-                        BirthdayUTC = item.BirthdayUTC,
+                        AccountName = item.AccountName.ToLower(),
+                        HB = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
                         AccountNumber = item.AccountNumber,
                         AccountsInformationID = item.AccountsInformationID,
                         ActiveDownline = item.ActiveDownline,
@@ -248,7 +252,8 @@ namespace Belcorp.Encore.Application
 
                 }
             }
-            list = list.Take(5).ToList();
+            //list = list.Take(5).ToList();
+            list = list.OrderBy(x => x.HB).ToList();
             return list;
         }
 
