@@ -121,5 +121,9 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string SPName { get; set; }
         public string SPLastName { get; set; }
         public string HB { get; set; }
+        [BsonRepresentation(BsonType.Double)]
+        public decimal? NCWP { get; set; }
+
+        public int? UplineLeader0 { get; set; }
     }
 }

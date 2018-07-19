@@ -59,5 +59,6 @@ namespace Belcorp.Encore.Entities.Entities.Core
 
         public List<AccountPhones> AccountPhones { get; set; }
         public List<AccountAddresses> AccountAddresses { get; set; }
+        public List<AccountAdditionalTitulars> AccountAdditionalTitulars { get; set; }
     }
 }

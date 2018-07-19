@@ -53,5 +53,14 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public string country { get; set; }
         public string SPName { get; set; }
         public string SPLastName { get; set; }
+
+        public string AdditionalTitularName { get; set; }
+        public string AdditionalTitularBirthday { get; set; }
+
+        public int UplineLeader0ID { get; set; }
+        public string UplineLeader0Name { get; set; }
+        public string UplineLeader0EmailAddress { get; set; }
+
+        public decimal? NCWP { get; set; }
     }
 }

@@ -117,7 +117,14 @@ namespace Belcorp.Encore.Application.Extension
                 ActiveDownline = item.ActiveDownline != null ? item.ActiveDownline : 0,
                 ConsultActive = item.ConsultActive != null ? item.ConsultActive : 0,
                 Birthday = item.Account.BirthdayUTC.HasValue ? item.Account.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
-                
+
+                NCWP = item.NCWP,
+                AdditionalTitularName = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].FirstName + " " + item.Account.AccountAdditionalTitulars[0].LastName : "",
+                AdditionalTitularBirthday = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].Brithday.Value.ToString("dd/MM/yyyy") : "",
+
+                UplineLeader0ID = item.Leader0 != null ? item.Leader0.AccountID : 0,
+                UplineLeader0Name = item.Leader0 != null ? item.Leader0.FirstName + " " + item.Leader0.LastName : "",
+                UplineLeader0EmailAddress = item.Leader0 != null ? item.Leader0.EmailAddress : ""
             };
 
             return result;

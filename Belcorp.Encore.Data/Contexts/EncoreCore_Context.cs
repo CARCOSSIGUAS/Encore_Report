@@ -17,6 +17,9 @@ namespace Belcorp.Encore.Data.Contexts
             builder.Entity<Accounts>()
                 .HasMany(p => p.AccountAddresses);
 
+            builder.Entity<Accounts>()
+               .HasMany(p => p.AccountAdditionalTitulars);
+
             builder.Entity<AccountAddresses>()
                 .HasOne(p => p.Addresses);
 
@@ -47,7 +50,8 @@ namespace Belcorp.Encore.Data.Contexts
 
         public DbSet<Accounts> Accounts { get; set; }
         public DbSet<AccountPhones> AccountPhones { get; set; }
-        
+        public DbSet<AccountAdditionalTitulars> AccountAdditionalTitulars { get; set; }
+
 
         public DbSet<Monitor> Monitor { get; set; }
         public DbSet<MonitorDetails> MonitorDetails { get; set; }

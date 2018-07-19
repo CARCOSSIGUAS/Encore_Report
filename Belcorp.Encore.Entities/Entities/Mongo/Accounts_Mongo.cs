@@ -43,6 +43,6 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         
         public List<AccountPhones> AccountPhones = new List<AccountPhones>();
         public List<Addresses> Addresses = new List<Addresses>();
-
+        public List<AccountAdditionalTitulars> AccountAdditionalTitulars = new List<AccountAdditionalTitulars>();
     }
 }

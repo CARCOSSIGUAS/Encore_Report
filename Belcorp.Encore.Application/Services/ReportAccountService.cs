@@ -546,6 +546,13 @@ namespace Belcorp.Encore.Application
                     r => r.Sponsor
                 )
                 .Unwind(a => a.Sponsor, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                    accountsCollection,
+                    ai => ai.UplineLeader0,
+                    l => l.AccountID,
+                    r => r.Leader0
+                )
+                .Unwind(a => a.Sponsor, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .FirstOrDefault();
 
             if (result == null)

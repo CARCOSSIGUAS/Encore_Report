@@ -8,5 +8,6 @@ namespace Belcorp.Encore.Entities.Entities.Mongo.Extension
     {
         public Accounts_Mongo Account { get; set; }
         public Accounts_Mongo Sponsor { get; set; }
+        public Accounts_Mongo Leader0 { get; set; }
     }
 }
