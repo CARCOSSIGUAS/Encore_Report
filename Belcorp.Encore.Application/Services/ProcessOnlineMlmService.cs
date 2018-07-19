@@ -110,7 +110,7 @@ namespace Belcorp.Encore.Application.Services
                 Indicators_InTableReports();
                 Indicators_InOrderCalculationsOnline();
                 Execute_Activities();
-                Migrate_AccountInformationByAccountId(Statistics.Order.AccountID, country);
+                Migrate_AccountInformationByAccountId(country);
                 UpdateTransactionDate(1, country);
                 PersonalIndicatorLog = personalIndicatorLogService.Update(PersonalIndicatorLog);
             }
@@ -497,7 +497,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Actualizar Mongo
-        public void Migrate_AccountInformationByAccountId(int AccountID, string country)
+        public void Migrate_AccountInformationByAccountId(string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
@@ -512,7 +512,7 @@ namespace Belcorp.Encore.Application.Services
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
             var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses).Include(aa=>aa.AccountConsistencyStatuses), true);
 
-            IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformations, activity, AccountID);
+            IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformations, activity, Statistics.Order.AccountID);
             try
             {
                 if (detailLog != null && detailLog.EndTime == null)
