@@ -72,6 +72,19 @@ namespace Belcorp.Encore.Application.Services
 
         public IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int ? AccountID = null)
         {
+            var UplineLeader0 = 0;
+
+            if (AccountID.HasValue)
+            {
+                var account = accountsInformation.Where(a => a.AccountID == AccountID).FirstOrDefault();
+                var sponsor = accountsInformation.Where(a => a.AccountID == account.SponsorID).FirstOrDefault();
+
+                if (sponsor != null)
+                {
+                    UplineLeader0 = sponsor.UplineLeader0 ?? 0;
+                }
+            }
+
             return from accountsInfo in accountsInformation
                    join titlesInfo_Career in titles on Int32.Parse(accountsInfo.CareerTitle) equals titlesInfo_Career.TitleID
                    join titlesInfo_Paid in titles on Int32.Parse(accountsInfo.PaidAsCurrentMonth) equals titlesInfo_Paid.TitleID
@@ -152,8 +165,10 @@ namespace Belcorp.Encore.Application.Services
                        CareerTitle_Des = titlesInfo_Career.ClientName,
                        PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
 
-                       Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity
-                   };
+                       Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity,
+                       NCWP = accountsInfo.NCWP,
+                       UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0
+            };
         }
 
         public void MigrateBonusDetailsByPeriod(int? periodId = null, string country = null)
