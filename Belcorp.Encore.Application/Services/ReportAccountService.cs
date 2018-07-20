@@ -143,8 +143,7 @@ namespace Belcorp.Encore.Application
         public List<AccountsInformation_Mongo> GetDataBirthday(int accountID, int? periodID, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
-            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
-            
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);            
 
             periodID = periodID == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodID;
 
@@ -493,12 +492,26 @@ namespace Belcorp.Encore.Application
 
             var period = homeService.GetCurrentPeriod(country).PeriodID;
 
-
             var accountRoot = AccountsUtils.Recursivo(accountInformationCollection, period, sponsor, accountID);
             if (accountRoot == null)
             {
                 return null;
             }
+
+            //var result = new List<AccountsInformation_Mongo>();
+
+            //result = accountRoot
+            //        .Aggregate()
+            //        .Match()
+            //        .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+
+            //            accountsCollection,
+            //            ai => ai.AccountID,
+            //            a => a.AccountID,
+            //            r => r.Account
+            //        )
+            //        .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+            //        .ToList();
 
             return accountRoot;
         }
