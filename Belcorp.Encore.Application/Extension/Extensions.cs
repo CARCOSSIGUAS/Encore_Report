@@ -173,5 +173,78 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
+        public static IEnumerable<ReportAccountPerformance_DTO> ToReportAccountPerformance_DTO(this IEnumerable<AccountsInformation_Mongo> list)
+        {
+            var result = list.Select(item => new ReportAccountPerformance_DTO()
+            {
+                AccountID=item.AccountID,
+                AccountNumber = item.AccountNumber,
+                AccountName = item.AccountName,
+                CareerTitle = item.CareerTitle,
+                CareerTitleDes = item.CareerTitle_Des,
+                PaidAsCurrentMonth = item.PaidAsCurrentMonth,
+                PaidAsCurrentMonthDesc = item.PaidAsCurrentMonth_Des,
+                PQV = item.PQV,
+                PCV = item.PCV,
+                DQVT = item.DQVT,
+                DQV = item.DQV,
+                CQL = item.CQL,
+
+                Title1Legs = item.Title1Legs,
+                Title2Legs = item.Title2Legs,
+                Title3Legs = item.Title3Legs,
+                Title4Legs = item.Title4Legs,
+                Title5Legs = item.Title5Legs,
+                Title6Legs = item.Title6Legs,
+                Title7Legs = item.Title7Legs,
+                Title8Legs = item.Title8Legs,
+                Title9Legs = item.Title9Legs,
+                Title10Legs = item.Title10Legs,
+                Title11Legs = item.Title11Legs,
+                Title12Legs = item.Title12Legs,
+                Title13Legs = item.Title13Legs,
+                Title14Legs = item.Title14Legs,
+            });
+
+            return result;
+        }
+
+        public static ReportAccountPerformance_DTO ToReportAccountPerformance_DTO(this AccountsInformation_Mongo item)
+        {
+            var result = new ReportAccountPerformance_DTO()
+            {
+                AccountID = item.AccountID,
+                AccountNumber = item.AccountNumber,
+                AccountName = item.AccountName,
+                CareerTitle = item.CareerTitle,
+                CareerTitleDes = item.CareerTitle_Des,
+                PaidAsCurrentMonth = item.PaidAsCurrentMonth,
+                PaidAsCurrentMonthDesc = item.PaidAsCurrentMonth_Des,
+                PQV = item.PQV,
+                PCV = item.PCV,
+                DQVT = item.DQVT,
+                DQV = item.DQV,
+                CQL = item.CQL,
+
+                Title1Legs = item.Title1Legs,
+                Title2Legs = item.Title2Legs,
+                Title3Legs = item.Title3Legs,
+                Title4Legs = item.Title4Legs,
+                Title5Legs = item.Title5Legs,
+                Title6Legs = item.Title6Legs,
+                Title7Legs = item.Title7Legs,
+                Title8Legs = item.Title8Legs,
+                Title9Legs = item.Title9Legs,
+                Title10Legs = item.Title10Legs,
+                Title11Legs = item.Title11Legs,
+                Title12Legs = item.Title12Legs,
+                Title13Legs = item.Title13Legs,
+                Title14Legs = item.Title14Legs,
+            };
+
+            return result;
+        }
+
+
     }
 }

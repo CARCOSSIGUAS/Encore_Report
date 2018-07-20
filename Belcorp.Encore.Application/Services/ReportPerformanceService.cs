@@ -24,13 +24,35 @@ namespace Belcorp.Encore.Application.Services
             encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
-        public async Task<AccountsInformation_Mongo> GetPerformance_AccountInformation(int accountId, int periodId, string country)
+
+        public async Task<AccountsInformation_Mongo> GetPerformanceByAccount(int accountId, int periodId, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
             var result = await accountInformationCollection.Find(p => p.AccountID == accountId && p.PeriodID == periodId).FirstOrDefaultAsync();
             return result;
         }
+
+
+        public async Task<IEnumerable<AccountsInformation_Mongo>> GetPerformanceBySponsor(int sponsorID, int periodId, string country)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
+            var sponsor = await accountInformationCollection.Find(p => p.AccountID == sponsorID && p.PeriodID == periodId).FirstOrDefaultAsync();
+            if (sponsor!=null)
+            {
+                sponsor.DQVT = sponsor.PQV;
+            }
+
+            var result = await accountInformationCollection.Find(p => p.SponsorID == sponsorID && p.PeriodID == periodId && p.DQVT > 0).ToListAsync();
+
+            if (result != null)
+                result.Insert(0, sponsor);
+
+            return result;
+        }
+
+
 
         public async Task<IEnumerable<ReportPerformance_DetailModel>> GetPerformance_Detail(int accountId, int periodId, string country)
         {
