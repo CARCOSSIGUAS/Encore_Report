@@ -173,6 +173,52 @@ namespace Belcorp.Encore.Data.Contexts
 
         }
 
+        public IMongoCollection<PerformanceIndicatorDay_Mongo> PerformanceIndicatorDayProvider(string country)
+        {
+            string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + country);
+            string database = _configuration.GetValue<string>("Encore_Mongo:Database" + country);
+
+            var client = new MongoClient(connectionString);
+
+            IMongoDatabase _database;
+
+            if (client != null)
+            {
+                _database = client.GetDatabase(database);
+
+                return _database.GetCollection<PerformanceIndicatorDay_Mongo>("PerformanceIndicatorDay");
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
+        public IMongoCollection<EnrrollmentAccountsByDayTemp_Mongo> EnrrollmentAccountsByDayTempProvider(string country)
+        {
+            string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + country);
+            string database = _configuration.GetValue<string>("Encore_Mongo:Database" + country);
+
+            var client = new MongoClient(connectionString);
+
+            IMongoDatabase _database;
+
+            if (client != null)
+            {
+                _database = client.GetDatabase(database);
+
+                return _database.GetCollection<EnrrollmentAccountsByDayTemp_Mongo>("EnrrollmentAccountsByDayTemp");
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
+        
+
         #endregion
     }
 }

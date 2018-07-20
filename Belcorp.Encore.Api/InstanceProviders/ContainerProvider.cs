@@ -47,6 +47,9 @@
             services.AddScoped<IPersonalIndicatorLogService, PersonalIndicatorLogService>();
             services.AddScoped<IPersonalIndicatorDetailLogService, PersonalIndicatorDetailLogService>();
 
+            services.AddScoped<IHomeService, HomeService>();
+
+
         }
     }
 }

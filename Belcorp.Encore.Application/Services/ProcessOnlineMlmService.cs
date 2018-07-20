@@ -1,6 +1,7 @@
 ﻿using Belcorp.Encore.Application.Interfaces;
 using Belcorp.Encore.Application.OnlineMLM;
 using Belcorp.Encore.Application.Services.Interfaces;
+using Belcorp.Encore.Application.Utilities;
 using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Constants;
 using Belcorp.Encore.Entities.Entities.Commissions;
@@ -10,6 +11,7 @@ using Belcorp.Encore.Repositories;
 using Belcorp.Encore.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -32,6 +34,7 @@ namespace Belcorp.Encore.Application.Services
         private readonly IProcessOnlineRepository processOnlineRepository;
         private readonly IAccountKPIsRepository accountKPIsRepository;
         private readonly IAccountInformationRepository accountsInformationRepository;
+        private readonly IHomeService homeService;
 
         public OnlineMLM_Statistics Statistics { get; set; }
         public PersonalIndicatorLog PersonalIndicatorLog { get; set; }
@@ -48,10 +51,11 @@ namespace Belcorp.Encore.Application.Services
             IPersonalIndicatorLogService _personalIndicatorLogService,
             IPersonalIndicatorDetailLogService _personalIndicatorDetailLogService,
 
-            IProcessOnlineRepository _processOnlineRepository, 
-            IAccountKPIsRepository _accountKPIsRepository, 
+            IProcessOnlineRepository _processOnlineRepository,
+            IAccountKPIsRepository _accountKPIsRepository,
             IAccountInformationRepository _accountsInformationRepository,
-            IConfiguration configuration
+            IConfiguration configuration,
+            IHomeService _homeService
         )
         {
             unitOfWork_Core = _unitOfWork_Core;
@@ -63,6 +67,7 @@ namespace Belcorp.Encore.Application.Services
             orderCalculationTypesService = _orderCalculationTypesService;
             personalIndicatorLogService = _personalIndicatorLogService;
             personalIndicatorDetailLogService = _personalIndicatorDetailLogService;
+            homeService = _homeService;
 
             processOnlineRepository = _processOnlineRepository;
             accountKPIsRepository = _accountKPIsRepository;
@@ -113,6 +118,8 @@ namespace Belcorp.Encore.Application.Services
                 Migrate_AccountInformationByAccountId(country);
                 UpdateTransactionDate(1, country);
                 PersonalIndicatorLog = personalIndicatorLogService.Update(PersonalIndicatorLog);
+
+                UpdateIngresosDiarios(country, Statistics.Order.AccountID);
             }
         }
 
@@ -275,12 +282,12 @@ namespace Belcorp.Encore.Application.Services
             int calculationType_DCV = calculationTypesService.GetCalculationTypeIdByCode("DCV");
             int calculationType_DQVT = calculationTypesService.GetCalculationTypeIdByCode("DQVT");
 
-            Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DCV,  value: (decimal)Statistics.CV);
+            Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DCV, value: (decimal)Statistics.CV);
             Indicadores_UpdateValue_AccountKPIs(accountsIds, calculationType_DQVT, value: (decimal)Statistics.QV);
 
             IndicadoresInDivision_Valida_Porcentaje(Accounts_UpLine);
         }
-        
+
         public void IndicadoresInDivision_Valida_Porcentaje(List<SponsorTree> accounts)
         {
             int currentAccountID, porcentForRuler, titleForRuler;
@@ -288,7 +295,7 @@ namespace Belcorp.Encore.Application.Services
             decimal DQV_Result;
 
             IRepository<RuleTypes> ruleTypesRepository = unitOfWork_Comm.GetRepository<RuleTypes>();
-            
+
             var ruleType = ruleTypesRepository.GetFirstOrDefault(rt => rt.Name == "VolumenDivision" && rt.Active == true, null, rt => rt.Include(r => r.RequirementRules), true);
 
             if (ruleType != null)
@@ -335,7 +342,7 @@ namespace Belcorp.Encore.Application.Services
 
             int orderCalculationTypeID_CV = orderCalculationTypesService.GetOrderCalculationTypeIdByCode("CV");
             int orderCalculationTypeID_RP = orderCalculationTypesService.GetOrderCalculationTypeIdByCode("RP");
-            int orderCalculationTypeID_QV = orderCalculationTypesService.GetOrderCalculationTypeIdByCode("QV"); 
+            int orderCalculationTypeID_QV = orderCalculationTypesService.GetOrderCalculationTypeIdByCode("QV");
 
             try
             {
@@ -510,7 +517,7 @@ namespace Belcorp.Encore.Application.Services
             var accountsInformations = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(Statistics.PeriodID, accountsIds).ToList();
 
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
-            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses).Include(aa=>aa.AccountConsistencyStatuses), true);
+            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses).Include(aa => aa.AccountConsistencyStatuses), true);
 
             IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformations, activity, Statistics.Order.AccountID);
             try
@@ -546,7 +553,7 @@ namespace Belcorp.Encore.Application.Services
             TransactionMonitor_Mongo item = new TransactionMonitor_Mongo
             {
                 TransactionMonitorID = typeTransaction,
-                 TransactionDate = DateTime.Now
+                TransactionDate = DateTime.Now
             };
 
             IMongoCollection<TransactionMonitor_Mongo> transactionMonitorCollection = encoreMongo_Context.TransactionMonitorProvider(country);
@@ -554,5 +561,62 @@ namespace Belcorp.Encore.Application.Services
             transactionMonitorCollection.ReplaceOne(ai => ai.TransactionMonitorID == typeTransaction, item, new UpdateOptions { IsUpsert = true });
         }
         #endregion
+
+
+        public void UpdateIngresosDiarios(string country, int accountID)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<PerformanceIndicatorDay_Mongo> performanceIndicatorDayCollection = encoreMongo_Context.PerformanceIndicatorDayProvider(country);
+            IMongoCollection<EnrrollmentAccountsByDayTemp_Mongo> enrrolmentAccountByDayTemp = encoreMongo_Context.EnrrollmentAccountsByDayTempProvider(country);
+
+            var period = homeService.GetCurrentPeriod(country).PeriodID;
+
+
+            var lista = accountInformationCollection.Find(a => a.PeriodID == period && (a.JoinDate >= DateTime.Now.Date && a.JoinDate <= DateTime.Now), null).ToList();
+
+            var filterDefinition = Builders<EnrrollmentAccountsByDayTemp_Mongo>.Filter.In(ai => ai.AccountID, lista.Select(x => x.AccountID));
+
+            var listaTemp = enrrolmentAccountByDayTemp.
+                Aggregate()
+                .Match(filterDefinition).ToList();
+
+            List<EnrrollmentAccountsByDayTemp_Mongo> listaNuevos = new List<EnrrollmentAccountsByDayTemp_Mongo>();
+
+            foreach (var item in lista)
+            {
+                if (!listaTemp.Any(q => q.AccountID == item.AccountID))
+                {
+                    listaNuevos.Add(new EnrrollmentAccountsByDayTemp_Mongo
+                    {
+                        AccountID = item.AccountID,
+                        DayOfMonth = DateTime.Now.Day,
+                        PeriodID = period
+                    });
+                }
+            }
+
+            foreach (var item in listaNuevos)
+            {
+                var accountRoot = AccountsUtils.RecursivoWithoutSponsor(accountInformationCollection, item.AccountID, period);
+                foreach (var account in accountRoot)
+                {
+                    var record = performanceIndicatorDayCollection.Find(ai => ai.AccountID == account.AccountID && ai.PeriodID == period).FirstOrDefault();
+                    performanceIndicatorDayCollection.ReplaceOne(ai => ai.AccountID == account.AccountID && ai.PeriodID == period, new PerformanceIndicatorDay_Mongo
+                    {
+                        AccountID = account.AccountID,
+                        DayOfMonth = DateTime.Now.Day,
+                        Ingresos = record != null ? record.Ingresos + 1 : 1,
+                        PeriodID = period
+                    }, new UpdateOptions { IsUpsert = true });
+                }
+
+                enrrolmentAccountByDayTemp.ReplaceOne(ai => ai.AccountID == item.AccountID && ai.DayOfMonth == DateTime.Now.Day, new EnrrollmentAccountsByDayTemp_Mongo
+                {
+                    AccountID = item.AccountID,
+                    DayOfMonth = DateTime.Now.Day,
+                    PeriodID = period
+                }, new UpdateOptions { IsUpsert = true });
+            }
+        }
     }
 }

@@ -27,5 +27,24 @@ namespace Belcorp.Encore.Application.Utilities
 
             return lista;
         }
+
+        public static IEnumerable<AccountsInformation_Mongo> RecursivoWithoutSponsor(IMongoCollection<AccountsInformation_Mongo> accountInformationCollection, int accountID, int periodID)
+        {
+            var lista = new List<AccountsInformation_Mongo>();
+            var objAccountInformation = new AccountsInformation_Mongo();
+
+            objAccountInformation = accountInformationCollection.Find(a => a.AccountID == accountID, null).FirstOrDefault();
+
+            if (objAccountInformation != null)
+            {
+                lista.Add(objAccountInformation);
+                if (objAccountInformation.AccountID != objAccountInformation.SponsorID && objAccountInformation.SponsorID != 0)
+                {
+                    lista.AddRange(RecursivoWithoutSponsor(accountInformationCollection, objAccountInformation.SponsorID, periodID));
+                }
+            }
+
+            return lista;
+        }
     }
 }

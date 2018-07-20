@@ -31,4 +31,6 @@
     <ProjectReference Include="..\Belcorp.Encore.Repositories\Belcorp.Encore.Repositories.csproj" />
   </ItemGroup>
 
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
+
 </Project>
