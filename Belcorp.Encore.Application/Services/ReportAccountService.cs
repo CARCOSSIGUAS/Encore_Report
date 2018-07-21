@@ -491,7 +491,7 @@ namespace Belcorp.Encore.Application
 
             var period = homeService.GetCurrentPeriod(country).PeriodID;
 
-            var accountRoot = AccountsUtils.RecursivoShortName(accountInformationCollection, period, sponsor, accountID, accountsCollection).ToList();
+            var accountRoot = AccountsUtils.RecursivoShortName(accountInformationCollection, period, sponsor, accountID, accountsCollection, country).ToList();
 
             if (accountRoot == null)
             {

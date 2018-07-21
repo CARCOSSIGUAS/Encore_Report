@@ -177,48 +177,19 @@ namespace Belcorp.Encore.Application.Extension
             {
                 if(a.FirstName != null && a.LastName1 != null)
                 {
-                    string[] nombres = (a.FirstName).Split(" ");
-                    string[] apellidos = (a.LastName1).Split(" ");
+                    string[] nombres = (a.FirstName.ToLower().Trim()).Split(" ");
+                    string[] apellidos = (a.LastName1.ToLower().Trim()).Split(" ");
 
                     a.FirstName = nombres.Length != 0 ? nombres[0] : " ";
                     a.FirstName2 = nombres.Length > 1 ? nombres[1] : " ";
 
-                    if (apellidos.Length == 1 && a.country == "BRA")
+                    if (a.country == "BRA")
                     {
-                        a.LastName1 = apellidos.Length ==1 ? apellidos[0] : " ";
+                        a.LastName1 = apellidos[apellidos.Length-1];
                     }
-                    else if (apellidos.Length == 1 && a.country == "USA")
+                    else if (a.country == "USA")
                     {
-                        a.LastName1 = apellidos.Length == 1 ? apellidos[0] : " ";
-                    }
-
-                    if (apellidos.Length == 2 && a.country == "BRA")
-                    {
-                        a.LastName1 = apellidos.Length > 1 ? apellidos[1] : " ";
-                    }
-                    else if (apellidos.Length == 2 && a.country == "USA")
-                    {
-                        a.LastName1 = apellidos.Length != 0 ? apellidos[0] : " ";
-                    }
-                    else if (apellidos.Length == 3 && a.country == "BRA")
-                    {
-                        a.LastName1 = apellidos.Length > 1 ? apellidos[1] + " " + (apellidos.Length > 2 ? apellidos[2] : " ") : " ";
-                    }
-                    else if (apellidos.Length == 3 && a.country == "USA")
-                    {
-                        a.LastName1 = apellidos.Length != 0? apellidos[0] + " " + (apellidos.Length > 1 ? apellidos[1] : " ") : " ";
-                    }
-                    else if (apellidos.Length == 4 && a.country == "BRA")
-                    {
-                        a.LastName1 = apellidos.Length > 2 ? apellidos[2] + " " + (apellidos.Length > 3 ? apellidos[3] : " ") : " ";
-                    }
-                    else if (apellidos.Length == 4 && a.country == "USA")
-                    {
-                        a.LastName1 = apellidos.Length != 0 ? apellidos[0] + " " + (apellidos.Length > 1 ? apellidos[1] : " ") : " ";
-                    }
-                    else if (a.country == "BRA" && apellidos.Length != 1)
-                    {
-                        a.LastName1 = apellidos.Length > 2 ? apellidos[2] + " " + (apellidos.Length > 3 ? apellidos[3] : " ") + " " + (apellidos.Length > 4 ? apellidos[4] : " ") : " ";
+                        a.LastName1 = apellidos[0];
                     }
                 }     
             });
