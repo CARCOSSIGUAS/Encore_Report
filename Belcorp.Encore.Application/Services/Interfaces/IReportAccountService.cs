@@ -12,7 +12,7 @@ namespace Belcorp.Encore.Application.Services
     {
         PagedList<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoreds(ReportAccountsSponsoredsSearch filter, string country);
         List<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsSponsoredsThree(ReportAccountsSponsoredsSearch filter, string country);
-        IEnumerable<AccountsInformation_Mongo> GetReportAccountsBySponsored(int sponsor, int accountID, string country);
+        IEnumerable<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsBySponsored(int sponsor, int accountID, string country);
 
         Task<IEnumerable<Options_DTO>> GetReportAccountsPeriods(string country);
         AccountsInformation_MongoWithAccountAndSponsor GetConsultantDetails(int? periodId, int accountId, int accountIdCurrent, string country = null);
