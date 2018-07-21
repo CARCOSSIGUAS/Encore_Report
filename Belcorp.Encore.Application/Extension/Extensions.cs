@@ -119,16 +119,16 @@ namespace Belcorp.Encore.Application.Extension
                 Birthday = item.Account.BirthdayUTC.HasValue ? item.Account.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
 
                 NCWP = item.NCWP,
-                AdditionalTitularName = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].FirstName + " " + item.Account.AccountAdditionalTitulars[0].LastName : "",
+                AdditionalTitularName = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].FirstName.ToLower() + " " + item.Account.AccountAdditionalTitulars[0].LastName.ToLower() : "",
                 AdditionalTitularBirthday = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].Brithday.Value.ToString("dd/MM/yyyy") : "",
 
                 UplineLeader0ID = item.Leader0 != null ? item.Leader0.AccountID : 0,
-                UplineLeader0Name = item.Leader0 != null ? item.Leader0.FirstName + " " + item.Leader0.LastName : "",
+                UplineLeader0Name = item.Leader0 != null ? item.Leader0.FirstName.ToLower() + " " + item.Leader0.LastName.ToLower() : "",
                 UplineLeader0EmailAddress = item.Leader0 != null ? item.Leader0.EmailAddress : "",
                 UplineLeader0Phones = item.Leader0 != null ? String.Join(" - ", item.Leader0.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
                 UplineLeaderM3ID = item.LeaderM3 != null ? item.LeaderM3.AccountID : 0,
-                UplineLeaderM3Name = item.LeaderM3 != null ? item.LeaderM3.FirstName + " " + item.LeaderM3.LastName : "",
+                UplineLeaderM3Name = item.LeaderM3 != null ? item.LeaderM3.FirstName.ToLower() + " " + item.LeaderM3.LastName.ToLower() : "",
                 UplineLeaderM3EmailAddress = item.LeaderM3 != null ? item.LeaderM3.EmailAddress : "",
 
             };
