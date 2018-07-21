@@ -46,8 +46,8 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public string Birthday { get; set; }
 
         public string PostalCode { get; set; }
-        
         public string FirstName { get; set; }
+        public string FirstName2 { get; set; }
         public string LastName1 { get; set; }
         public string LastName2 { get; set; }
         public string country { get; set; }
@@ -65,8 +65,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public int UplineLeaderM3ID { get; set; }
         public string UplineLeaderM3Name { get; set; }
         public string UplineLeaderM3EmailAddress { get; set; }
-
-
+        
         public decimal? NCWP { get; set; }
     }
 }

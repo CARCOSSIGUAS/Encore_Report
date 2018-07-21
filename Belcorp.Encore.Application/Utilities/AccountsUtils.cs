@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Belcorp.Encore.Entities.Entities.Mongo;
+using Belcorp.Encore.Entities.Entities.Mongo.Extension;
 using MongoDB.Driver;
 
 namespace Belcorp.Encore.Application.Utilities
@@ -46,5 +47,39 @@ namespace Belcorp.Encore.Application.Utilities
 
             return lista;
         }
+
+        public static IEnumerable<AccountsInformation_MongoWithAccountAndSponsor> RecursivoShortName(IMongoCollection<AccountsInformation_Mongo> accountInformationCollection, int period, int sponsor, int accountID,IMongoCollection<Accounts_Mongo> accountsCollection)
+        {
+            var lista = new List<AccountsInformation_MongoWithAccountAndSponsor>();
+            var objAccountInformation = new AccountsInformation_Mongo();
+
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountID);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, period);
+
+            var item = accountInformationCollection
+                    .Aggregate()
+                    .Match(filterDefinition)
+                    .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                        accountsCollection,
+                        ai => ai.AccountID,
+                        a => a.AccountID,
+                        r => r.Account
+                    )
+                   .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                .FirstOrDefault();
+
+            if (item != null)
+            {
+                lista.Add(item);
+
+                if (accountID != sponsor)
+                {
+                    lista.AddRange(RecursivoShortName(accountInformationCollection, period, sponsor, objAccountInformation.SponsorID, accountsCollection));
+                }
+            }
+            return lista;
+        }
+
     }
 }

@@ -395,7 +395,6 @@ namespace Belcorp.Encore.Application
                 };
             }
 
-
             var result = accountInformationCollection
                 .Aggregate()
                 .Match(filterDefinition)
@@ -485,34 +484,21 @@ namespace Belcorp.Encore.Application
             return result;
         }
 
-        public IEnumerable<AccountsInformation_Mongo> GetReportAccountsBySponsored(int sponsor, int accountID, string country)
+        public IEnumerable<AccountsInformation_MongoWithAccountAndSponsor> GetReportAccountsBySponsored(int sponsor, int accountID, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
 
             var period = homeService.GetCurrentPeriod(country).PeriodID;
 
-            var accountRoot = AccountsUtils.Recursivo(accountInformationCollection, period, sponsor, accountID);
+            var accountRoot = AccountsUtils.RecursivoShortName(accountInformationCollection, period, sponsor, accountID, accountsCollection).ToList();
+
             if (accountRoot == null)
             {
                 return null;
             }
 
-            //var result = new List<AccountsInformation_Mongo>();
-
-            //result = accountRoot
-            //        .Aggregate()
-            //        .Match()
-            //        .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
-
-            //            accountsCollection,
-            //            ai => ai.AccountID,
-            //            a => a.AccountID,
-            //            r => r.Account
-            //        )
-            //        .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
-            //        .ToList();
-
+            accountRoot[0].country = country;
             return accountRoot;
         }
 
