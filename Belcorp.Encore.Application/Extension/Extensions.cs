@@ -182,10 +182,13 @@ namespace Belcorp.Encore.Application.Extension
 
                     a.FirstName = nombres.Length != 0 ? nombres[0] : " ";
                     a.FirstName2 = nombres.Length > 1 ? nombres[1] : " ";
-                    if (apellidos.Length == 2)
+                    if (apellidos.Length == 2 && a.country == "BRA")
+                    {
+                        a.LastName1 = apellidos.Length > 1 ? apellidos[1] : " ";
+                    }
+                    else if (apellidos.Length == 2 && a.country == "USA")
                     {
                         a.LastName1 = apellidos.Length != 0 ? apellidos[0] : " ";
-                        a.LastName2 = apellidos.Length > 1 ? apellidos[1] : " ";
                     }
                     else if (apellidos.Length == 3 && a.country == "BRA")
                     {
