@@ -182,6 +182,16 @@ namespace Belcorp.Encore.Application.Extension
 
                     a.FirstName = nombres.Length != 0 ? nombres[0] : " ";
                     a.FirstName2 = nombres.Length > 1 ? nombres[1] : " ";
+
+                    if (apellidos.Length == 1 && a.country == "BRA")
+                    {
+                        a.LastName1 = apellidos.Length ==1 ? apellidos[0] : " ";
+                    }
+                    else if (apellidos.Length == 1 && a.country == "USA")
+                    {
+                        a.LastName1 = apellidos.Length == 1 ? apellidos[0] : " ";
+                    }
+
                     if (apellidos.Length == 2 && a.country == "BRA")
                     {
                         a.LastName1 = apellidos.Length > 1 ? apellidos[1] : " ";
@@ -206,7 +216,7 @@ namespace Belcorp.Encore.Application.Extension
                     {
                         a.LastName1 = apellidos.Length != 0 ? apellidos[0] + " " + (apellidos.Length > 1 ? apellidos[1] : " ") : " ";
                     }
-                    else if(a.country == "BRA")
+                    else if (a.country == "BRA" && apellidos.Length != 1)
                     {
                         a.LastName1 = apellidos.Length > 2 ? apellidos[2] + " " + (apellidos.Length > 3 ? apellidos[3] : " ") + " " + (apellidos.Length > 4 ? apellidos[4] : " ") : " ";
                     }
