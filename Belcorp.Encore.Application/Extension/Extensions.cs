@@ -257,7 +257,7 @@ namespace Belcorp.Encore.Application.Extension
             {
                 AccountID = item.AccountID,
                 AccountNumber = item.AccountNumber,
-                AccountName = item.AccountName,
+                AccountName = item.AccountName.ToLower(),
                 CareerTitle = item.CareerTitle,
                 CareerTitleDes = item.CareerTitle_Des,
                 PaidAsCurrentMonth = item.PaidAsCurrentMonth,
