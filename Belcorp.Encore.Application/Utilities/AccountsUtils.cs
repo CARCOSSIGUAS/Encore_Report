@@ -51,7 +51,6 @@ namespace Belcorp.Encore.Application.Utilities
         public static IEnumerable<AccountsInformation_MongoWithAccountAndSponsor> RecursivoShortName(IMongoCollection<AccountsInformation_Mongo> accountInformationCollection, int period, int sponsor, int accountID,IMongoCollection<Accounts_Mongo> accountsCollection)
         {
             var lista = new List<AccountsInformation_MongoWithAccountAndSponsor>();
-            var objAccountInformation = new AccountsInformation_Mongo();
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountID);
@@ -75,7 +74,7 @@ namespace Belcorp.Encore.Application.Utilities
 
                 if (accountID != sponsor)
                 {
-                    lista.AddRange(RecursivoShortName(accountInformationCollection, period, sponsor, objAccountInformation.SponsorID, accountsCollection));
+                    lista.AddRange(RecursivoShortName(accountInformationCollection, period, sponsor, item.SponsorID, accountsCollection));
                 }
             }
             return lista;
