@@ -445,8 +445,8 @@ namespace Belcorp.Encore.Application
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.SponsorID, accountRoot.AccountID);
 
-            List<string> accountStatusExcluded = new List<string>() { "BegunEnrollment", "Terminated", "BegunEnrollment", "Cessada", "Cadastrada" };
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada"}; //"BegunEnrollment", "Terminated", "BegunEnrollment", "Cessada", "Cadastrada" 
+             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
 
             if (!String.IsNullOrEmpty(filter.StringSearch))
             {
