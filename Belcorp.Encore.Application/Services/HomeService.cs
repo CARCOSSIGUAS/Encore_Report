@@ -123,11 +123,11 @@ namespace Belcorp.Encore.Application.Services
             return res;
         }
 
-        public KpisIndicator_DTO GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country)
+        public async Task<KpisIndicator_DTO> GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country)
         {
             List<string> codigos = new List<string> { "DCV", "DQV", "GCV", "GQV" };
             IMongoCollection<AccountKPIsDetails_Mongo> accountKpisDetailsCollection = encoreMongo_Context.AccountKPIsDetailsProvider(country);
-            var main = accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == SponsorID && a.DownlineID == DownLineID).FirstOrDefault();
+            var main = await accountKpisDetailsCollection.Find(a => a.PeriodID == periodID && a.SponsorID == SponsorID && a.DownlineID == DownLineID).FirstOrDefaultAsync();
 
             if (main != null)
             {
@@ -172,7 +172,7 @@ namespace Belcorp.Encore.Application.Services
             return new KpisIndicator_DTO();
         }
 
-        public BonusIndicator_DTO GetBonusIndicator(int sponsorID, string country)
+        public async Task<BonusIndicator_DTO> GetBonusIndicator(int sponsorID, string country)
         {
             var period = GetCurrentPeriod(country);
 
@@ -189,9 +189,9 @@ namespace Belcorp.Encore.Application.Services
             filterDefinition &= Builders<BonusDetails_Mongo>.Filter.Or(filter_Payments, filter_NoPayments);
 
             IMongoCollection<BonusDetails_Mongo> bonusDetailsCollection = encoreMongo_Context.BonusDetailsProvider(country);
-            var result = bonusDetailsCollection.Aggregate()
+            var result = await bonusDetailsCollection.Aggregate()
                                                .Match(filterDefinition)
-                                               .ToList();
+                                               .ToListAsync();
 
             BonusIndicator_DTO bonusDetails_DTO = new BonusIndicator_DTO();
 
@@ -214,7 +214,6 @@ namespace Belcorp.Encore.Application.Services
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             var period = GetCurrentPeriod(country);
 
-            //var result = new List<Accounts_MongoWithAccountsInformation>();
             var result = new List<AccountsInformation_Mongo>();
 
             var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == period.PeriodID, null).FirstOrDefault();
@@ -222,12 +221,6 @@ namespace Belcorp.Encore.Application.Services
             {
                 return result;
             }
-
-            //var filter_FirstName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.FirstName, new BsonRegularExpression(filter, "i"));
-            //var filter_LastName = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.LastName, new BsonRegularExpression(filter, "i"));
-            //var AccountNumber = Builders<Accounts_Mongo>.Filter.Regex(ai => ai.AccountNumber, new BsonRegularExpression(filter, "i"));
-            //var filterDefinitionAccounts = Builders<Accounts_Mongo>.Filter.Empty;
-            //filterDefinitionAccounts &= Builders<Accounts_Mongo>.Filter.Or(filter_FirstName, filter_LastName, AccountNumber);
 
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             var filter_FullName = Builders<AccountsInformation_Mongo>.Filter.Regex(ai => ai.AccountName, new BsonRegularExpression(filter, "i"));
@@ -241,27 +234,76 @@ namespace Belcorp.Encore.Application.Services
             filterDefinitionAccountInformations &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);
             
             var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.AccountName);
-            var limit = 1000005;
-            //result = accountsCollection
-            //    .Aggregate()
-            //    //.Match(filterDefinitionAccounts)
-            //    .Lookup<Accounts_Mongo, AccountsInformation_Mongo, Accounts_MongoWithAccountsInformation>(
-            //        accountInformationCollection,
-            //        a => a.AccountID,
-            //        ai => ai.AccountID,
-            //        r => r.AccountInformation
-            //    )
-            //    .Unwind(a => a.AccountInformation, new AggregateUnwindOptions<Accounts_MongoWithAccountsInformation> { PreserveNullAndEmptyArrays = true })
-            //    .Match(filterDefinitionAccountInformations)
-            //    .Sort(orderDefinition)
-            //    .Limit(limit)
-            //    .ToList();
+            var limit = 10;
+
             result = accountInformationCollection
                 .Aggregate()
                 .Match(filterDefinitionAccountInformations)               
                 .Sort(orderDefinition)
                 .Limit(limit)
                 .ToList();
+            return result;
+        }
+
+        public async Task<NewsIndicator_DTO> GetNewsIndicator(int accountID, int periodoID, string country)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
+            var accountRoot = await accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == periodoID, null).FirstOrDefaultAsync();
+            if (accountRoot == null)
+            {
+                return null;
+            }
+
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodoID);
+
+            if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.LeftBower, accountRoot.LeftBower);
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.RightBower, accountRoot.RightBower);   
+            }
+            else
+            {
+                filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountRoot.AccountID);
+            }
+
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.HasContinuity, true);
+
+            var resultContinuity = await accountInformationCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Group(
+                    x => x.NewStatus,
+                    g => new NewStatusQty_DTO { NewStatus = g.Key,  QtyHasContinuity = g.Count() })
+                .ToListAsync();
+
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.IsQualified, true);
+
+            var resultQualified = await accountInformationCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Group(
+                    x => x.NewStatus,
+                    g => new NewStatusQty_DTO { NewStatus = g.Key, QtyQualified = g.Count() })
+                .ToListAsync();
+
+            NewsIndicator_DTO result = new NewsIndicator_DTO();
+            result.New0_Total = resultContinuity.Where(x => x.NewStatus == $"New 0" || x.NewStatus == $"Nova 0").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.New1_Total = resultContinuity.Where(x => x.NewStatus == $"New 1" || x.NewStatus == $"Nova 1").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.New2_Total = resultContinuity.Where(x => x.NewStatus == $"New 2" || x.NewStatus == $"Nova 2").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.New3_Total = resultContinuity.Where(x => x.NewStatus == $"New 3" || x.NewStatus == $"Nova 3").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.New4_Total = resultContinuity.Where(x => x.NewStatus == $"New 4" || x.NewStatus == $"Nova 4").Select(x => x.QtyHasContinuity).FirstOrDefault();
+
+            result.New0_Activa = resultQualified.Where(x => x.NewStatus == $"New 0" || x.NewStatus == $"Nova 0").Select(x => x.QtyQualified).FirstOrDefault();
+            result.New1_Activa = resultQualified.Where(x => x.NewStatus == $"New 1" || x.NewStatus == $"Nova 1").Select(x => x.QtyQualified).FirstOrDefault();
+            result.New2_Activa = resultQualified.Where(x => x.NewStatus == $"New 2" || x.NewStatus == $"Nova 2").Select(x => x.QtyQualified).FirstOrDefault();
+            result.New3_Activa = resultQualified.Where(x => x.NewStatus == $"New 3" || x.NewStatus == $"Nova 3").Select(x => x.QtyQualified).FirstOrDefault();
+            result.New4_Activa = resultQualified.Where(x => x.NewStatus == $"New 4" || x.NewStatus == $"Nova 4").Select(x => x.QtyQualified).FirstOrDefault();
+
             return result;
         }
 

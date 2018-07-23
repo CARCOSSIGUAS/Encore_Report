@@ -11,8 +11,10 @@ namespace Belcorp.Encore.Application.Services.Interfaces
     {
         Task<AccountHomeHeader_DTO> GetHeader(int accountId, string country);
         Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, int? periodID, string country);
-        KpisIndicator_DTO GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country);
-        BonusIndicator_DTO GetBonusIndicator(int SponsorID, string country);
+        Task<NewsIndicator_DTO> GetNewsIndicator(int accountID, int periodoID, string country);
+        Task<BonusIndicator_DTO> GetBonusIndicator(int SponsorID, string country);
+        Task<KpisIndicator_DTO> GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country);
+
         List<AccountsInformation_Mongo> GetConsultantSearch(string filter, int accountId, string country);
         List<AccountsInformation_MongoWithAccountAndSponsor> GetConsultantLowerPerformance(int? periodID, int accountID, string country);
         Periods_Mongo GetCurrentPeriod(string country);

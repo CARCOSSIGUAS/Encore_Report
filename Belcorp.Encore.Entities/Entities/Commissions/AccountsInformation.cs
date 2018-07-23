@@ -86,5 +86,7 @@ namespace Belcorp.Encore.Entities.Entities.Commissions
 
         public decimal? NCWP { get; set; }
         public int? UplineLeader0 { get; set; }
+        public bool? IsQualified { get; set; }
+        public bool? HasContinuity { get; set; }
     }
 }
