@@ -86,5 +86,6 @@ namespace Belcorp.Encore.Entities.Entities.Commissions
 
         public decimal? NCWP { get; set; }
         public int? UplineLeader0 { get; set; }
+        public int? UplineLeaderG { get; set; }
     }
 }

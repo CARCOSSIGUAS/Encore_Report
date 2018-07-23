@@ -73,6 +73,7 @@ namespace Belcorp.Encore.Application.Services
         public IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int ? AccountID = null)
         {
             var UplineLeader0 = 0;
+            var UplineLeaderG = 0;
 
             if (AccountID.HasValue)
             {
@@ -82,6 +83,7 @@ namespace Belcorp.Encore.Application.Services
                 if (sponsor != null)
                 {
                     UplineLeader0 = sponsor.UplineLeader0 ?? 0;
+                    UplineLeaderG = sponsor.UplineLeaderG ?? 0;
                 }
             }
 
@@ -167,7 +169,8 @@ namespace Belcorp.Encore.Application.Services
 
                        Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity,
                        NCWP = accountsInfo.NCWP,
-                       UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0
+                       UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0,
+                       UplineLeaderG = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeaderG : accountsInfo.UplineLeader0
             };
         }
 
