@@ -491,7 +491,7 @@ namespace Belcorp.Encore.Application
 
             var period = homeService.GetCurrentPeriod(country).PeriodID;
 
-            var accountRoot = AccountsUtils.RecursivoShortName(accountInformationCollection, period, sponsor, accountID, accountsCollection).ToList();
+            var accountRoot = AccountsUtils.RecursivoShortName(accountInformationCollection, period, sponsor, accountID, accountsCollection, country).ToList();
 
             if (accountRoot == null)
             {
@@ -580,11 +580,11 @@ namespace Belcorp.Encore.Application
                     r => r.Leader0
                 )
                 .Unwind(a => a.Leader0, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
-                 .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
+                .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
                     accountsCollection,
                     ai => ai.UplineLeaderM3,
-                    q => q.AccountID,
-                    d => d.LeaderM3
+                    l => l.AccountID,
+                    r => r.LeaderM3
                 )
                 .Unwind(a => a.LeaderM3, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .FirstOrDefault();

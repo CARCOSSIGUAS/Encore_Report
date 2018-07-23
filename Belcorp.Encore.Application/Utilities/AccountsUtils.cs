@@ -48,7 +48,7 @@ namespace Belcorp.Encore.Application.Utilities
             return lista;
         }
 
-        public static IEnumerable<AccountsInformation_MongoWithAccountAndSponsor> RecursivoShortName(IMongoCollection<AccountsInformation_Mongo> accountInformationCollection, int period, int sponsor, int accountID,IMongoCollection<Accounts_Mongo> accountsCollection)
+        public static IEnumerable<AccountsInformation_MongoWithAccountAndSponsor> RecursivoShortName(IMongoCollection<AccountsInformation_Mongo> accountInformationCollection, int period, int sponsor, int accountID,IMongoCollection<Accounts_Mongo> accountsCollection, string country)
         {
             var lista = new List<AccountsInformation_MongoWithAccountAndSponsor>();
 
@@ -70,11 +70,12 @@ namespace Belcorp.Encore.Application.Utilities
 
             if (item != null)
             {
+                item.country = country;
                 lista.Add(item);
 
                 if (accountID != sponsor)
                 {
-                    lista.AddRange(RecursivoShortName(accountInformationCollection, period, sponsor, item.SponsorID, accountsCollection));
+                    lista.AddRange(RecursivoShortName(accountInformationCollection, period, sponsor, item.SponsorID, accountsCollection, country));
                 }
             }
             return lista;

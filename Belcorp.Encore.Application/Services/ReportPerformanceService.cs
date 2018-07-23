@@ -15,12 +15,15 @@ namespace Belcorp.Encore.Application.Services
     public class ReportPerformanceService : IReportPerformanceService
     {
         private readonly EncoreMongo_Context encoreMongo_Context;
+        private readonly IHomeService homeService;
 
         public ReportPerformanceService
         (
-            IConfiguration configuration
+            IConfiguration configuration,
+            IHomeService _homeService
         )
         {
+            homeService = _homeService;
             encoreMongo_Context = new EncoreMongo_Context(configuration);
         }
 
@@ -28,6 +31,7 @@ namespace Belcorp.Encore.Application.Services
         public async Task<AccountsInformation_Mongo> GetPerformanceByAccount(int accountId, int periodId, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            periodId = periodId == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodId;
 
             var result = await accountInformationCollection.Find(p => p.AccountID == accountId && p.PeriodID == periodId).FirstOrDefaultAsync();
             return result;

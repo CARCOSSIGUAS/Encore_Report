@@ -77,5 +77,13 @@ namespace Belcorp.Encore.Api.Controllers
             BackgroundJob.Enqueue(() => migrateService.MigrateAccountKPIsDetailsByPeriod(periodId, country));
             return Json(new { Status = "Processing Background" });
         }
+
+        [HttpGet("requirementtitlecalculations")]
+        [AutomaticRetry(Attempts = 0)]
+        public ActionResult RequirementTitleCalculations(string country = null)
+        {
+            BackgroundJob.Enqueue(() => migrateService.RequirementTitleCalculations(country));
+            return Json(new { Status = "Processing Background" });
+        }
     }
 }

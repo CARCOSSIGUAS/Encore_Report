@@ -13,6 +13,7 @@ using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
+using Belcorp.Encore.Repositories.Interfaces;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -74,6 +75,7 @@ namespace Belcorp.Encore.Application.Services
         public IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int? AccountID = null)
         {
             var UplineLeader0 = 0;
+            var UplineLeaderM3 = 0;
 
             if (AccountID.HasValue)
             {
@@ -83,6 +85,7 @@ namespace Belcorp.Encore.Application.Services
                 if (sponsor != null)
                 {
                     UplineLeader0 = sponsor.UplineLeader0 ?? 0;
+                    UplineLeaderM3 = sponsor.UplineLeaderM3 ?? 0;
                 }
             }
 
@@ -145,8 +148,7 @@ namespace Belcorp.Encore.Application.Services
                              LastOrderDate = accountsInfo.LastOrderDate,
                              IsCommissionQualified = accountsInfo.IsCommissionQualified,
                              BirthdayUTC = accountsInfo.BirthdayUTC,
-                             UplineLeaderM3 = accountsInfo.UplineLeaderM3,
-                             UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name,
+
                              UplineLeaderL1 = accountsInfo.UplineLeaderL1,
                              UplineLeaderL1Name = accountsInfo.UplineLeaderL1Name,
                              TotalDownline = accountsInfo.TotalDownline,
@@ -168,8 +170,10 @@ namespace Belcorp.Encore.Application.Services
 
                              Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity,
                              NCWP = accountsInfo.NCWP,
-                             UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0
-                         };
+                             UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0,
+                             UplineLeaderM3 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeaderM3 : accountsInfo.UplineLeaderM3,
+                             UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name
+                          };
 
             return result;
         }
@@ -431,5 +435,39 @@ namespace Belcorp.Encore.Application.Services
             transactionMonitorCollection.ReplaceOne(ai => ai.TransactionMonitorID == typeTransaction, item, new UpdateOptions { IsUpsert = true });
         }
         #endregion
+
+        public void RequirementTitleCalculations(string country)
+        {
+
+            IRepository<RequirementTitleCalculations> requirementTitleCalculationsRepository = unitOfWork_Comm.GetRepository<RequirementTitleCalculations>();
+
+            IMongoCollection<RequirementTitleCalculations_Mongo> RequirementTitleCalculations_MongoCollection = encoreMongo_Context.RequirementTitleCalculationsProvider(country);
+
+          
+            var total = requirementTitleCalculationsRepository.GetPagedList(null, null, null, 0, 10000, true);
+            int ii = total.TotalPages;
+
+
+            for (int i = 0; i < ii; i++)
+            {
+                var RequirementTitleCalculations = requirementTitleCalculationsRepository.GetPagedList(null, a => a.OrderBy(o => o.CalculationtypeID), null, i, 10000, true).Items;
+                IEnumerable<RequirementTitleCalculations_Mongo> result = GetRequirementTitleCalculations(RequirementTitleCalculations);
+                RequirementTitleCalculations_MongoCollection.InsertMany(result);
+            }
+        }
+
+        private IEnumerable<RequirementTitleCalculations_Mongo> GetRequirementTitleCalculations(IList<RequirementTitleCalculations> RequirementTitleCalculations)
+        {
+            return from item in RequirementTitleCalculations
+                   select new RequirementTitleCalculations_Mongo
+                   {
+                       TitleID = item.TitleID,
+                       CalculationtypeID = item.CalculationtypeID,
+                       PlanID = item.PlanID,
+                       MinValue = item.MinValue,
+                       MaxValue = item.MaxValue,
+                       DateModified = item.DateModified
+                   };
+        }
     }
 }

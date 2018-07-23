@@ -112,9 +112,25 @@ namespace Belcorp.Encore.Application.Services
 
                 Indicators_InPersonal();
                 Indicators_InDivision();
-                Indicators_InTableReports();
-                Indicators_InOrderCalculationsOnline();
+
+                IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
+                var activityPrev = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, null, true);
+                var IsQualifiedPrev = activityPrev != null ? activityPrev.IsQualified : false;
+
                 Execute_Activities();
+
+                var activityCurrent = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, null, true);
+
+                var IsQualifiedCurrent = activityCurrent != null ? activityCurrent.IsQualified : false;
+                var activeDownline = false;
+                if (IsQualifiedPrev == false && IsQualifiedCurrent == true)
+                {
+                    activeDownline = true;
+                    Indicators_InCountConsultantActives();
+                }
+
+                Indicators_InTableReports(activeDownline);
+                Indicators_InOrderCalculationsOnline();
                 Migrate_AccountInformationByAccountId(country);
                 UpdateTransactionDate(1, country);
                 PersonalIndicatorLog = personalIndicatorLogService.Update(PersonalIndicatorLog);
@@ -396,7 +412,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Actualizar Reportes
-        public void Indicators_InTableReports()
+        public void Indicators_InTableReports(bool activeDownline)
         {
             var detailLog = personalIndicatorDetailLogService.Insert(personalIndicatorDetailLogService.Create(PersonalIndicatorLog, "CodeSubProcessCalculationTableReportsIndicator"));
 
@@ -416,7 +432,7 @@ namespace Belcorp.Encore.Application.Services
                     var accountInformations = accountsInformationRepository.GetPagedList(a => a.PeriodID == Statistics.PeriodID && listAccounts.Contains(a.AccountID), null, null, 0, Accounts_UpLine.Count, false);
 
                     IRepository<AccountKPIsDetails> accountKPIsDetailsRepository = unitOfWork_Comm.GetRepository<AccountKPIsDetails>();
-                    var listKpisCode = new List<string>(new[] { "DQV", "DCV", "GQV", "GCV" });
+                    var listKpisCode = new List<string>(new[] { "DQV", "DCV", "GQV", "GCV", "NCA" });
 
                     int calculationType_DQV = calculationTypesService.GetCalculationTypeIdByCode("DQV");
 
@@ -427,6 +443,7 @@ namespace Belcorp.Encore.Application.Services
                         accountInformation_Up.DQV = result_accountKPIs.Value;
                         accountInformation_Up.DCV += Statistics.CV;
                         accountInformation_Up.DQVT += Statistics.QV;
+                        accountInformation_Up.ActiveDownline = activeDownline ? accountInformation_Current.ActiveDownline + 1 : accountInformation_Up.ActiveDownline;
                         accountsInformationRepository.Update(accountInformation_Up);
 
                         unitOfWork_Comm.SaveChanges();
@@ -536,6 +553,48 @@ namespace Belcorp.Encore.Application.Services
                             accountInformationCollection.InsertOne(item);
                         }
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                detailLog.RealError = "Error";
+            }
+
+            personalIndicatorDetailLogService.Update(detailLog);
+        }
+        #endregion
+
+        #region Actualizar AccountInformation (NCA)
+        public void Indicators_InCountConsultantActives()
+        {
+            var detailLog = personalIndicatorDetailLogService.Insert(personalIndicatorDetailLogService.Create(PersonalIndicatorLog, "CodeSubProcessCalculationUpdateNCA"));
+
+            try
+            {
+                if (detailLog != null && detailLog.EndTime == null)
+                {
+                    int calculationType_NCA = calculationTypesService.GetCalculationTypeIdByCode("NCA");
+
+                    var listAccounts = Accounts_UpLine.Select(a => a.AccountID).ToList();
+
+                    var result = accountKPIsRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID && a.PeriodID == Statistics.PeriodID && a.CalculationTypeID == calculationType_NCA, null, null, false);
+
+                    if (result == null)
+                    {
+                        accountKPIsRepository.Insert(
+                                new AccountKPIs
+                                {
+                                    AccountID = Statistics.Order.AccountID,
+                                    PeriodID = Statistics.PeriodID,
+                                    CalculationTypeID = calculationType_NCA,
+                                    Value = 0,
+                                    DateModified = DateTime.Now
+                                });
+                    }
+
+                    unitOfWork_Comm.SaveChanges();
+
+                    Indicadores_UpdateValue_AccountKPIs(listAccounts, calculationType_NCA, value: 1);
                 }
             }
             catch (Exception ex)

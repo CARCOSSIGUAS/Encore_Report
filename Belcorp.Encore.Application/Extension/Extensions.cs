@@ -119,7 +119,7 @@ namespace Belcorp.Encore.Application.Extension
                 Birthday = item.Account.BirthdayUTC.HasValue ? item.Account.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
 
                 NCWP = item.NCWP,
-                AdditionalTitularName = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].FirstName + " " + item.Account.AccountAdditionalTitulars[0].LastName : "",
+                AdditionalTitularName = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].FirstName.ToLower() + " " + item.Account.AccountAdditionalTitulars[0].LastName.ToLower() : "",
                 AdditionalTitularBirthday = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].Brithday.Value.ToString("dd/MM/yyyy") : "",
 
                 UplineLeader0ID = item.Leader0 != null ? item.Leader0.AccountID : 0,
@@ -128,8 +128,9 @@ namespace Belcorp.Encore.Application.Extension
                 UplineLeader0Phones = item.Leader0 != null ? String.Join(" - ", item.Leader0.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
                 UplineLeaderM3ID = item.LeaderM3 != null ? item.LeaderM3.AccountID : 0,
-                UplineLeaderM3Name = item.LeaderM3 != null ? item.LeaderM3.FirstName + " " + item.LeaderM3.LastName : "",
+                UplineLeaderM3Name = item.LeaderM3 != null ? item.LeaderM3.FirstName.ToLower() + " " + item.LeaderM3.LastName.ToLower() : "",
                 UplineLeaderM3EmailAddress = item.LeaderM3 != null ? item.LeaderM3.EmailAddress : "",
+                UplineLeaderM3Phones = item.LeaderM3 != null ? String.Join(" - ", item.LeaderM3.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
             };
 
@@ -177,8 +178,8 @@ namespace Belcorp.Encore.Application.Extension
             {
                 if(a.FirstName != null && a.LastName1 != null)
                 {
-                    string[] nombres = (a.FirstName).Split(" ");
-                    string[] apellidos = (a.LastName1).Split(" ");
+                    string[] nombres = (a.FirstName.ToLower().Trim()).Split(" ");
+                    string[] apellidos = (a.LastName1.ToLower().Trim()).Split(" ");
 
                     a.FirstName = (nombres.Length != 0 ? nombres[0] : " ").ToLower();
                     a.FirstName2 = (nombres.Length > 1 ? nombres[1] : " ").ToLower();
@@ -186,7 +187,7 @@ namespace Belcorp.Encore.Application.Extension
                     {
                         a.LastName1 = (apellidos.Length > 1 ? apellidos[1] : " ").ToLower();
                     }
-                    else if (apellidos.Length == 2 && a.country == "USA")
+                    else if (a.country == "USA")
                     {
                         a.LastName1 = (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
                     }
@@ -257,7 +258,7 @@ namespace Belcorp.Encore.Application.Extension
             {
                 AccountID = item.AccountID,
                 AccountNumber = item.AccountNumber,
-                AccountName = item.AccountName,
+                AccountName = item.AccountName.ToLower(),
                 CareerTitle = item.CareerTitle,
                 CareerTitleDes = item.CareerTitle_Des,
                 PaidAsCurrentMonth = item.PaidAsCurrentMonth,

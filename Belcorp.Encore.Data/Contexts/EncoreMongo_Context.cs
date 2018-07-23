@@ -217,7 +217,29 @@ namespace Belcorp.Encore.Data.Contexts
 
         }
 
-        
+        public IMongoCollection<RequirementTitleCalculations_Mongo> RequirementTitleCalculationsProvider(string country)
+        {
+
+            string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + country);
+            string database = _configuration.GetValue<string>("Encore_Mongo:Database" + country);
+
+            var client = new MongoClient(connectionString);
+
+            IMongoDatabase _database;
+
+            if (client != null)
+            {
+                _database = client.GetDatabase(database);
+
+                return _database.GetCollection<RequirementTitleCalculations_Mongo>("RequirementTitleCalculations");
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
 
         #endregion
     }
