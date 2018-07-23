@@ -15,6 +15,7 @@ namespace Belcorp.Encore.Application.Services.Interfaces
         void MigrateTermTranslations(string country);
         void MigrateAccountKPIsDetailsByPeriod(int? periodId, string country);
         void MigrateBonusDetailsByPeriod(int? periodId, string country);
+        void RequirementTitleCalculations(string country);
 
         IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int? AccountID = null);
     }
