@@ -119,5 +119,25 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public int? UplineLeader0 { get; set; }
         public bool? IsQualified { get; set; }
         public bool? HasContinuity { get; set; }
+
+
+        public decimal? PQVRequirement { get; set; }
+        public decimal? PCVRequirement { get; set; }
+        public decimal? GQVRequirement { get; set; }
+        public decimal? GCVRequirement { get; set; }
+        public decimal? DQVTRequirement { get; set; }
+        public decimal? DCVRequirement { get; set; }
+        public decimal? DQVRequirement { get; set; }
+        public decimal? CQLRequirement { get; set; }
+
+
+        public decimal? PQVRequirementNext { get; set; }
+        public decimal? PCVRequirementNext { get; set; }
+        public decimal? GQVRequirementNext { get; set; }
+        public decimal? GCVRequirementNext { get; set; }
+        public decimal? DQVTRequirementNext { get; set; }
+        public decimal? DCVRequirementNext { get; set; }
+        public decimal? DQVRequirementNext { get; set; }
+        public decimal? CQLRequirementNext { get; set; }
     }
 }

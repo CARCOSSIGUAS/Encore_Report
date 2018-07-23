@@ -16,6 +16,8 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public string PaidAsCurrentMonth { get; set; }
         public string PaidAsCurrentMonthDesc { get; set; }
 
+        public int? LEVEL { get; set; }
+
         public decimal? PQV { get; set; }
         public decimal? PCV { get; set; }
         public decimal? DQVT { get; set; }
@@ -36,5 +38,18 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public int? Title12Legs { get; set; }
         public int? Title13Legs { get; set; }
         public int? Title14Legs { get; set; }
+
+
+        public decimal? PQVRequirement { get; set; }
+        public decimal? PCVRequirement { get; set; }
+        public decimal? DQVTRequirement { get; set; }
+        public decimal? DQVRequirement { get; set; }
+        public decimal? CQLRequirement { get; set; }
+
+        public decimal? PQVRequirementNext { get; set; }
+        public decimal? PCVRequirementNext { get; set; }
+        public decimal? DQVTRequirementNext { get; set; }
+        public decimal? DQVRequirementNext { get; set; }
+        public decimal? CQLRequirementNext { get; set; }
     }
 }
