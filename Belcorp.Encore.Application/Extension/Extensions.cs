@@ -232,7 +232,7 @@ namespace Belcorp.Encore.Application.Extension
                 DQVT = item.DQVT,
                 DQV = item.DQV,
                 CQL = item.CQL,
-
+                LEVEL = item.LEVEL,
                 Title1Legs = item.Title1Legs,
                 Title2Legs = item.Title2Legs,
                 Title3Legs = item.Title3Legs,
@@ -268,6 +268,18 @@ namespace Belcorp.Encore.Application.Extension
                 DQVT = item.DQVT,
                 DQV = item.DQV,
                 CQL = item.CQL,
+
+                PQVRequirement = item.PQVRequirement,
+                PCVRequirement = item.PCVRequirement,
+                DQVTRequirement = item.DQVTRequirement,
+                DQVRequirement = item.DQVRequirement,
+                CQLRequirement = item.CQLRequirement,
+
+                PQVRequirementNext = item.PQVRequirementNext,
+                PCVRequirementNext = item.PCVRequirementNext,
+                DQVTRequirementNext = item.DQVTRequirementNext,
+                DQVRequirementNext = item.DQVRequirementNext,
+                CQLRequirementNext = item.CQLRequirementNext,
 
                 Title1Legs = item.Title1Legs,
                 Title2Legs = item.Title2Legs,
