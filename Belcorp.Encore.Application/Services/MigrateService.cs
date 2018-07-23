@@ -435,9 +435,7 @@ namespace Belcorp.Encore.Application.Services
 
         public void RequirementTitleCalculations(string country)
         {
-
             IRepository<RequirementTitleCalculations> requirementTitleCalculationsRepository = unitOfWork_Comm.GetRepository<RequirementTitleCalculations>();
-
             IMongoCollection<RequirementTitleCalculations_Mongo> RequirementTitleCalculations_MongoCollection = encoreMongo_Context.RequirementTitleCalculationsProvider(country);
 
           
@@ -464,6 +462,38 @@ namespace Belcorp.Encore.Application.Services
                        MinValue = item.MinValue,
                        MaxValue = item.MaxValue,
                        DateModified = item.DateModified
+                   };
+        }
+
+        public void RequirementLegs(string country)
+        {
+            IRepository<RequirementLegs> requirementLegsRepository = unitOfWork_Comm.GetRepository<RequirementLegs>();
+            IMongoCollection<RequirementLegs_Mongo> RequirementLegs_MongoCollection = encoreMongo_Context.RequirementLegsProvider(country);
+
+
+            var total = requirementLegsRepository.GetPagedList(null, null, null, 0, 10000, true);
+            int ii = total.TotalPages;
+
+
+            for (int i = 0; i < ii; i++)
+            {
+                var RequirementLegs = requirementLegsRepository.GetPagedList(null, a => a.OrderBy(o => o.TitleID), null, i, 10000, true).Items;
+                IEnumerable<RequirementLegs_Mongo> result = GetRequirementLegs(RequirementLegs);
+                RequirementLegs_MongoCollection.InsertMany(result);
+            }
+        }
+
+        private IEnumerable<RequirementLegs_Mongo> GetRequirementLegs(IList<RequirementLegs> RequirementTitleCalculations)
+        {
+            return from item in RequirementTitleCalculations
+                   select new RequirementLegs_Mongo
+                   {
+                       TitleID = item.TitleID,
+                       PlanID = item.PlanID,
+                       TitleRequired = item.TitleRequired,
+                       Generation = item.Generation,
+                       Level = item.Level,
+                       TitleQty = item.TitleQty
                    };
         }
     }

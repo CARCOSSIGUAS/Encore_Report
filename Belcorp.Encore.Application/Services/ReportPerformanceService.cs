@@ -42,6 +42,8 @@ namespace Belcorp.Encore.Application.Services
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
+            periodId = periodId == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodId;
+
             var sponsor = await accountInformationCollection.Find(p => p.AccountID == sponsorID && p.PeriodID == periodId).FirstOrDefaultAsync();
             if (sponsor!=null)
             {

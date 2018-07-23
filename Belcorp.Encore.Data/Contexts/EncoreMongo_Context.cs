@@ -240,6 +240,29 @@ namespace Belcorp.Encore.Data.Contexts
 
         }
 
+        public IMongoCollection<RequirementLegs_Mongo> RequirementLegsProvider(string country)
+        {
+
+            string connectionString = _configuration.GetValue<string>("Encore_Mongo:ConnectionString" + country);
+            string database = _configuration.GetValue<string>("Encore_Mongo:Database" + country);
+
+            var client = new MongoClient(connectionString);
+
+            IMongoDatabase _database;
+
+            if (client != null)
+            {
+                _database = client.GetDatabase(database);
+
+                return _database.GetCollection<RequirementLegs_Mongo>("RequirementLegs");
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+
 
         #endregion
     }
