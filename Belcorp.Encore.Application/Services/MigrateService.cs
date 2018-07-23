@@ -473,14 +473,14 @@ namespace Belcorp.Encore.Application.Services
             IRepository<RequirementLegs> requirementLegsRepository = unitOfWork_Comm.GetRepository<RequirementLegs>();
             IMongoCollection<RequirementLegs_Mongo> RequirementLegs_MongoCollection = encoreMongo_Context.RequirementLegsProvider(country);
 
+            var total = requirementLegsRepository.GetPagedList(null, null, aa=>aa.Include(p=>p.Titles), 0, 10000, true);
 
-            var total = requirementLegsRepository.GetPagedList(null, null, null, 0, 10000, true);
             int ii = total.TotalPages;
 
 
             for (int i = 0; i < ii; i++)
             {
-                var RequirementLegs = requirementLegsRepository.GetPagedList(null, a => a.OrderBy(o => o.TitleID), null, i, 10000, true).Items;
+                var RequirementLegs = requirementLegsRepository.GetPagedList(null, a => a.OrderBy(o => o.TitleID), aa => aa.Include(p => p.Titles), i, 10000, true).Items;
                 IEnumerable<RequirementLegs_Mongo> result = GetRequirementLegs(RequirementLegs);
                 RequirementLegs_MongoCollection.InsertMany(result);
             }
@@ -496,7 +496,8 @@ namespace Belcorp.Encore.Application.Services
                        TitleRequired = item.TitleRequired,
                        Generation = item.Generation,
                        Level = item.Level,
-                       TitleQty = item.TitleQty
+                       TitleQty = item.TitleQty,
+                       TitleDescription = item.Titles.ClientName
                    };
         }
     }
