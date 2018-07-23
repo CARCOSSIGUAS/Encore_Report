@@ -123,13 +123,14 @@ namespace Belcorp.Encore.Application.Extension
                 AdditionalTitularBirthday = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].Brithday.Value.ToString("dd/MM/yyyy") : "",
 
                 UplineLeader0ID = item.Leader0 != null ? item.Leader0.AccountID : 0,
-                UplineLeader0Name = item.Leader0 != null ? item.Leader0.FirstName.ToLower() + " " + item.Leader0.LastName.ToLower() : "",
+                UplineLeader0Name = item.Leader0 != null ? item.Leader0.FirstName + " " + item.Leader0.LastName : "",
                 UplineLeader0EmailAddress = item.Leader0 != null ? item.Leader0.EmailAddress : "",
                 UplineLeader0Phones = item.Leader0 != null ? String.Join(" - ", item.Leader0.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
                 UplineLeaderM3ID = item.LeaderM3 != null ? item.LeaderM3.AccountID : 0,
                 UplineLeaderM3Name = item.LeaderM3 != null ? item.LeaderM3.FirstName.ToLower() + " " + item.LeaderM3.LastName.ToLower() : "",
                 UplineLeaderM3EmailAddress = item.LeaderM3 != null ? item.LeaderM3.EmailAddress : "",
+                UplineLeaderM3Phones = item.LeaderM3 != null ? String.Join(" - ", item.LeaderM3.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
             };
 
@@ -180,16 +181,35 @@ namespace Belcorp.Encore.Application.Extension
                     string[] nombres = (a.FirstName.ToLower().Trim()).Split(" ");
                     string[] apellidos = (a.LastName1.ToLower().Trim()).Split(" ");
 
-                    a.FirstName = nombres.Length != 0 ? nombres[0] : " ";
-                    a.FirstName2 = nombres.Length > 1 ? nombres[1] : " ";
-
-                    if (a.country == "BRA")
+                    a.FirstName = (nombres.Length != 0 ? nombres[0] : " ").ToLower();
+                    a.FirstName2 = (nombres.Length > 1 ? nombres[1] : " ").ToLower();
+                    if (apellidos.Length == 2 && a.country == "BRA")
                     {
-                        a.LastName1 = apellidos[apellidos.Length-1];
+                        a.LastName1 = (apellidos.Length > 1 ? apellidos[1] : " ").ToLower();
                     }
                     else if (a.country == "USA")
                     {
-                        a.LastName1 = apellidos[0];
+                        a.LastName1 = (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
+                    }
+                    else if (apellidos.Length == 3 && a.country == "BRA")
+                    {
+                        a.LastName1 = (apellidos.Length > 1 ? apellidos[1] + " " + (apellidos.Length > 2 ? apellidos[2] : " ") : " ").ToLower();
+                    }
+                    else if (apellidos.Length == 3 && a.country == "USA")
+                    {
+                        a.LastName1 = (apellidos.Length != 0? apellidos[0] + " " + (apellidos.Length > 1 ? apellidos[1] : " ") : " ").ToLower();
+                    }
+                    else if (apellidos.Length == 4 && a.country == "BRA")
+                    {
+                        a.LastName1 = (apellidos.Length > 2 ? apellidos[2] + " " + (apellidos.Length > 3 ? apellidos[3] : " ") : " ").ToLower();
+                    }
+                    else if (apellidos.Length == 4 && a.country == "USA")
+                    {
+                        a.LastName1 = (apellidos.Length != 0 ? apellidos[0] + " " + (apellidos.Length > 1 ? apellidos[1] : " ") : " ").ToLower();
+                    }
+                    else if(a.country == "BRA")
+                    {
+                        a.LastName1 = (apellidos.Length > 2 ? apellidos[2] + " " + (apellidos.Length > 3 ? apellidos[3] : " ") + " " + (apellidos.Length > 4 ? apellidos[4] : " ") : " ").ToLower();
                     }
                 }     
             });
