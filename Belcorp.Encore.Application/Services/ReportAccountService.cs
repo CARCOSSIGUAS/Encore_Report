@@ -438,11 +438,11 @@ namespace Belcorp.Encore.Application
                 .Unwind(a => a.Leader0, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .Lookup<AccountsInformation_MongoWithAccountAndSponsor, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
                     accountsCollection,
-                    ai => ai.UplineLeaderG,
-                    l => l.AccountID,
-                    r => r.LeaderG
+                    ai => ai.UplineLeaderM3,
+                    q => q.AccountID,
+                    d => d.LeaderM3
                 )
-                .Unwind(a => a.LeaderG, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
+                .Unwind(a => a.LeaderM3, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .FirstOrDefault();
 
             if (result == null)

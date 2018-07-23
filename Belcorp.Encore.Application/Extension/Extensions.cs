@@ -122,10 +122,13 @@ namespace Belcorp.Encore.Application.Extension
                 UplineLeader0ID = item.Leader0 != null ? item.Leader0.AccountID : 0,
                 UplineLeader0Name = item.Leader0 != null ? item.Leader0.FirstName + " " + item.Leader0.LastName : "",
                 UplineLeader0EmailAddress = item.Leader0 != null ? item.Leader0.EmailAddress : "",
+                UplineLeader0Phones = item.Leader0 != null ? String.Join(" - ", item.Leader0.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
-                UplineLeaderGID = item.LeaderG != null ? item.LeaderG.AccountID : 0,
-                UplineLeaderGName = item.LeaderG != null ? item.LeaderG.FirstName + " " + item.LeaderG.LastName : "",
-                UplineLeaderGEmailAddress = item.LeaderG != null ? item.LeaderG.EmailAddress : ""
+                UplineLeaderM3ID = item.LeaderM3 != null ? item.LeaderM3.AccountID : 0,
+                UplineLeaderM3Name = item.LeaderM3 != null ? item.LeaderM3.FirstName.ToLower() + " " + item.LeaderM3.LastName.ToLower() : "",
+                UplineLeaderM3EmailAddress = item.LeaderM3 != null ? item.LeaderM3.EmailAddress : "",
+                UplineLeaderM3Phones = item.LeaderM3 != null ? String.Join(" - ", item.LeaderM3.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+
             };
 
             return result;
