@@ -51,5 +51,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public decimal? DQVTRequirementNext { get; set; }
         public decimal? DQVRequirementNext { get; set; }
         public decimal? CQLRequirementNext { get; set; }
+
+        public IEnumerable<RequirementLegs_DTO> RequirementLegs { get; set; }
     }
 }

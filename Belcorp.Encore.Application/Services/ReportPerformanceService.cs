@@ -46,8 +46,10 @@ namespace Belcorp.Encore.Application.Services
         {
             IMongoCollection<RequirementLegs_Mongo> requirementLegsCollection = encoreMongo_Context.RequirementLegsProvider(country);
             IMongoCollection<RequirementTitleCalculations_Mongo> requirementTitleCalculationsCollection = encoreMongo_Context.RequirementTitleCalculationsProvider(country);
+            List<RequirementLegs_DTO> items = new List<RequirementLegs_DTO>();
 
-            var title = int.Parse(string.IsNullOrEmpty(item.CareerTitle) ? "0" : item.CareerTitle);
+
+           var title = int.Parse(string.IsNullOrEmpty(item.CareerTitle) ? "0" : item.CareerTitle);
             var requirementTitleCalculations = await requirementTitleCalculationsCollection.Find(p => p.TitleID == title).ToListAsync();
             var requirementTitleCalculationsNext = await requirementTitleCalculationsCollection.Find(p => p.TitleID == title + 1).ToListAsync();
            
@@ -62,7 +64,51 @@ namespace Belcorp.Encore.Application.Services
             item.CQLRequirementNext = ValidateNullValueRequirementTitleCalculations(requirementTitleCalculationsNext.FirstOrDefault(x => x.CalculationtypeID == 8));
 
 
+            requirementLegs.ForEach(x=> {
+                items.Add(GetRequirementLegs(x, item ));
+            });
+
+            item.RequirementLegs = items;
+
             return item;
+        }
+
+        public RequirementLegs_DTO GetRequirementLegs(RequirementLegs_Mongo item, ReportAccountPerformance_DTO reportAccountPerformance)
+        {
+            RequirementLegs_DTO retorno;
+            decimal titleQtyDiff = 0;
+
+            switch (item.TitleRequired)
+            {
+                case 1: titleQtyDiff = item.TitleQty -  (decimal)reportAccountPerformance.Title1Legs;break;
+                case 2: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title2Legs; break;
+                case 3: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title3Legs; break;
+                case 4: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title4Legs; break;
+                case 5: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title5Legs; break;
+                case 6: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title6Legs; break;
+                case 7: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title7Legs; break;
+                case 8: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title8Legs; break;
+                case 9: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title9Legs; break;
+                case 10: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title10Legs; break;
+                case 11: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title11Legs; break;
+                case 12: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title12Legs; break;
+                case 13: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title13Legs; break;
+                case 14: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title14Legs; break;
+            }
+
+            retorno = new RequirementLegs_DTO
+            {
+                TitleID = item.TitleID,
+                PlanID = item.PlanID,
+                TitleRequired = item.TitleRequired,
+                TitleDescription = item.TitleDescription,
+                Generation = item.Generation,
+                Level = item.Level,
+                TitleQty = item.TitleQty,
+                TitleQtyDiff = titleQtyDiff
+            };
+
+            return retorno;
         }
 
 
