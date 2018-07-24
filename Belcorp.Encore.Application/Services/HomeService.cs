@@ -294,17 +294,17 @@ namespace Belcorp.Encore.Application.Services
                 .ToListAsync();
 
             NewsIndicator_DTO result = new NewsIndicator_DTO();
-            result.New0_Total = resultContinuity.Where(x => x.NewStatus == $"New 0" || x.NewStatus == $"Nova 0").Select(x => x.QtyHasContinuity).FirstOrDefault();
-            result.New1_Total = resultContinuity.Where(x => x.NewStatus == $"New 1" || x.NewStatus == $"Nova 1").Select(x => x.QtyHasContinuity).FirstOrDefault();
-            result.New2_Total = resultContinuity.Where(x => x.NewStatus == $"New 2" || x.NewStatus == $"Nova 2").Select(x => x.QtyHasContinuity).FirstOrDefault();
-            result.New3_Total = resultContinuity.Where(x => x.NewStatus == $"New 3" || x.NewStatus == $"Nova 3").Select(x => x.QtyHasContinuity).FirstOrDefault();
-            result.New4_Total = resultContinuity.Where(x => x.NewStatus == $"New 4" || x.NewStatus == $"Nova 4").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.New0_Total = resultContinuity.Where(x => x.NewStatus.TrimEnd() == $"New 0" || x.NewStatus.TrimEnd() == $"Nova 0").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.New1_Total = resultContinuity.Where(x => x.NewStatus.TrimEnd() == $"New 1" || x.NewStatus.TrimEnd() == $"Nova 1").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.New2_Total = resultContinuity.Where(x => x.NewStatus.TrimEnd() == $"New 2" || x.NewStatus.TrimEnd() == $"Nova 2").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.New3_Total = resultContinuity.Where(x => x.NewStatus.TrimEnd() == $"New 3" || x.NewStatus.TrimEnd() == $"Nova 3").Select(x => x.QtyHasContinuity).FirstOrDefault();
+            result.New4_Total = resultContinuity.Where(x => x.NewStatus.TrimEnd() == $"New 4" || x.NewStatus.TrimEnd() == $"Nova 4").Select(x => x.QtyHasContinuity).FirstOrDefault();
 
-            result.New0_Activa = resultQualified.Where(x => x.NewStatus == $"New 0" || x.NewStatus == $"Nova 0").Select(x => x.QtyQualified).FirstOrDefault();
-            result.New1_Activa = resultQualified.Where(x => x.NewStatus == $"New 1" || x.NewStatus == $"Nova 1").Select(x => x.QtyQualified).FirstOrDefault();
-            result.New2_Activa = resultQualified.Where(x => x.NewStatus == $"New 2" || x.NewStatus == $"Nova 2").Select(x => x.QtyQualified).FirstOrDefault();
-            result.New3_Activa = resultQualified.Where(x => x.NewStatus == $"New 3" || x.NewStatus == $"Nova 3").Select(x => x.QtyQualified).FirstOrDefault();
-            result.New4_Activa = resultQualified.Where(x => x.NewStatus == $"New 4" || x.NewStatus == $"Nova 4").Select(x => x.QtyQualified).FirstOrDefault();
+            result.New0_Activa = resultQualified.Where(x => x.NewStatus.TrimEnd() == $"New 0" || x.NewStatus.TrimEnd() == $"Nova 0").Select(x => x.QtyQualified).FirstOrDefault();
+            result.New1_Activa = resultQualified.Where(x => x.NewStatus.TrimEnd() == $"New 1" || x.NewStatus.TrimEnd() == $"Nova 1").Select(x => x.QtyQualified).FirstOrDefault();
+            result.New2_Activa = resultQualified.Where(x => x.NewStatus.TrimEnd() == $"New 2" || x.NewStatus.TrimEnd() == $"Nova 2").Select(x => x.QtyQualified).FirstOrDefault();
+            result.New3_Activa = resultQualified.Where(x => x.NewStatus.TrimEnd() == $"New 3" || x.NewStatus.TrimEnd() == $"Nova 3").Select(x => x.QtyQualified).FirstOrDefault();
+            result.New4_Activa = resultQualified.Where(x => x.NewStatus.TrimEnd() == $"New 4" || x.NewStatus.TrimEnd() == $"Nova 4").Select(x => x.QtyQualified).FirstOrDefault();
 
             return result;
         }
