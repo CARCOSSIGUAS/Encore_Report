@@ -11,7 +11,7 @@ namespace Belcorp.Encore.Application.Services.Interfaces
     {
         Task<AccountHomeHeader_DTO> GetHeader(int accountId, string country);
         Task<PerformanceIndicator_DTO> GetPerformanceIndicator(int accountId, int? periodID, string country);
-        Task<NewsIndicator_DTO> GetNewsIndicator(int accountID, int periodoID, string country);
+        Task<NewsIndicator_DTO> GetNewsIndicator(int accountID, string country);
         Task<BonusIndicator_DTO> GetBonusIndicator(int SponsorID, string country);
         Task<KpisIndicator_DTO> GetKpisIndicator(int periodID, int SponsorID, int DownLineID, string country);
 

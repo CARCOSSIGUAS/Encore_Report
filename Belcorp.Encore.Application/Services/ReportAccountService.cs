@@ -231,7 +231,7 @@ namespace Belcorp.Encore.Application
                         CareerTitle_Des = item.CareerTitle_Des,
                         City = item.City,
                         ConsultActive = item.ConsultActive,
-                        country = item.country,
+                        country = country,
                         CQL = item.CQL,
                         CreditAvailable = item.CreditAvailable,
                         DCV = item.DCV,
@@ -493,8 +493,6 @@ namespace Belcorp.Encore.Application
             {
                 return null;
             }
-
-            accountRoot[0].country = country;
             return accountRoot;
         }
 

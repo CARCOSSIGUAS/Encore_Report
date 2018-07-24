@@ -70,7 +70,6 @@ namespace Belcorp.Encore.Application.Utilities
 
             if (item != null)
             {
-                item.country = country;
                 lista.Add(item);
 
                 if (accountID != sponsor)
