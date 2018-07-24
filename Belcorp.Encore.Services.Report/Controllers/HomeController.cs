@@ -93,9 +93,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("newsindicator", Name = "GetNewsIndicator")]
-        public IActionResult GetNewsIndicator(int accountID, int periodoID, string country = null)
+        public IActionResult GetNewsIndicator(int accountID, string country = null)
         {
-            var result = homeService.GetNewsIndicator(accountID, periodoID, country);
+            var result = homeService.GetNewsIndicator(accountID, country);
 
             if (result == null)
             {
