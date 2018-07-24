@@ -245,18 +245,20 @@ namespace Belcorp.Encore.Application.Services
             return result;
         }
 
-        public async Task<NewsIndicator_DTO> GetNewsIndicator(int accountID, int periodoID, string country)
+        public async Task<NewsIndicator_DTO> GetNewsIndicator(int accountID, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
-            var accountRoot = await accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == periodoID, null).FirstOrDefaultAsync();
+            var period = GetCurrentPeriod(country);
+
+            var accountRoot = await accountInformationCollection.Find(a => a.AccountID == accountID && a.PeriodID == period.PeriodID, null).FirstOrDefaultAsync();
             if (accountRoot == null)
             {
                 return null;
             }
 
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodoID);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, period.PeriodID);
 
             if (accountRoot.LeftBower.HasValue && accountRoot.RightBower.HasValue)
             {
