@@ -111,7 +111,5 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public int? UplineLeader0 { get; set; }
         public bool? IsQualified { get; set; }
         public bool? HasContinuity { get; set; }
-
-        public string country { get; set; }
     }
 }
