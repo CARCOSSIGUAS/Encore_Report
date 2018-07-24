@@ -443,7 +443,7 @@ namespace Belcorp.Encore.Application.Services
                         accountInformation_Up.DQV = result_accountKPIs.Value;
                         accountInformation_Up.DCV += Statistics.CV;
                         accountInformation_Up.DQVT += Statistics.QV;
-                        accountInformation_Up.ActiveDownline = activeDownline ? accountInformation_Up.ActiveDownline + 1 : accountInformation_Up.ActiveDownline;
+                        accountInformation_Up.ActiveDownline = activeDownline ? ((accountInformation_Up.ActiveDownline ?? 0) + 1) : accountInformation_Up.ActiveDownline;
                         accountsInformationRepository.Update(accountInformation_Up);
 
                         unitOfWork_Comm.SaveChanges();
