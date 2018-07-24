@@ -150,7 +150,7 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
-        public static List<ReportAccount_DTO> ToTopologyList(this IEnumerable<AccountsInformation_MongoWithAccountAndSponsor> list)
+        public static List<ReportAccount_DTO> ToTopologyList(this IEnumerable<AccountsInformation_MongoWithAccountAndSponsor> list, string country)
         {
             var result = list.Select(ai => new ReportAccount_DTO()
             {
@@ -171,7 +171,7 @@ namespace Belcorp.Encore.Application.Extension
                 SponsorName = ai.SponsorName.ToLower(),
                 FirstName = ai.Account.FirstName != null ? ai.Account.FirstName: "",
                 LastName1 = ai.Account.LastName != null ? ai.Account.LastName: "",
-                country = ai.country,
+                country = country,
             }).ToList();
 
             result.ForEach(a =>
