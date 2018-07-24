@@ -38,6 +38,8 @@ namespace Belcorp.Encore.Data.Contexts
             builder.Entity<RequirementTitleCalculations>()
                 .HasOne(c => c.calculationTypes);
 
+            builder.Entity<RequirementLegs>()
+                            .HasKey(c => c.TitleRequired);
 
 
         }
