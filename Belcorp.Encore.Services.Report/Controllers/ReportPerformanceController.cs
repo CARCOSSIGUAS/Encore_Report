@@ -28,13 +28,15 @@ namespace Belcorp.Encore.Services.Report.Controllers
         public async Task<IActionResult> GetStatesByPeriods(int accountID, int periodID, string country = null)
         {
             var result = await reportPerformanceService.GetPerformanceByAccount(accountID, periodID, country);
+            var item = result.ToReportAccountPerformance_DTO();
+            var retorno = await reportPerformanceService.GetRequirements(item, country);
 
             if (result == null)
             {
                 return NotFound();
             }
 
-            return Ok(result.ToReportAccountPerformance_DTO());
+            return Ok(retorno);
         }
 
         [HttpGet("getPerformanceBySponsor", Name = "GetPerformanceBySponsor")]

@@ -2,6 +2,8 @@
 using Belcorp.Encore.Application.ViewModel;
 using Belcorp.Encore.Data;
 using Belcorp.Encore.Data.Contexts;
+using Belcorp.Encore.Entities.Entities.Commissions;
+using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -31,30 +33,45 @@ namespace Belcorp.Encore.Application.Services
         public async Task<AccountsInformation_Mongo> GetPerformanceByAccount(int accountId, int periodId, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
-            IMongoCollection<RequirementLegs_Mongo> requirementLegsCollection = encoreMongo_Context.RequirementLegsProvider(country);
-            IMongoCollection<RequirementTitleCalculations_Mongo> requirementTitleCalculationsCollection = encoreMongo_Context.RequirementTitleCalculationsProvider(country);
-
 
             periodId = periodId == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodId;
 
             var result = await accountInformationCollection.Find(p => p.AccountID == accountId && p.PeriodID == periodId).FirstOrDefaultAsync();
-            var title = int.Parse(string.IsNullOrEmpty(result.CareerTitle) ? "0" : result.CareerTitle);
-            var requirementLegs = await requirementLegsCollection.Find(p => p.TitleID == int.Parse(string.IsNullOrEmpty(result.CareerTitle) ? "0" : result.CareerTitle)).ToListAsync();
-            var requirementTitleCalculations = await requirementTitleCalculationsCollection.Find(p => p.TitleID == title).ToListAsync();
-            var requirementTitleCalculationsNext = await requirementTitleCalculationsCollection.Find(p => p.TitleID == title +1).ToListAsync();
-
-
-
-            result.PQVRequirement = requirementTitleCalculations.FirstOrDefault(x => x.CalculationtypeID == 1).MinValue;
-            result.DQVRequirement = requirementTitleCalculations.FirstOrDefault(x => x.CalculationtypeID == 6).MinValue;
-            result.CQLRequirement = requirementTitleCalculations.FirstOrDefault(x => x.CalculationtypeID == 8).MinValue;
-
-            result.PQVRequirementNext = requirementTitleCalculationsNext.FirstOrDefault(x => x.CalculationtypeID == 1).MinValue;
-            result.DQVRequirementNext = requirementTitleCalculationsNext.FirstOrDefault(x => x.CalculationtypeID == 6).MinValue;
-            result.CQLRequirementNext = requirementTitleCalculationsNext.FirstOrDefault(x => x.CalculationtypeID == 8).MinValue;
-
 
             return result;
+        }
+
+
+        public async Task<ReportAccountPerformance_DTO> GetRequirements(ReportAccountPerformance_DTO item, string country)
+        {
+            IMongoCollection<RequirementLegs_Mongo> requirementLegsCollection = encoreMongo_Context.RequirementLegsProvider(country);
+            IMongoCollection<RequirementTitleCalculations_Mongo> requirementTitleCalculationsCollection = encoreMongo_Context.RequirementTitleCalculationsProvider(country);
+
+            var title = int.Parse(string.IsNullOrEmpty(item.CareerTitle) ? "0" : item.CareerTitle);
+            var requirementTitleCalculations = await requirementTitleCalculationsCollection.Find(p => p.TitleID == title).ToListAsync();
+            var requirementTitleCalculationsNext = await requirementTitleCalculationsCollection.Find(p => p.TitleID == title + 1).ToListAsync();
+           
+            var requirementLegs = await requirementLegsCollection.Find(p => p.TitleID == title).ToListAsync();
+
+
+            item.PQVRequirement = ValidateNullValueRequirementTitleCalculations(requirementTitleCalculations.FirstOrDefault(x => x.CalculationtypeID == 1));
+            item.DQVRequirement = ValidateNullValueRequirementTitleCalculations(requirementTitleCalculations.FirstOrDefault(x => x.CalculationtypeID == 6));
+            item.CQLRequirement = ValidateNullValueRequirementTitleCalculations(requirementTitleCalculations.FirstOrDefault(x => x.CalculationtypeID == 8));
+            item.PQVRequirementNext = ValidateNullValueRequirementTitleCalculations(requirementTitleCalculationsNext.FirstOrDefault(x => x.CalculationtypeID == 1));
+            item.DQVRequirementNext = ValidateNullValueRequirementTitleCalculations(requirementTitleCalculationsNext.FirstOrDefault(x => x.CalculationtypeID == 6));
+            item.CQLRequirementNext = ValidateNullValueRequirementTitleCalculations(requirementTitleCalculationsNext.FirstOrDefault(x => x.CalculationtypeID == 8));
+
+
+            return item;
+        }
+
+
+        public decimal ValidateNullValueRequirementTitleCalculations(RequirementTitleCalculations_Mongo item)
+        {
+            decimal retorno = 0;
+            if (item!=null)
+                retorno = item.MinValue;
+            return retorno;
         }
 
 
