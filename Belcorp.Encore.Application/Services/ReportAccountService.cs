@@ -140,7 +140,7 @@ namespace Belcorp.Encore.Application
             return list;
         }
 
-        public List<AccountsInformation_Mongo> GetDataBirthday(int accountID, int? periodID, string country)
+        public List<BirthDayAccount_DTO> GetDataBirthday(int accountID, int? periodID, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);            
@@ -193,7 +193,7 @@ namespace Belcorp.Encore.Application
                 .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .ToList();
 
-            List<AccountsInformation_Mongo> list = new List<AccountsInformation_Mongo>();
+            List<BirthDayAccount_DTO> list = new List<BirthDayAccount_DTO>();
             foreach (var item in result)
             {
                 if(item.Account.AccountAdditionalTitulars!=null&&item.Account.AccountAdditionalTitulars.Count>0)
@@ -202,7 +202,7 @@ namespace Belcorp.Encore.Application
                     {
                         if (titular.Brithday.Value.Month == Month && titular.Brithday.Value.Day >= Day && titular.Brithday.Value.Day <= LastDay)
                         {
-                            list.Add(new AccountsInformation_Mongo()
+                            list.Add(new BirthDayAccount_DTO()
                             {
                                 AccountID = titular.AccountID,
                                 AccountName = titular.FirstName + " " + titular.LastName,
@@ -217,7 +217,7 @@ namespace Belcorp.Encore.Application
 
                 if (item.BirthdayUTC.Value.Month == Month && item.BirthdayUTC.Value.Day >= Day && item.BirthdayUTC.Value.Day <= LastDay)
                 { 
-                    list.Add(new AccountsInformation_Mongo()
+                    list.Add(new BirthDayAccount_DTO()
                     {
                         AccountID = item.AccountID,
                         AccountName = item.AccountName.ToLower(),
@@ -246,13 +246,13 @@ namespace Belcorp.Encore.Application
                         GQV = item.GQV,
                         IsCommissionQualified = item.IsCommissionQualified,
                         JoinDate = item.JoinDate,
-                        LastName1 = item.LastName1,
-                        LastName2 = item.LastName2,
+                        //LastName1 = item.LastName1,
+                        //LastName2 = item.LastName2,
                         LastOrderDate = item.LastOrderDate,
                         LeftBower = item.LeftBower,
                         LEVEL = item.LEVEL,
-                        Name1 = item.Name1,
-                        Name2 = item.Name2,
+                        //Name1 = item.Name1,
+                        //Name2 = item.Name2,
                         PaidAsCurrentMonth = item.PaidAsCurrentMonth,
                         PaidAsCurrentMonth_Des = item.PaidAsCurrentMonth_Des,
                         NewStatus = item.NewStatus,
@@ -264,8 +264,8 @@ namespace Belcorp.Encore.Application
                         Region = item.Region,
                         RightBower = item.RightBower,
                         SortPath = item.SortPath,
-                        SPLastName = item.SPLastName,
-                        SPName = item.SPName,
+                        //SPLastName = item.SPLastName,
+                        //SPName = item.SPName,
                         SponsorID = item.SponsorID,
                         SponsorName = item.SponsorName,
                         STATE = item.STATE,

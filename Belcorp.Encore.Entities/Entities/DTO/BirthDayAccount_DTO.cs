@@ -1,15 +1,15 @@
-﻿using Belcorp.Encore.Entities.Entities.Commissions;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using Belcorp.Encore.Entities.Entities.Core;
+using Belcorp.Encore.Entities.Entities.Mongo;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace Belcorp.Encore.Entities.Entities.Mongo
+namespace Belcorp.Encore.Entities.Entities.DTO
 {
-    public class AccountsInformation_Mongo
+    public class BirthDayAccount_DTO
     {
-        [BsonId]
         public int AccountsInformationID { get; set; }
-
         public int PeriodID { get; set; }
         public int AccountID { get; set; }
         public string AccountNumber { get; set; }
@@ -26,35 +26,16 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string CareerTitle { get; set; }
         public string PaidAsCurrentMonth { get; set; }
         public string PaidAsLastMonth { get; set; }
-
-        [BsonRepresentation(BsonType.Double)]
         public decimal? VolumeForCareerTitle { get; set; }
         public string Activity { get; set; }
-
-        [BsonRepresentation(BsonType.Double)]
         public decimal? NineMonthsPQV { get; set; }
-
-        [BsonRepresentation(BsonType.Double)]
         public decimal? PQV { get; set; }
-
-        [BsonRepresentation(BsonType.Double)]
         public decimal? PCV { get; set; }
-
-        [BsonRepresentation(BsonType.Double)]
         public decimal? GQV { get; set; }
-
-        [BsonRepresentation(BsonType.Double)]
         public decimal? GCV { get; set; }
-
-        [BsonRepresentation(BsonType.Double)]
         public decimal? DQVT { get; set; }
-
-        [BsonRepresentation(BsonType.Double)]
-        public decimal? DCV { get; set; }
-
-        [BsonRepresentation(BsonType.Double)]
+        public decimal? DCV { get; set; }        
         public decimal? DQV { get; set; }
-
         public DateTime? JoinDate { get; set; }
         public int? Generation { get; set; }
         public int? LEVEL { get; set; }
@@ -81,9 +62,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public decimal? CQL { get; set; }
         public DateTime? LastOrderDate { get; set; }
         public bool? IsCommissionQualified { get; set; }
-        [BsonRepresentation(BsonType.DateTime)]
         public DateTime? BirthdayUTC { get; set; }
-
         public int? UplineLeaderM3 { get; set; }
         public string UplineLeaderM3Name { get; set; }
         public int? UplineLeaderL1 { get; set; }
@@ -101,18 +80,20 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public decimal? NineMonthsGQV { get; set; }
         public decimal? NineMonthsDQV { get; set; }
         public int? ConsultActive { get; set; }
-
         public string CareerTitle_Des { get; set; }
         public string PaidAsCurrentMonth_Des { get; set; }
-        
-        [BsonRepresentation(BsonType.Double)]
+        public string Name1 { get; set; }
+        public string Name2 { get; set; }
+        public string LastName1 { get; set; }
+        public string LastName2 { get; set; }
+        public string country { get; set; }
+        public string SPName { get; set; }
+        public string SPLastName { get; set; }
+        public string HB { get; set; }        
         public decimal? NCWP { get; set; }
-
         public int? UplineLeader0 { get; set; }
         public bool? IsQualified { get; set; }
         public bool? HasContinuity { get; set; }
-
-        public string country { get; set; }
         public decimal? PQVRequirement { get; set; }
         public decimal? PCVRequirement { get; set; }
         public decimal? GQVRequirement { get; set; }
@@ -121,8 +102,6 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public decimal? DCVRequirement { get; set; }
         public decimal? DQVRequirement { get; set; }
         public decimal? CQLRequirement { get; set; }
-
-
         public decimal? PQVRequirementNext { get; set; }
         public decimal? PCVRequirementNext { get; set; }
         public decimal? GQVRequirementNext { get; set; }
