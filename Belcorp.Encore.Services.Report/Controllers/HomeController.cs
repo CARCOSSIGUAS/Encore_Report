@@ -92,6 +92,18 @@ namespace Belcorp.Encore.Services.Report.Controllers
             return Json(new { items = result.toAccountsAutocomplete_DTO(), word = filter });
         }
 
+        [HttpGet("newsindicator", Name = "GetNewsIndicator")]
+        public IActionResult GetNewsIndicator(int accountID, int periodoID, string country = null)
+        {
+            var result = homeService.GetNewsIndicator(accountID, periodoID, country);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
+        }
+
         [HttpGet("consultantlower", Name = "GetConsultantLowerPerformance")]
         public IActionResult GetConsultantLowerPerformance(int? periodID, int accountID, string country = null)
         {

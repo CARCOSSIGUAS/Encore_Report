@@ -172,8 +172,11 @@ namespace Belcorp.Encore.Application.Services
                              NCWP = accountsInfo.NCWP,
                              UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0,
                              UplineLeaderM3 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeaderM3 : accountsInfo.UplineLeaderM3,
-                             UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name
-                          };
+                             UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name,
+
+                             IsQualified = accountsInfo.IsQualified,
+                             HasContinuity = accountsInfo.HasContinuity
+                         };
 
             return result;
         }

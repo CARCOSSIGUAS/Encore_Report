@@ -179,8 +179,6 @@ namespace Belcorp.Encore.Application
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
 
-            //var orderDefinitionAccountName = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.AccountName);
-
             var result = new List<AccountsInformation_MongoWithAccountAndSponsor>();
 
             result = accountInformationCollection
@@ -193,8 +191,6 @@ namespace Belcorp.Encore.Application
                     r => r.Account
                 )
                 .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
-                //.Limit(200)
-                //.Sort(orderDefinitionAccountName)
                 .ToList();
 
             List<AccountsInformation_Mongo> list = new List<AccountsInformation_Mongo>();
@@ -279,7 +275,7 @@ namespace Belcorp.Encore.Application
 
                 }
             }
-            //list = list.Take(5).ToList();
+
             list = list.OrderBy(x => x.HB).ToList();
             return list;
         }
