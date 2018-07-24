@@ -493,8 +493,6 @@ namespace Belcorp.Encore.Application
             {
                 return null;
             }
-
-            accountRoot[0].country = country;
             return accountRoot;
         }
 

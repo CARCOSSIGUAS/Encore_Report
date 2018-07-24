@@ -98,7 +98,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return NotFound();
             }
 
-            return Ok(result.ToTopologyList());
+            return Ok(result.ToTopologyList(country));
         }
 
         [HttpGet("exportexcel")]
