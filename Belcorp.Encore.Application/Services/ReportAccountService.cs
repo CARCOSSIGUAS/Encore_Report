@@ -392,7 +392,10 @@ namespace Belcorp.Encore.Application
             }
 
             var result = accountInformationCollection
-                .Aggregate()
+                .Aggregate(options: new AggregateOptions
+                {
+                    AllowDiskUse = true
+                })
                 .Match(filterDefinition)
                 .Sort(orderDefinition)
                 .Skip(filter.PageSize * (filter.PageNumber - 1))
