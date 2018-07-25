@@ -92,8 +92,8 @@ namespace Belcorp.Encore.Application.Extension
                 AccountName = item.AccountName.ToLower(),
                 AccountNumber = item.AccountNumber,
                 Activity = item.Activity,
-                CareerTitleDes= item.CareerTitle_Des,
-                CareerTitle =item.CareerTitle, 
+                CareerTitleDes = item.CareerTitle_Des,
+                CareerTitle = item.CareerTitle,
                 DQV = item.DQV,
                 DQVT = item.DQVT,
                 CQL = item.CQL,
@@ -117,7 +117,7 @@ namespace Belcorp.Encore.Application.Extension
                 ActiveDownline = item.ActiveDownline != null ? item.ActiveDownline : 0,
                 ConsultActive = item.ConsultActive != null ? item.ConsultActive : 0,
                 Birthday = item.Account.BirthdayUTC.HasValue ? item.Account.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
-
+                IsBirthday = item.Account.BirthdayUTC.HasValue && item.Account.BirthdayUTC.Value.Date == DateTime.Now.Date ? true:false,
                 NCWP = item.NCWP,
                 AdditionalTitularName = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].FirstName.ToLower() + " " + item.Account.AccountAdditionalTitulars[0].LastName.ToLower() : "",
                 AdditionalTitularBirthday = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].Brithday.Value.ToString("dd/MM/yyyy") : "",
@@ -220,7 +220,7 @@ namespace Belcorp.Encore.Application.Extension
         {
             var result = list.Select(item => new ReportAccountPerformance_DTO()
             {
-                AccountID=item.AccountID,
+                AccountID = item.AccountID,
                 AccountNumber = item.AccountNumber,
                 AccountName = item.AccountName,
                 CareerTitle = item.CareerTitle,
@@ -247,7 +247,7 @@ namespace Belcorp.Encore.Application.Extension
                 Title12Legs = item.Title12Legs,
                 Title13Legs = item.Title13Legs,
                 Title14Legs = item.Title14Legs,
-            });
+            }).OrderByDescending(x => x.DQVT);
 
             return result;
         }

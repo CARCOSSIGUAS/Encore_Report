@@ -629,10 +629,9 @@ namespace Belcorp.Encore.Application.Services
             IMongoCollection<EnrrollmentAccountsByDayTemp_Mongo> enrrolmentAccountByDayTemp = encoreMongo_Context.EnrrollmentAccountsByDayTempProvider(country);
 
             var period = homeService.GetCurrentPeriod(country).PeriodID;
+            var date = DateTime.Now.Date;
 
-
-            var lista = accountInformationCollection.Find(a => a.PeriodID == period && (a.JoinDate >= DateTime.Now.Date && a.JoinDate <= DateTime.Now), null).ToList();
-
+            var lista = accountInformationCollection.Find(a => a.PeriodID == period && (a.JoinDate >= date && a.JoinDate <= DateTime.Now), null).ToList();
             var filterDefinition = Builders<EnrrollmentAccountsByDayTemp_Mongo>.Filter.In(ai => ai.AccountID, lista.Select(x => x.AccountID));
 
             var listaTemp = enrrolmentAccountByDayTemp.

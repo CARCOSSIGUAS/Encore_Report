@@ -68,5 +68,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public string UplineLeaderM3Phones { get; set; }
 
         public decimal? NCWP { get; set; }
+
+        public bool IsBirthday { get; set; }
     }
 }
