@@ -14,6 +14,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using Belcorp.Encore.Repositories.Interfaces;
+using Belcorp.Encore.Entities.Constants;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -77,7 +78,13 @@ namespace Belcorp.Encore.Application.Services
             var UplineLeader0 = 0;
             var UplineLeaderM3 = 0;
 
-            if (AccountID.HasValue)
+            int? LeftRighBower = null;
+            if (AccountID.HasValue && activity != null &&
+                    (
+                        activity.AccountConsistencyStatuses.AccountConsistencyStatusID == (short)Constants.AccountConsistencyStatuses.New0 ||
+                        activity.AccountConsistencyStatuses.AccountConsistencyStatusID == (short)Constants.AccountConsistencyStatuses.New1
+                    )
+              )
             {
                 var account = accountsInformation.Where(a => a.AccountID == AccountID).FirstOrDefault();
                 var sponsor = accountsInformation.Where(a => a.AccountID == account.SponsorID).FirstOrDefault();
@@ -86,6 +93,7 @@ namespace Belcorp.Encore.Application.Services
                 {
                     UplineLeader0 = sponsor.UplineLeader0 ?? 0;
                     UplineLeaderM3 = sponsor.UplineLeaderM3 ?? 0;
+                    LeftRighBower =  sponsor.LeftBower;
                 }
             }
 
@@ -125,8 +133,8 @@ namespace Belcorp.Encore.Application.Services
                              Generation = accountsInfo.Generation,
                              LEVEL = accountsInfo.LEVEL,
                              SortPath = accountsInfo.SortPath,
-                             LeftBower = accountsInfo.LeftBower,
-                             RightBower = accountsInfo.RightBower,
+                             LeftBower =  (AccountID.HasValue && AccountID == accountsInfo.AccountID && LeftRighBower.HasValue) ? LeftRighBower : accountsInfo.LeftBower,
+                             RightBower = (AccountID.HasValue && AccountID == accountsInfo.AccountID && LeftRighBower.HasValue) ? LeftRighBower : accountsInfo.RightBower,
                              RequirementNewGeneration = accountsInfo.RequirementNewGeneration,
                              TimeLimitForNewGeneration = accountsInfo.TimeLimitForNewGeneration,
                              Title1Legs = accountsInfo.Title1Legs,

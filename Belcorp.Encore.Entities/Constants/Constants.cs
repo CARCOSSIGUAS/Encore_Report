@@ -103,5 +103,18 @@ namespace Belcorp.Encore.Entities.Constants
             USA = 1,
             BRA = 73
         }
+
+        public enum AccountConsistencyStatuses : short
+        {
+            NotSet = 0,
+            BegunEnrollment = 1,
+            New0 = 7,
+            New1 = 2,
+            New2 = 3,
+            New3 = 4,
+            New4 = 5,
+            Established = 6,
+            Terminated =  9
+        }
     }
 }
