@@ -73,16 +73,15 @@ namespace Belcorp.Encore.Application.Services
             UpdateTransactionDate(2, country);
         }
 
-        public IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activity = null, int? AccountID = null)
+        public IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activityPrevious = null, Activities activityCurrent = null, int? AccountID = null)
         {
             var UplineLeader0 = 0;
             var UplineLeaderM3 = 0;
 
             int? LeftRighBower = null;
-            if (AccountID.HasValue && activity != null &&
+            if (AccountID.HasValue && activityPrevious != null &&
                     (
-                        activity.AccountConsistencyStatuses.AccountConsistencyStatusID == (short)Constants.AccountConsistencyStatuses.New0 ||
-                        activity.AccountConsistencyStatuses.AccountConsistencyStatusID == (short)Constants.AccountConsistencyStatuses.New1
+                        activityPrevious.AccountConsistencyStatuses.AccountConsistencyStatusID == (short)Constants.AccountConsistencyStatuses.BegunEnrollment
                     )
               )
             {
@@ -115,7 +114,7 @@ namespace Belcorp.Encore.Application.Services
                              City = accountsInfo.City,
                              STATE = accountsInfo.STATE,
                              Region = accountsInfo.Region,
-                             NewStatus = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.AccountConsistencyStatuses.Name : accountsInfo.NewStatus,
+                             NewStatus = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activityCurrent != null) ? activityCurrent.AccountConsistencyStatuses.Name : accountsInfo.NewStatus,
                              TimeLimitToBeDemote = accountsInfo.TimeLimitToBeDemote,
                              CareerTitle = accountsInfo.CareerTitle,
                              PaidAsCurrentMonth = accountsInfo.PaidAsCurrentMonth,
@@ -176,14 +175,14 @@ namespace Belcorp.Encore.Application.Services
                              CareerTitle_Des = titlesInfo_Career.ClientName,
                              PaidAsCurrentMonth_Des = titlesInfo_Paid.ClientName,
 
-                             Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.ActivityStatuses.ExternalName : accountsInfo.Activity,
+                             Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activityCurrent != null) ? activityCurrent.ActivityStatuses.ExternalName : accountsInfo.Activity,
                              NCWP = accountsInfo.NCWP,
                              UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0,
                              UplineLeaderM3 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeaderM3 : accountsInfo.UplineLeaderM3,
                              UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name,
 
-                             IsQualified = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.IsQualified : accountsInfo.IsQualified,
-                             HasContinuity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.HasContinuity : accountsInfo.HasContinuity
+                             IsQualified = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activityCurrent != null) ? activityCurrent.IsQualified : accountsInfo.IsQualified,
+                             HasContinuity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activityCurrent != null) ? activityCurrent.HasContinuity : accountsInfo.HasContinuity
                          };
 
             return result;
