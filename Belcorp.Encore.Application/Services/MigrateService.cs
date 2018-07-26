@@ -174,8 +174,8 @@ namespace Belcorp.Encore.Application.Services
                              UplineLeaderM3 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeaderM3 : accountsInfo.UplineLeaderM3,
                              UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name,
 
-                             IsQualified = accountsInfo.IsQualified,
-                             HasContinuity = accountsInfo.HasContinuity
+                             IsQualified = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.IsQualified : accountsInfo.IsQualified,
+                             HasContinuity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activity != null) ? activity.HasContinuity : accountsInfo.HasContinuity
                          };
 
             return result;
