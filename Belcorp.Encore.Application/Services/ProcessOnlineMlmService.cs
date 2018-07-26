@@ -114,8 +114,8 @@ namespace Belcorp.Encore.Application.Services
                 Indicators_InDivision();
 
                 IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
-                var activityPrev = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, null, true);
-                var IsQualifiedPrev = activityPrev != null ? activityPrev.IsQualified : false;
+                var activityPrevious = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, null, true);
+                var IsQualifiedPrev = activityPrevious != null ? activityPrevious.IsQualified : false;
 
                 Execute_Activities();
 
@@ -131,7 +131,7 @@ namespace Belcorp.Encore.Application.Services
 
                 Indicators_InTableReports(activeDownline);
                 Indicators_InOrderCalculationsOnline();
-                Migrate_AccountInformationByAccountId(country);
+                Migrate_AccountInformationByAccountId(country, activityPrevious);
                 UpdateTransactionDate(1, country);
                 PersonalIndicatorLog = personalIndicatorLogService.Update(PersonalIndicatorLog);
 
@@ -521,7 +521,7 @@ namespace Belcorp.Encore.Application.Services
         #endregion
 
         #region Actualizar Mongo
-        public void Migrate_AccountInformationByAccountId(string country)
+        public void Migrate_AccountInformationByAccountId(string country, Activities activityPrevious)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
 
@@ -534,9 +534,9 @@ namespace Belcorp.Encore.Application.Services
             var accountsInformations = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(Statistics.PeriodID, accountsIds).ToList();
 
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
-            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses).Include(aa => aa.AccountConsistencyStatuses), true);
+            var activityCurrent = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses).Include(aa => aa.AccountConsistencyStatuses), true);
 
-            IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformations, activity, Statistics.Order.AccountID);
+            IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformations, activityPrevious, activityCurrent, Statistics.Order.AccountID);
             try
             {
                 if (detailLog != null && detailLog.EndTime == null)
