@@ -70,5 +70,6 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public decimal? NCWP { get; set; }
 
         public bool IsBirthday { get; set; }
+        public int? LeftBower { get; set; }
     }
 }

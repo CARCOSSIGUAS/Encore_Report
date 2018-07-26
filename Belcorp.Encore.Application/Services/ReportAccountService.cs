@@ -388,6 +388,9 @@ namespace Belcorp.Encore.Application
                     case "3":
                         orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ((int)ai.LEVEL));
                         break;
+                    case "4":
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ((int)ai.LeftBower));
+                        break;
                 };
             }
 

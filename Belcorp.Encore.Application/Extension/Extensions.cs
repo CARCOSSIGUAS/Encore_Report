@@ -34,7 +34,8 @@ namespace Belcorp.Encore.Application.Extension
                 SponsorEmailAddress = ai.Sponsor != null ? ai.Sponsor.EmailAddress : "",
                 SponsorID = ai.SponsorID,
                 SponsorName = ai.SponsorName.ToLower(),
-                SponsorPhones = ai.Sponsor != null ? String.Join(" - ", ai.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : ""
+                SponsorPhones = ai.Sponsor != null ? String.Join(" - ", ai.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                LeftBower = ai.LeftBower
             }).ToList();
 
             return result;
