@@ -20,6 +20,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public string EmailAddress { get; set; }
         public int? SponsorID { get; set; }
         public int? EnrollerID { get; set; }
+        public int DefaultLanguageID { get; set; }
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime? EnrollmentDateUTC { get; set; }

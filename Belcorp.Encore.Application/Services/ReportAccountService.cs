@@ -159,7 +159,7 @@ namespace Belcorp.Encore.Application
             int Year = Hoy.Year;
             var LastDay = DateTime.DaysInMonth(Year, Month);
             var GenerationIds = "0,1";
-            var listGenerationIds = GetIdsFromString(GenerationIds).Select(s => int.Parse(s) + accountRoot.Generation).ToList();
+            //var listGenerationIds = GetIdsFromString(GenerationIds).Select(s => int.Parse(s) + accountRoot.Generation).ToList();
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodID);
@@ -174,7 +174,7 @@ namespace Belcorp.Encore.Application
                 filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountRoot.AccountID);
             }
 
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.Generation, listGenerationIds);
+            //filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.In(ai => ai.Generation, listGenerationIds);
 
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);

@@ -289,6 +289,7 @@ namespace Belcorp.Encore.Application.Services
 
                     account_Mongo.BirthdayUTC = account.BirthdayUTC;
                     account_Mongo.TerminatedDateUTC = account.TerminatedDateUTC;
+                    account_Mongo.DefaultLanguageID = account.DefaultLanguageID;
 
                     account_Mongo.AccountPhones = account.AccountPhones;
                     account_Mongo.Addresses = account.AccountAddresses.Select(a => a.Addresses).Where(a => a.AddressTypeID == 1).ToList();
