@@ -114,7 +114,7 @@ namespace Belcorp.Encore.Application.Services
                 Indicators_InDivision();
 
                 IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
-                var activityPrevious = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, null, true);
+                var activityPrevious = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses).Include(aa => aa.AccountConsistencyStatuses), true);
                 var IsQualifiedPrev = activityPrevious != null ? activityPrevious.IsQualified : false;
 
                 Execute_Activities();
