@@ -18,5 +18,14 @@ namespace Belcorp.Encore.Repositories
         {
             dbCommissions_Context = _dbCommissions_Context;
         }
+
+        //public IEnumerable<AccountKPIs> GetListAccountInformationByPeriodIdAndAccountId(int periodId, List<int> accountIds)
+        //{
+        //    var result = from ai in dbCommissions_Context.AccountsInformation.AsNoTracking()
+        //                 where ai.PeriodID == periodId && accountIds.Contains(ai.AccountID)
+        //                 select ai;
+
+        //    return result.ToList();
+        //}
     }
 }

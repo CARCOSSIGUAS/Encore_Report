@@ -17,6 +17,9 @@ namespace Belcorp.Encore.Data.Contexts
             builder.Entity<Accounts>()
                 .HasMany(p => p.AccountAddresses);
 
+            builder.Entity<Accounts>()
+        .HasOne(p => p.AccountStatuses);
+
             builder.Entity<AccountAddresses>()
                 .HasOne(p => p.Addresses);
 
@@ -37,6 +40,7 @@ namespace Belcorp.Encore.Data.Contexts
 
             builder.Entity<TermTranslationsMongo>()
                 .HasOne(p => p.Languages);
+
 
         }
 
@@ -62,6 +66,8 @@ namespace Belcorp.Encore.Data.Contexts
 
         public DbSet<Languages> Languages { get; set; }
         public DbSet<TermTranslationsMongo> TermTranslationsMongo { get; set; }
+        public DbSet<AccountConsistencyStatuses> AccountConsistencyStatuses { get; set; }
+        public DbSet<AccountStatuses> AccountStatuses { get; set; }
 
     }
 }

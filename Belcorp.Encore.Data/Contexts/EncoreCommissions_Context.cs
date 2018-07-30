@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Belcorp.Encore.Entities.Entities.Commissions;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Belcorp.Encore.Data.Contexts
 {
@@ -11,6 +12,9 @@ namespace Belcorp.Encore.Data.Contexts
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            //builder.Entity<Accounts>().Property(c => c.ActivationPeriodID).
+            //    .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
+
             builder.Entity<AccountKPIs>()
                 .HasKey(c => new { c.AccountID, c.PeriodID, c.CalculationTypeID });
 
@@ -59,6 +63,7 @@ namespace Belcorp.Encore.Data.Contexts
         public DbSet<PersonalIndicatorDetailLog> PersonalIndicatorDetailLog { get; set; }
 
         public DbSet<RequirementTitleCalculations> RequirementTitleCalculations { get; set; }
+        public DbSet<SystemConfigs> SystemConfigs { get; set; }
 
 
     }

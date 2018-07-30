@@ -28,10 +28,17 @@ namespace Belcorp.Encore.Application.Services
         private readonly IOrderCalculationTypesService orderCalculationTypesService;
         private readonly IPersonalIndicatorLogService personalIndicatorLogService;
         private readonly IPersonalIndicatorDetailLogService personalIndicatorDetailLogService;
+        private readonly IAccountConsistencyStatusesService accountConsistencyStatusesService;
+        private readonly IActivityStatusesService activityStatusesService;
+        private readonly IAccountKPIsService accountKPIsService;
+        private readonly IAccountStatusesService accountStatusesService;
+        private readonly ISystemConfigsService systemConfigsService;
 
         private readonly IProcessOnlineRepository processOnlineRepository;
         private readonly IAccountKPIsRepository accountKPIsRepository;
         private readonly IAccountInformationRepository accountsInformationRepository;
+        private readonly IOrdersRepository ordersRepository;
+        private readonly IActivitiesRepository activitiesRepository1;
 
         public OnlineMLM_Statistics Statistics { get; set; }
         public PersonalIndicatorLog PersonalIndicatorLog { get; set; }
@@ -47,10 +54,17 @@ namespace Belcorp.Encore.Application.Services
             IOrderCalculationTypesService _orderCalculationTypesService,
             IPersonalIndicatorLogService _personalIndicatorLogService,
             IPersonalIndicatorDetailLogService _personalIndicatorDetailLogService,
+            IAccountConsistencyStatusesService _accountConsistencyStatusesService,
+            IActivityStatusesService _activityStatusesService,
+            IAccountKPIsService _accountKPIsService,
+            IAccountStatusesService _accountStatusesService,
+            ISystemConfigsService _systemConfigsService,
 
             IProcessOnlineRepository _processOnlineRepository, 
             IAccountKPIsRepository _accountKPIsRepository, 
             IAccountInformationRepository _accountsInformationRepository,
+            IOrdersRepository _ordersRepository,
+            IActivitiesRepository _activitiesRepository1,
             IConfiguration configuration
         )
         {
@@ -63,10 +77,17 @@ namespace Belcorp.Encore.Application.Services
             orderCalculationTypesService = _orderCalculationTypesService;
             personalIndicatorLogService = _personalIndicatorLogService;
             personalIndicatorDetailLogService = _personalIndicatorDetailLogService;
+            accountConsistencyStatusesService = _accountConsistencyStatusesService;
+            activityStatusesService = _activityStatusesService;
+            accountKPIsService = _accountKPIsService;
+            accountStatusesService = _accountStatusesService;
+            systemConfigsService = _systemConfigsService;
 
             processOnlineRepository = _processOnlineRepository;
             accountKPIsRepository = _accountKPIsRepository;
             accountsInformationRepository = _accountsInformationRepository;
+            ordersRepository = _ordersRepository;
+            activitiesRepository1 = _activitiesRepository1;
         }
 
         public void ProcessMLMOrder(int _orderId, string country)
@@ -109,7 +130,7 @@ namespace Belcorp.Encore.Application.Services
                 Indicators_InDivision();
                 Indicators_InTableReports();
                 Indicators_InOrderCalculationsOnline();
-                Execute_Activities();
+                Update_Activities();
                 Migrate_AccountInformationByAccountId(Statistics.Order.AccountID, country);
 
                 PersonalIndicatorLog = personalIndicatorLogService.Update(PersonalIndicatorLog);
@@ -494,6 +515,172 @@ namespace Belcorp.Encore.Application.Services
 
             personalIndicatorDetailLogService.Update(detailLog);
         }
+
+        public void Update_Activities()
+        {
+            IRepository<RuleTypes> ruleTypesRepository = unitOfWork_Comm.GetRepository<RuleTypes>();
+            var ruleType = ruleTypesRepository.GetFirstOrDefault(rt => rt.Name == "Qualification" && rt.Active == true, null, rt => rt.Include(r => r.RequirementRules), true);
+
+            //Declaracion de variables
+            string typePrice;
+            decimal? amountCalification, qVValueTotal, amountParameter;
+            int? calculationTypeID, begunConsistencyStatus, new0ConsistencyStatus, new1ConsistencyStatus, begunEnrollment, activeAccountStatus, enrolled;
+            
+            typePrice = ruleType.RequirementRules.Value1;
+            calculationTypeID = calculationTypesService.GetCalculationTypeIdByCode(typePrice);            
+            amountCalification = decimal.Parse(ruleType.RequirementRules.Value2);
+            IRepository<ActivityStatuses> activityStatusesRepository = unitOfWork_Core.GetRepository<ActivityStatuses>();
+            var activityStatuses = activityStatusesRepository.GetFirstOrDefault(a => a.CampaignsWithoutOrder == "0", o => o.OrderBy(a => a.ActivityStatusID), null, true);
+            begunConsistencyStatus = accountConsistencyStatusesService.GetAccountConsistencyStatusID(1).AccountConsistencyStatusID;
+            new0ConsistencyStatus = accountConsistencyStatusesService.GetAccountConsistencyStatusID(2).AccountConsistencyStatusID;
+            new1ConsistencyStatus = accountConsistencyStatusesService.GetAccountConsistencyStatusID(3).AccountConsistencyStatusID;
+            begunEnrollment = activityStatusesService.GetActivityIDFromInternalName("BegunEnrollment").ActivityStatusID;
+            enrolled = (activityStatusesService.GetActivityIDFromInternalName("Enrolled") == null) ? 17 : activityStatusesService.GetActivityIDFromInternalName("Enrolled").ActivityStatusID;
+            qVValueTotal = accountKPIsService.GetAmountAccountKPI(Statistics.Order.AccountID, Statistics.PeriodID, calculationTypeID.Value).Value;
+            activeAccountStatus = accountStatusesService.LkpAccountStatusID("Active").AccountStatusID;
+            amountParameter = (systemConfigsService.GetAmountParameter("PQVNewBA") != null) ? Convert.ToDecimal(systemConfigsService.GetAmountParameter("PQVNewBA").ConfigValue) : (decimal?)null;
+            IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
+            var activity = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses), false);
+            short activeAccountStatusNew = activity.ActivityStatusID;
+
+            if (!String.IsNullOrEmpty(typePrice) && amountCalification.HasValue)
+            {
+                var result = accountKPIsRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID && a.CalculationTypeID == calculationTypeID, null, null, true);
+
+                if (result != null)
+                {
+                    bool isQualified = (result.Value >= amountCalification) ? true : false;                       
+
+                    if (activity != null)
+                    {
+                        activity.IsQualified = isQualified;
+                    }
+                    else
+                    {
+                        activitiesRepository.Insert(
+                            new Activities
+                            {
+                                AccountID = Statistics.Order.AccountID,
+                                ActivityStatusID = (int)Constants.AccountStatus.Active,
+                                PeriodID = Statistics.PeriodID,
+                                IsQualified = isQualified
+                            }
+                        );
+                    }
+                    
+                    /*Inicio Afectación de la actividad*/
+                    //Si no es orden de retorno(ID: 8) Ejecutar afectación actividad para periodo actual
+                    if (Statistics.Order.OrderTypeID != (int)Constants.OrderType.ReturnOrder)
+                    {
+                        /*Si viene de un OrdenConsistency1 o OrdenConsistency2 y el valor total acumulado de QV es mayor al monto 
+                         * configurado entonces le pone el OrdenConsistency3 [siempre y cuando exista el monto configurado], 
+		    	        Sino evalua si viene de OrdenConsistency1 y el valor total acumulado de QV es menor al monto configurado 
+                        entonces le pone OrdenConsistency2 [siempre y cuando exista el monto configurado], 
+		    	        Sino evalua si viene de OrdenConsistency1 entonces le pone el de OrdenConsistency2 
+                        [siempre y cuando no exista el monto configurado], en caso contrario lo deja está.
+		    	        */
+                        activity.HasContinuity = (activity.AccountConsistencyStatusID == begunConsistencyStatus) ? true : activity.HasContinuity;
+
+                        if(activity.AccountConsistencyStatusID == begunConsistencyStatus ||
+                            activity.AccountConsistencyStatusID == new0ConsistencyStatus && qVValueTotal >= amountParameter)
+                        {
+                            activity.AccountConsistencyStatusID = Convert.ToInt16(new1ConsistencyStatus);
+                        }
+                        else if (activity.AccountConsistencyStatusID == begunConsistencyStatus && qVValueTotal < amountParameter)
+                        {
+                            activity.AccountConsistencyStatusID = Convert.ToInt16(new0ConsistencyStatus);
+                        }
+                        else
+                        {
+                            activity.AccountConsistencyStatusID = activity.AccountConsistencyStatusID;
+                        }
+
+                        activity.ActivityStatusID = 
+                            (activity.ActivityStatusID == begunEnrollment || activity.ActivityStatusID == enrolled 
+                            && qVValueTotal < amountParameter) ? (short)enrolled : activityStatuses.ActivityStatusID;
+
+                        activitiesRepository.Update(activity);
+                        unitOfWork_Core.SaveChanges();                        
+
+
+                        if (activeAccountStatus == activeAccountStatusNew)
+                        {  
+                            IRepository<Entities.Entities.Core.Accounts> accountsCoreRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
+                            var accountCore = accountsCoreRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.AccountStatuses), false);
+                            accountCore.AccountStatusID = Convert.ToInt16(activeAccountStatus);
+                            accountCore.TerminatedDateUTC = (DateTime?)null;
+                            accountsCoreRepository.Update(accountCore);
+
+                            IRepository<Entities.Entities.Commissions.Accounts> accountsCommRepository = unitOfWork_Comm.GetRepository<Entities.Entities.Commissions.Accounts>();
+                            var accountComm = accountsCommRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID, null, null, false);
+                            accountComm.AccountStatusID = Convert.ToInt16(activeAccountStatus);
+                            accountComm.TerminatedDateUTC = null;
+                            accountsCommRepository.Update(accountComm);
+                            
+                        }
+                    }
+                    else
+                    {
+                        //Si es orden de retorno(ID:8) evaluar si debe regresar actividad
+                        int existOrderPerAnt = ordersRepository.GetExistOrderPerAnt(Statistics.Order.AccountID, Statistics.PeriodID);
+                        int existOrderPerAct = ordersRepository.GetExistOrderPerAct(Statistics.Order.AccountID, Statistics.PeriodID);
+
+                        //SI el consultor no tiene ordenes, se confirma el retorno de actividad a BE
+                        if (existOrderPerAnt == 0)
+                        {
+                            activity.ActivityStatusID = 17;
+                            activity.IsQualified = false;
+                            activitiesRepository.Update(activity);
+
+                            IRepository<Entities.Entities.Core.Accounts> accountsCoreRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
+                            var accountCore = accountsCoreRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID, null, null, false);
+                            accountCore.AccountStatusID = (int)Constants.AccountStatus.BegunEnrollment;
+                            accountCore.EnrollmentDateUTC = null;
+                            accountsCoreRepository.Update(accountCore);
+
+                            IRepository<Entities.Entities.Commissions.Accounts> accountsCommRepository = unitOfWork_Comm.GetRepository<Entities.Entities.Commissions.Accounts>();
+                            var accountComm = accountsCommRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID, null, null, false);
+                            accountComm.AccountStatusID = (int)Constants.AccountStatus.BegunEnrollment;
+                            accountComm.EnrollmentDateUTC = null;
+                            accountsCommRepository.Update(accountComm);
+                        }
+
+
+                        //Si tiene ordenes desde su Enrollment, pero no tiene ordenes en el periodo actual si asigna actividad anterior
+                        if (existOrderPerAnt == 1 && existOrderPerAct == 0)
+                        {
+                            //Buscar Actividad Anterior para determinar nuevo status de actividad
+                            int accountStatus = activitiesRepository1.GetAccountActivStatus(Statistics.Order.AccountID, Statistics.PeriodID).FirstOrDefault().ActivityStatuses.AccountStatusID;
+                            short activityStatus = activitiesRepository1.GetAccountActivStatus(Statistics.Order.AccountID, Statistics.PeriodID).FirstOrDefault().ActivityStatuses.ActivityStatusID;
+
+                            //Afectar Actividad de Consultor(si no hay actividad en el periodo anterior queda en BE, de lo contrario asigna actividad del perirodo anterior
+                            activity.ActivityStatusID = (activityStatus == 0) ? (short)17 : activityStatus;
+                            activity.IsQualified = false;
+                            activitiesRepository.Update(activity);
+
+                            //Si la actividad anterior es BE o no tiene registro de actividad; la actividad del perirodo actual queda en BE
+                            if (accountStatus == (int)Constants.AccountStatus.BegunEnrollment || accountStatus == (int)Constants.AccountStatus.NotSet)
+                            {
+                                IRepository<Entities.Entities.Commissions.Accounts> accountsCommRepository = unitOfWork_Comm.GetRepository<Entities.Entities.Commissions.Accounts>();
+                                var accountComm = accountsCommRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID, null, null, false);
+                                accountComm.AccountStatusID = (int)Constants.AccountStatus.BegunEnrollment;
+                                accountComm.EnrollmentDateUTC = null;
+                                accountsCommRepository.Update(accountComm);
+
+                                IRepository<Entities.Entities.Core.Accounts> accountsCoreRepository = unitOfWork_Core.GetRepository<Entities.Entities.Core.Accounts>();
+                                var accountCore = accountsCoreRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID, null, null, false);
+                                accountCore.AccountStatusID = (int)Constants.AccountStatus.BegunEnrollment;
+                                accountCore.EnrollmentDateUTC = null;
+                                accountsCoreRepository.Update(accountCore);                                
+                            }
+                        }
+                    }
+                    unitOfWork_Core.SaveChanges();
+                    unitOfWork_Comm.SaveChanges();
+                }
+            }
+        }
+
         #endregion
 
         #region Actualizar Mongo

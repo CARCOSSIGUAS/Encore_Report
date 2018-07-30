@@ -16,7 +16,7 @@ namespace Belcorp.Encore.Entities.Entities.Core
         public string AccountNumber { get; set; }
         public short AccountTypeID { get; set; }
         public short AccountStatusID { get; set; }
-        public int ? PreferedContactMethodID { get; set; }
+        public int ? PreferedContactMethodID { get; set; } 
         public int DefaultLanguageID { get; set; }
         public int ? UserID { get; set; }
         public string FirstName { get; set; }
@@ -25,7 +25,7 @@ namespace Belcorp.Encore.Entities.Entities.Core
         public string NickName { get; set; }
         public string CoApplicant { get; set; }
         public string EmailAddress { get; set; }
-        public int ? SponsorID { get; set; }
+        public int ? SponsorID { get; set; } 
         public int ? EnrollerID { get; set; }
         public DateTime ? EnrollmentDateUTC { get; set; }
         public bool ? IsTaxExempt { get; set; }
@@ -40,7 +40,10 @@ namespace Belcorp.Encore.Entities.Entities.Core
         public DateTime ? DateApplicationReceivedUTC { get; set; }
         public DateTime ? BirthdayUTC { get; set; }
         public short ? GenderID { get; set; }
+
+        [Timestamp]
         public byte[] DataVersion { get; set; }
+
         public int ? ModifiedByUserID { get; set; }
         public DateTime DateCreatedUTC { get; set; }
         public int ? CreatedByUserID { get; set; }
@@ -54,10 +57,11 @@ namespace Belcorp.Encore.Entities.Entities.Core
         public string ETLPhase { get; set; }
         public DateTime ? ETLDate { get; set; }
         public bool IsLocked { get; set; }
-        public short ? AccountBlockingTypeID { get; set; }
-        public short ? AccountBlockingSubTypeID { get; set; }
+        public short ? AccountBlockingTypeID { get; set; } 
+        public short ? AccountBlockingSubTypeID { get; set; } 
 
         public List<AccountPhones> AccountPhones { get; set; }
         public List<AccountAddresses> AccountAddresses { get; set; }
+        public AccountStatuses AccountStatuses { get; set; }
     }
 }

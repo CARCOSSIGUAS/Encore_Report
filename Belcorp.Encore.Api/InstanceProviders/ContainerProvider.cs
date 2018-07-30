@@ -30,7 +30,7 @@
             services.AddScoped<IAccountsService, AccountsService>();
 
             services.AddScoped<ITitlesRepository, TitlesRepository>();
-            services.AddScoped<IAccountKPIsRepository, AccountKPIsRepository>();
+            
 
             services.AddScoped<IProcessOnlineMlmService, ProcessOnlineMlmService>();
             services.AddScoped<IProcessOnlineRepository, ProcessOnlineRepository>();
@@ -41,11 +41,29 @@
             services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             services.AddScoped<IMigrateService, MigrateService>();
+
             services.AddScoped<ICalculationTypesService, CalculationTypesService>();
+
             services.AddScoped<IOrderCalculationTypesService, OrderCalculationTypesService>();
 
             services.AddScoped<IPersonalIndicatorLogService, PersonalIndicatorLogService>();
+
             services.AddScoped<IPersonalIndicatorDetailLogService, PersonalIndicatorDetailLogService>();
+
+            services.AddScoped<IAccountConsistencyStatusesService, AccountConsistencyStatusesService>();
+
+            services.AddScoped<IActivityStatusesService, ActivityStatusesService>();
+            
+            services.AddScoped<IAccountKPIsService, AccountKPIsService>();
+            services.AddScoped<IAccountKPIsRepository, AccountKPIsRepository>();
+
+            services.AddScoped<IAccountStatusesService, AccountStatusesService>();
+
+            services.AddScoped<IOrdersRepository, OrdersRepository>();
+
+            services.AddScoped<IActivitiesRepository, ActivitiesRepository>();
+
+            services.AddScoped<ISystemConfigsService, SystemConfigsService>();
 
         }
     }

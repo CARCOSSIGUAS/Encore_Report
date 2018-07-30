@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Belcorp.Encore.Entities.Entities.Commissions
@@ -27,6 +28,8 @@ namespace Belcorp.Encore.Entities.Entities.Commissions
         public DateTime? BirthdayUTC { get; set; }
         public DateTime? TerminatedDateUTC { get; set; }
         public DateTime? ActivationDateUTC { get; set; }
+
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public int? ActivationPeriodID { get; set; }
     }
 }
