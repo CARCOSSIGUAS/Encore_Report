@@ -204,7 +204,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return NotFound();
             }
 
-            return Ok(result.ToReportAccount_DTO());
+            return Ok(result.ToReportAccount_DTO(country));
         }
 
         [HttpGet("periods", Name = "GetReportAccountsPeriods")]
@@ -230,6 +230,68 @@ namespace Belcorp.Encore.Services.Report.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("exportbirthday", Name = "GetExportBirthday")]
+        public IActionResult GetExportBirthday(int accountID, int periodID, string country,string language)
+        {
+
+            try
+            {
+                const string XlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                
+                var lista = reportAccountService.GetDataBirthday(accountID, periodID, country);
+
+                var result = lista.ToExportBirthday();
+
+                if (result == null)
+                {
+                    return NotFound();
+                }
+
+                using (var package = new ExcelPackage())
+                {
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Accounts");
+                    int totalRows = result.Count;
+
+                    var excel = result;
+
+                    worksheet.Cells["A1"].Value = termTranslationsService.GetLanguageTerm(language, "ConsultantCode", country);
+                    worksheet.Cells["B1"].Value = termTranslationsService.GetLanguageTerm(language, "ConsultantName", country);
+                    worksheet.Cells["C1"].Value = termTranslationsService.GetLanguageTerm(language, "CareerTitle", country);
+                    worksheet.Cells["D1"].Value = termTranslationsService.GetLanguageTerm(language, "Email", country);
+                    worksheet.Cells["E1"].Value = termTranslationsService.GetLanguageTerm(language, "Birthday", country);
+                    worksheet.Cells["A2"].LoadFromCollection(excel);
+                    int noOfProperties = excel.GetType().GetGenericArguments()[0].GetProperties().Length;
+
+                    using (ExcelRange r = worksheet.Cells[1, 1, 1, noOfProperties])
+                    {
+                        r.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                        r.Style.Font.Bold = true;
+                        r.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    }
+
+                    try
+                    {
+                        //Install libgdiplus in server
+                        for (var col = 1; col < noOfProperties + 1; col++)
+                        {
+                            worksheet.Column(col).AutoFit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+
+                    var dateReport = DateTime.Now;
+                    return File(package.GetAsByteArray(), XlsxContentType, string.Format("Birthdays_{0}.{1}", dateReport.ToString("dd-MM-yyyy"), ".xlsx"));
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content(ex.InnerException.ToString());
+            }
+        }
+
     }
 }
 

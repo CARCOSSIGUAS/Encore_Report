@@ -85,17 +85,44 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
-        public static ReportAccount_DTO ToReportAccount_DTO(this AccountsInformation_MongoWithAccountAndSponsor item)
+        public static ReportAccount_DTO ToReportAccount_DTO(this AccountsInformation_MongoWithAccountAndSponsor item, string country)
         {
             DateTime dateTime = DateTime.UtcNow;
             var hrBrasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
             var date = TimeZoneInfo.ConvertTimeFromUtc(dateTime, hrBrasilia);
 
+            var nombreCompleto = string.Empty;
+            var nombreCompletoLider = string.Empty;
+
+
+            if (item.Account != null)
+            {
+                var apellidos = (item.Account.LastName.ToLower().Trim()).Split(" ");
+                nombreCompleto = item.Account.FirstName.ToLower() + " " + item.Account.LastName.ToLower();
+
+                if (country == "BRA")
+                    nombreCompleto += " " + (apellidos.Length > 0 ? apellidos[apellidos.Length] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompleto += " " + (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
+            }
+
+            if (item.Leader0 != null)
+            {
+                var apellidos = (item.Account.LastName.ToLower().Trim()).Split(" ");
+                nombreCompleto = item.Account.FirstName.ToLower() + " " + item.Account.LastName.ToLower();
+
+                if (country == "BRA")
+                    nombreCompleto += " " + (apellidos.Length > 0 ? apellidos[apellidos.Length] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompleto += " " + (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
+            }
+
+
 
             var result = new ReportAccount_DTO()
             {
                 AccountID = item.AccountID,
-                AccountName = item.AccountName.ToLower(),
+                AccountName = nombreCompleto,
                 AccountNumber = item.AccountNumber,
                 Activity = item.Activity,
                 CareerTitleDes = item.CareerTitle_Des,
@@ -189,33 +216,14 @@ namespace Belcorp.Encore.Application.Extension
 
                     a.FirstName = (nombres.Length != 0 ? nombres[0] : " ").ToLower();
                     a.FirstName2 = (nombres.Length > 1 ? nombres[1] : " ").ToLower();
-                    if (apellidos.Length == 2 && a.country == "BRA")
+
+                    if (a.country == "BRA")
                     {
-                        a.LastName1 = (apellidos.Length > 1 ? apellidos[1] : " ").ToLower();
+                        a.LastName1 = (apellidos.Length > 0 ? apellidos[apellidos.Length] : " ").ToLower();
                     }
                     else if (a.country == "USA")
                     {
                         a.LastName1 = (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
-                    }
-                    else if (apellidos.Length == 3 && a.country == "BRA")
-                    {
-                        a.LastName1 = (apellidos.Length > 1 ? apellidos[1] + " " + (apellidos.Length > 2 ? apellidos[2] : " ") : " ").ToLower();
-                    }
-                    else if (apellidos.Length == 3 && a.country == "USA")
-                    {
-                        a.LastName1 = (apellidos.Length != 0? apellidos[0] + " " + (apellidos.Length > 1 ? apellidos[1] : " ") : " ").ToLower();
-                    }
-                    else if (apellidos.Length == 4 && a.country == "BRA")
-                    {
-                        a.LastName1 = (apellidos.Length > 2 ? apellidos[2] + " " + (apellidos.Length > 3 ? apellidos[3] : " ") : " ").ToLower();
-                    }
-                    else if (apellidos.Length == 4 && a.country == "USA")
-                    {
-                        a.LastName1 = (apellidos.Length != 0 ? apellidos[0] + " " + (apellidos.Length > 1 ? apellidos[1] : " ") : " ").ToLower();
-                    }
-                    else if(a.country == "BRA")
-                    {
-                        a.LastName1 = (apellidos.Length > 2 ? apellidos[2] + " " + (apellidos.Length > 3 ? apellidos[3] : " ") + " " + (apellidos.Length > 4 ? apellidos[4] : " ") : " ").ToLower();
                     }
                 }     
             });
@@ -294,6 +302,19 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
+        public static List<ExportBirthDayAccount_DTO> ToExportBirthday(this List<BirthDayAccount_DTO> list)
+        {
+            var result = list.Select(ai => new ExportBirthDayAccount_DTO()
+            {
+                AccountID = ai.AccountID,
+                AccountName = ai.AccountName.ToLower(),
+                CareerTitleDes = ai.CareerTitle_Des,
+                EmailAddress = ai.EmailAddress,
+                Birthday = ai.HB,
+            }).ToList();
+
+            return result;
+        }
 
     }
 }
