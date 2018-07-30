@@ -257,9 +257,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
 
                     worksheet.Cells["A1"].Value = termTranslationsService.GetLanguageTerm(language, "ConsultantCode", country);
                     worksheet.Cells["B1"].Value = termTranslationsService.GetLanguageTerm(language, "ConsultantName", country);
-                    worksheet.Cells["C1"].Value = termTranslationsService.GetLanguageTerm(language, "CareerTitle", country);
-                    worksheet.Cells["D1"].Value = termTranslationsService.GetLanguageTerm(language, "Email", country);
-                    worksheet.Cells["E1"].Value = termTranslationsService.GetLanguageTerm(language, "Birthday", country);
+                    worksheet.Cells["C1"].Value = termTranslationsService.GetLanguageTerm(language, "Birthday", country);
+                    worksheet.Cells["D1"].Value = termTranslationsService.GetLanguageTerm(language, "CareerTitle", country);
+                    worksheet.Cells["E1"].Value = termTranslationsService.GetLanguageTerm(language, "Email", country);
                     worksheet.Cells["A2"].LoadFromCollection(excel);
                     int noOfProperties = excel.GetType().GetGenericArguments()[0].GetProperties().Length;
 

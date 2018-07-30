@@ -158,6 +158,9 @@ namespace Belcorp.Encore.Application
             int Month = Hoy.Month;
             int Year = Hoy.Year;
             var LastDay = DateTime.DaysInMonth(Year, Month);
+            DateTime zeroTime = new DateTime(1, 1, 1);
+
+
             var GenerationIds = "0,1";
             //var listGenerationIds = GetIdsFromString(GenerationIds).Select(s => int.Parse(s) + accountRoot.Generation).ToList();
             var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
@@ -204,12 +207,14 @@ namespace Belcorp.Encore.Application
                         {
                             list.Add(new BirthDayAccount_DTO()
                             {
-                                AccountID = titular.AccountID,
+                                AccountID = item.AccountID,
                                 AccountName = titular.FirstName + " " + titular.LastName,
                                 BirthdayUTC = titular.Brithday,
                                 Generation = -1,
                                 LEVEL = -1,
                                 HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
+                                Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0
+
                             });
                         }
                     }
@@ -271,7 +276,8 @@ namespace Belcorp.Encore.Application
                             SponsorName = item.SponsorName,
                             STATE = item.STATE,
                             TotalDownline = item.TotalDownline,
-                            VolumeForCareerTitle = item.VolumeForCareerTitle
+                            VolumeForCareerTitle = item.VolumeForCareerTitle,
+                            Anios = item.BirthdayUTC.HasValue ? (zeroTime + (DateTime.Now - item.BirthdayUTC.Value)).Year - 1 : 0
                         });
 
                     }
@@ -549,6 +555,8 @@ namespace Belcorp.Encore.Application
             periodId = periodId.HasValue ? periodId : homeService.GetCurrentPeriod(country).PeriodID;
 
             var accountRoot = accountInformationCollection.Find(a => a.AccountID == accountIdCurrent && a.PeriodID == periodId, null).FirstOrDefault();
+
+
             if (accountRoot == null)
             {
                 return null;
@@ -598,6 +606,13 @@ namespace Belcorp.Encore.Application
             }
 
             result.LEVEL = result.LEVEL - accountRoot.LEVEL;
+
+            if (result.SponsorID == 10)
+            {
+                var accountConsultedRoot = accountsCollection.Find(a => a.AccountID == 1, null).FirstOrDefault();
+                result.Sponsor =  accountConsultedRoot;
+            }
+
             return result;
         }
     }
