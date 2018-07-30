@@ -94,6 +94,7 @@ namespace Belcorp.Encore.Application.Extension
             var nombreCompleto = string.Empty;
             var nombreCompletoLider = string.Empty;
             var nombreCompletoLiderM3 = string.Empty;
+            var nombreCompletoSponsor = string.Empty;
 
 
             if (item.Account != null)
@@ -129,7 +130,16 @@ namespace Belcorp.Encore.Application.Extension
                     nombreCompletoLiderM3 += " " + (apellidosLeaderM3.Length != 0 ? apellidosLeaderM3[0] : " ").ToLower();
             }
 
+            if (item.Sponsor != null)
+            {
+                var apellidosSponsor = (item.Sponsor.LastName.ToLower().Trim()).Split(" ");
+                nombreCompletoSponsor = item.Sponsor.FirstName.ToLower().Trim().Split(" ")[0];
 
+                if (country == "BRA")
+                    nombreCompletoSponsor += " " + (apellidosSponsor.Length > 0 ? apellidosSponsor[apellidosSponsor.Length - 1] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompletoSponsor += " " + (apellidosSponsor.Length != 0 ? apellidosSponsor[0] : " ").ToLower();
+            }
 
             var result = new ReportAccount_DTO()
             {
@@ -157,7 +167,7 @@ namespace Belcorp.Encore.Application.Extension
                 PQV = item.PQV,
                 SponsorEmailAddress = item.Sponsor != null ? item.Sponsor.EmailAddress : "",
                 SponsorID = item.SponsorID,
-                SponsorName = item.SponsorName.ToLower(),
+                SponsorName = nombreCompletoSponsor,
                 SponsorPhones = item.Sponsor != null ? String.Join(" - ", item.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
                 ActiveDownline = item.ActiveDownline != null ? item.ActiveDownline : 0,
                 ConsultActive = item.ConsultActive != null ? item.ConsultActive : 0,
