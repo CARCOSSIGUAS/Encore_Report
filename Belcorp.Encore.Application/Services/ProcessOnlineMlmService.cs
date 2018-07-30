@@ -136,6 +136,7 @@ namespace Belcorp.Encore.Application.Services
                 PersonalIndicatorLog = personalIndicatorLogService.Update(PersonalIndicatorLog);
 
                 UpdateIngresosDiarios(country, Statistics.Order.AccountID);
+                UpdateVODiarios(country, Statistics.Order.AccountID);
             }
         }
 
@@ -674,6 +675,36 @@ namespace Belcorp.Encore.Application.Services
                     DayOfMonth = DateTime.Now.Day,
                     PeriodID = period
                 }, new UpdateOptions { IsUpsert = true });
+            }
+        }
+
+        public void UpdateVODiarios(string country, int accountID)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<PerformanceIndicatorDay_Mongo> performanceIndicatorDayCollection = encoreMongo_Context.PerformanceIndicatorDayProvider(country);
+
+            var period = homeService.GetCurrentPeriod(country).PeriodID;
+            var date = DateTime.Now.Date;
+
+            var lista = accountInformationCollection.Find(a => a.PeriodID == period, null).ToList();
+            var filterDefinition = Builders<EnrrollmentAccountsByDayTemp_Mongo>.Filter.In(ai => ai.AccountID, lista.Select(x => x.AccountID));
+
+
+            foreach (var item in lista)
+            {
+                var accountRoot = AccountsUtils.RecursivoWithoutSponsor(accountInformationCollection, item.AccountID, period);
+                foreach (var account in accountRoot)
+                {
+                    var record = performanceIndicatorDayCollection.Find(ai => ai.AccountID == account.AccountID && ai.PeriodID == period).FirstOrDefault();
+                    performanceIndicatorDayCollection.ReplaceOne(ai => ai.AccountID == account.AccountID && ai.PeriodID == period, new PerformanceIndicatorDay_Mongo
+                    {
+                        AccountID = account.AccountID,
+                        DayOfMonth = DateTime.Now.Day,
+                        
+                        VO = record != null ? (record.VO + Statistics.QV) : Statistics.QV,
+                        PeriodID = period
+                    }, new UpdateOptions { IsUpsert = true });
+                }
             }
         }
     }

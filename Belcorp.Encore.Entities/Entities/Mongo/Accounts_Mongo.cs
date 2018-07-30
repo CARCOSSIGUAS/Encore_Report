@@ -31,7 +31,7 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public int? AccountStatusID { get; set; }
         public string EntityName { get; set; }
 
-        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        [BsonRepresentation(BsonType.DateTime)]
         public DateTime? BirthdayUTC { get; set; }
 
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]

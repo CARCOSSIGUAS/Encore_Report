@@ -17,5 +17,6 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         public int DayOfMonth { get; set; }
         public int Ingresos { get; set; }
         public int PeriodID { get; set; }
+        public decimal? VO { get; set; }
     }
 }

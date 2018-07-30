@@ -87,6 +87,11 @@ namespace Belcorp.Encore.Application.Extension
 
         public static ReportAccount_DTO ToReportAccount_DTO(this AccountsInformation_MongoWithAccountAndSponsor item)
         {
+            DateTime dateTime = DateTime.UtcNow;
+            var hrBrasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
+            var date = TimeZoneInfo.ConvertTimeFromUtc(dateTime, hrBrasilia);
+
+
             var result = new ReportAccount_DTO()
             {
                 AccountID = item.AccountID,
@@ -118,7 +123,7 @@ namespace Belcorp.Encore.Application.Extension
                 ActiveDownline = item.ActiveDownline != null ? item.ActiveDownline : 0,
                 ConsultActive = item.ConsultActive != null ? item.ConsultActive : 0,
                 Birthday = item.Account.BirthdayUTC.HasValue ? item.Account.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
-                IsBirthday = item.Account.BirthdayUTC.HasValue && item.Account.BirthdayUTC.Value.Date == DateTime.Now.Date ? true:false,
+                IsBirthday = item.Account.BirthdayUTC.HasValue && item.Account.BirthdayUTC.Value.Month == date.Month && item.Account.BirthdayUTC.Value.Day == date.Day ? true : false,
                 NCWP = item.NCWP,
                 AdditionalTitularName = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].FirstName.ToLower() + " " + item.Account.AccountAdditionalTitulars[0].LastName.ToLower() : "",
                 AdditionalTitularBirthday = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].Brithday.Value.ToString("dd/MM/yyyy") : "",

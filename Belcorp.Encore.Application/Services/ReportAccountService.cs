@@ -143,7 +143,7 @@ namespace Belcorp.Encore.Application
         public List<BirthDayAccount_DTO> GetDataBirthday(int accountID, int? periodID, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
-            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);            
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
 
             periodID = periodID == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodID;
 
@@ -196,7 +196,7 @@ namespace Belcorp.Encore.Application
             List<BirthDayAccount_DTO> list = new List<BirthDayAccount_DTO>();
             foreach (var item in result)
             {
-                if(item.Account.AccountAdditionalTitulars!=null&&item.Account.AccountAdditionalTitulars.Count>0)
+                if (item.Account.AccountAdditionalTitulars != null && item.Account.AccountAdditionalTitulars.Count > 0)
                 {
                     foreach (var titular in item.Account.AccountAdditionalTitulars)
                     {
@@ -214,66 +214,69 @@ namespace Belcorp.Encore.Application
                         }
                     }
                 }
-
-                if (item.BirthdayUTC.Value.Month == Month && item.BirthdayUTC.Value.Day >= Day && item.BirthdayUTC.Value.Day <= LastDay)
-                { 
-                    list.Add(new BirthDayAccount_DTO()
+                if (item.BirthdayUTC != null)
+                {
+                    if (item.BirthdayUTC.Value.Month == Month && item.BirthdayUTC.Value.Day >= Day && item.BirthdayUTC.Value.Day <= LastDay)
                     {
-                        AccountID = item.AccountID,
-                        AccountName = item.AccountName.ToLower(),
-                        HB = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
-                        AccountNumber = item.AccountNumber,
-                        AccountsInformationID = item.AccountsInformationID,
-                        ActiveDownline = item.ActiveDownline,
-                        Activity = item.Activity,
-                        Address = item.Address,
-                        CareerTitle = item.CareerTitle,
-                        CareerTitle_Des = item.CareerTitle_Des,
-                        City = item.City,
-                        ConsultActive = item.ConsultActive,
-                        country = country,
-                        CQL = item.CQL,
-                        CreditAvailable = item.CreditAvailable,
-                        DCV = item.DCV,
-                        DebtsToExpire = item.DebtsToExpire,
-                        DQV = item.DQV,
-                        DQVT = item.DQVT,
-                        EmailAddress = item.EmailAddress,
-                        ExpiredDebts = item.ExpiredDebts,
-                        GCV = item.GCV,
-                        Generation = item.Generation,
-                        GenerationM3 = item.GenerationM3,
-                        GQV = item.GQV,
-                        IsCommissionQualified = item.IsCommissionQualified,
-                        JoinDate = item.JoinDate,
-                        //LastName1 = item.LastName1,
-                        //LastName2 = item.LastName2,
-                        LastOrderDate = item.LastOrderDate,
-                        LeftBower = item.LeftBower,
-                        LEVEL = item.LEVEL,
-                        //Name1 = item.Name1,
-                        //Name2 = item.Name2,
-                        PaidAsCurrentMonth = item.PaidAsCurrentMonth,
-                        PaidAsCurrentMonth_Des = item.PaidAsCurrentMonth_Des,
-                        NewStatus = item.NewStatus,
-                        PaidAsLastMonth = item.PaidAsLastMonth,
-                        PCV = item.PCV,
-                        PeriodID = item.PeriodID,
-                        PQV = item.PQV,
-                        PostalCode = item.PostalCode,
-                        Region = item.Region,
-                        RightBower = item.RightBower,
-                        SortPath = item.SortPath,
-                        //SPLastName = item.SPLastName,
-                        //SPName = item.SPName,
-                        SponsorID = item.SponsorID,
-                        SponsorName = item.SponsorName,
-                        STATE = item.STATE,
-                        TotalDownline = item.TotalDownline,
-                        VolumeForCareerTitle = item.VolumeForCareerTitle
-                    });
+                        list.Add(new BirthDayAccount_DTO()
+                        {
+                            AccountID = item.AccountID,
+                            AccountName = item.AccountName.ToLower(),
+                            HB = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
+                            AccountNumber = item.AccountNumber,
+                            AccountsInformationID = item.AccountsInformationID,
+                            ActiveDownline = item.ActiveDownline,
+                            Activity = item.Activity,
+                            Address = item.Address,
+                            CareerTitle = item.CareerTitle,
+                            CareerTitle_Des = item.CareerTitle_Des,
+                            City = item.City,
+                            ConsultActive = item.ConsultActive,
+                            country = country,
+                            CQL = item.CQL,
+                            CreditAvailable = item.CreditAvailable,
+                            DCV = item.DCV,
+                            DebtsToExpire = item.DebtsToExpire,
+                            DQV = item.DQV,
+                            DQVT = item.DQVT,
+                            EmailAddress = item.EmailAddress,
+                            ExpiredDebts = item.ExpiredDebts,
+                            GCV = item.GCV,
+                            Generation = item.Generation,
+                            GenerationM3 = item.GenerationM3,
+                            GQV = item.GQV,
+                            IsCommissionQualified = item.IsCommissionQualified,
+                            JoinDate = item.JoinDate,
+                            //LastName1 = item.LastName1,
+                            //LastName2 = item.LastName2,
+                            LastOrderDate = item.LastOrderDate,
+                            LeftBower = item.LeftBower,
+                            LEVEL = item.LEVEL,
+                            //Name1 = item.Name1,
+                            //Name2 = item.Name2,
+                            PaidAsCurrentMonth = item.PaidAsCurrentMonth,
+                            PaidAsCurrentMonth_Des = item.PaidAsCurrentMonth_Des,
+                            NewStatus = item.NewStatus,
+                            PaidAsLastMonth = item.PaidAsLastMonth,
+                            PCV = item.PCV,
+                            PeriodID = item.PeriodID,
+                            PQV = item.PQV,
+                            PostalCode = item.PostalCode,
+                            Region = item.Region,
+                            RightBower = item.RightBower,
+                            SortPath = item.SortPath,
+                            //SPLastName = item.SPLastName,
+                            //SPName = item.SPName,
+                            SponsorID = item.SponsorID,
+                            SponsorName = item.SponsorName,
+                            STATE = item.STATE,
+                            TotalDownline = item.TotalDownline,
+                            VolumeForCareerTitle = item.VolumeForCareerTitle
+                        });
 
+                    }
                 }
+
             }
 
             list = list.OrderBy(x => x.HB).ToList();
@@ -447,8 +450,8 @@ namespace Belcorp.Encore.Application
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, filter.PeriodId);
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.SponsorID, accountRoot.AccountID);
 
-            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada"}; //"BegunEnrollment", "Terminated", "BegunEnrollment", "Cessada", "Cadastrada" 
-             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+            List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" }; //"BegunEnrollment", "Terminated", "BegunEnrollment", "Cessada", "Cadastrada" 
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
 
             if (!String.IsNullOrEmpty(filter.StringSearch))
             {
