@@ -57,9 +57,9 @@ namespace Belcorp.Encore.Application.Extension
                 LEVEL = ai.LEVEL,
                 MainAddress = ai.Account != null ? ai.Account.Addresses
                                                          .Where(a => a.AddressTypeID == 1)
-                                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() 
+                                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault()
                                                  : "",
-                PostalCode = ai.PostalCode != null && ai.PostalCode.Length == 5  ? ai.PostalCode.Substring(0, 5) + "-" + ai.PostalCode.Substring(5) : "",
+                PostalCode = ai.PostalCode != null && ai.PostalCode.Length == 5 ? ai.PostalCode.Substring(0, 5) + "-" + ai.PostalCode.Substring(5) : "",
                 PaidAsCurrentMonth = ai.PaidAsCurrentMonth_Des,
                 PCV = ai.PCV,
                 AccountPhone_1 = ai.Account != null ? ai.Account.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(p => p.PhoneNumber).FirstOrDefault() : "",
@@ -93,28 +93,40 @@ namespace Belcorp.Encore.Application.Extension
 
             var nombreCompleto = string.Empty;
             var nombreCompletoLider = string.Empty;
+            var nombreCompletoLiderM3 = string.Empty;
 
 
             if (item.Account != null)
             {
                 var apellidos = (item.Account.LastName.ToLower().Trim()).Split(" ");
-                nombreCompleto = item.Account.FirstName.ToLower() + " " + item.Account.LastName.ToLower();
+                nombreCompleto = item.Account.FirstName.ToLower();
 
                 if (country == "BRA")
-                    nombreCompleto += " " + (apellidos.Length > 0 ? apellidos[apellidos.Length] : " ").ToLower();
+                    nombreCompleto += " " + (apellidos.Length > 0 ? apellidos[apellidos.Length - 1] : " ").ToLower();
                 else if (country == "USA")
                     nombreCompleto += " " + (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
             }
 
             if (item.Leader0 != null)
             {
-                var apellidos = (item.Account.LastName.ToLower().Trim()).Split(" ");
-                nombreCompleto = item.Account.FirstName.ToLower() + " " + item.Account.LastName.ToLower();
+                var apellidosLeader = (item.Leader0.LastName.ToLower().Trim()).Split(" ");
+                nombreCompletoLider = item.Leader0.FirstName.ToLower();
 
                 if (country == "BRA")
-                    nombreCompleto += " " + (apellidos.Length > 0 ? apellidos[apellidos.Length] : " ").ToLower();
+                    nombreCompletoLider += " " + (apellidosLeader.Length > 0 ? apellidosLeader[apellidosLeader.Length - 1] : " ").ToLower();
                 else if (country == "USA")
-                    nombreCompleto += " " + (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
+                    nombreCompletoLider += " " + (apellidosLeader.Length != 0 ? apellidosLeader[0] : " ").ToLower();
+            }
+
+            if (item.LeaderM3 != null)
+            {
+                var apellidosLeaderM3 = (item.LeaderM3.LastName.ToLower().Trim()).Split(" ");
+                nombreCompletoLiderM3 = item.LeaderM3.FirstName.ToLower();
+
+                if (country == "BRA")
+                    nombreCompletoLiderM3 += " " + (apellidosLeaderM3.Length > 0 ? apellidosLeaderM3[apellidosLeaderM3.Length - 1] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompletoLiderM3 += " " + (apellidosLeaderM3.Length != 0 ? apellidosLeaderM3[0] : " ").ToLower();
             }
 
 
@@ -156,12 +168,12 @@ namespace Belcorp.Encore.Application.Extension
                 AdditionalTitularBirthday = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].Brithday.Value.ToString("dd/MM/yyyy") : "",
 
                 UplineLeader0ID = item.Leader0 != null ? item.Leader0.AccountID : 0,
-                UplineLeader0Name = item.Leader0 != null ? item.Leader0.FirstName + " " + item.Leader0.LastName : "",
+                UplineLeader0Name = nombreCompletoLider,
                 UplineLeader0EmailAddress = item.Leader0 != null ? item.Leader0.EmailAddress : "",
                 UplineLeader0Phones = item.Leader0 != null ? String.Join(" - ", item.Leader0.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
                 UplineLeaderM3ID = item.LeaderM3 != null ? item.LeaderM3.AccountID : 0,
-                UplineLeaderM3Name = item.LeaderM3 != null ? item.LeaderM3.FirstName.ToLower() + " " + item.LeaderM3.LastName.ToLower() : "",
+                UplineLeaderM3Name = nombreCompletoLiderM3,
                 UplineLeaderM3EmailAddress = item.LeaderM3 != null ? item.LeaderM3.EmailAddress : "",
                 UplineLeaderM3Phones = item.LeaderM3 != null ? String.Join(" - ", item.LeaderM3.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
@@ -202,14 +214,14 @@ namespace Belcorp.Encore.Application.Extension
                 PQV = ai.PQV,
                 SponsorID = ai.SponsorID,
                 SponsorName = ai.SponsorName.ToLower(),
-                FirstName = ai.Account.FirstName != null ? ai.Account.FirstName: "",
-                LastName1 = ai.Account.LastName != null ? ai.Account.LastName: "",
+                FirstName = ai.Account.FirstName != null ? ai.Account.FirstName : "",
+                LastName1 = ai.Account.LastName != null ? ai.Account.LastName : "",
                 country = country,
             }).ToList();
 
             result.ForEach(a =>
             {
-                if(a.FirstName != null && a.LastName1 != null)
+                if (a.FirstName != null && a.LastName1 != null)
                 {
                     string[] nombres = (a.FirstName.ToLower().Trim()).Split(" ");
                     string[] apellidos = (a.LastName1.ToLower().Trim()).Split(" ");
@@ -219,13 +231,13 @@ namespace Belcorp.Encore.Application.Extension
 
                     if (a.country == "BRA")
                     {
-                        a.LastName1 = (apellidos.Length > 0 ? apellidos[apellidos.Length] : " ").ToLower();
+                        a.LastName1 = (apellidos.Length > 0 ? apellidos[apellidos.Length - 1] : " ").ToLower();
                     }
                     else if (a.country == "USA")
                     {
                         a.LastName1 = (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
                     }
-                }     
+                }
             });
             return result;
         }
