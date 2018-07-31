@@ -373,7 +373,7 @@ namespace Belcorp.Encore.Application.Services
         {
             IMongoCollection<TransactionMonitor_Mongo> periodsCollection = encoreMongo_Context.TransactionMonitorProvider(country);
             var item =  periodsCollection.AsQueryable().OrderByDescending(x=>x.TransactionDate).FirstOrDefault();
-            return item != null ? item.TransactionDate.ToString("dd/MM/yyyy hh:mm:ss") : "";
+            return item != null ? item.TransactionDate.ToString("MM/dd/yyyy hh:mm:ss") : "";
         }
     }
 }
