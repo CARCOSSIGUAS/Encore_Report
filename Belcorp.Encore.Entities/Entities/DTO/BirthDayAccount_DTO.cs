@@ -110,5 +110,6 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public decimal? DCVRequirementNext { get; set; }
         public decimal? DQVRequirementNext { get; set; }
         public decimal? CQLRequirementNext { get; set; }
+        public double Anios { get; set; }
     }
 }

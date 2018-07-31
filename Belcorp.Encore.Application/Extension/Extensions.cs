@@ -57,9 +57,9 @@ namespace Belcorp.Encore.Application.Extension
                 LEVEL = ai.LEVEL,
                 MainAddress = ai.Account != null ? ai.Account.Addresses
                                                          .Where(a => a.AddressTypeID == 1)
-                                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() 
+                                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault()
                                                  : "",
-                PostalCode = ai.PostalCode != null && ai.PostalCode.Length == 5  ? ai.PostalCode.Substring(0, 5) + "-" + ai.PostalCode.Substring(5) : "",
+                PostalCode = ai.PostalCode != null && ai.PostalCode.Length == 5 ? ai.PostalCode.Substring(0, 5) + "-" + ai.PostalCode.Substring(5) : "",
                 PaidAsCurrentMonth = ai.PaidAsCurrentMonth_Des,
                 PCV = ai.PCV,
                 AccountPhone_1 = ai.Account != null ? ai.Account.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(p => p.PhoneNumber).FirstOrDefault() : "",
@@ -85,17 +85,66 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
-        public static ReportAccount_DTO ToReportAccount_DTO(this AccountsInformation_MongoWithAccountAndSponsor item)
+        public static ReportAccount_DTO ToReportAccount_DTO(this AccountsInformation_MongoWithAccountAndSponsor item, string country)
         {
             DateTime dateTime = DateTime.UtcNow;
             var hrBrasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
             var date = TimeZoneInfo.ConvertTimeFromUtc(dateTime, hrBrasilia);
 
+            var nombreCompleto = string.Empty;
+            var nombreCompletoLider = string.Empty;
+            var nombreCompletoLiderM3 = string.Empty;
+            var nombreCompletoSponsor = string.Empty;
+
+
+            if (item.Account != null)
+            {
+                var apellidos = (item.Account.LastName.ToLower().Trim()).Split(" ");
+                nombreCompleto = item.Account.FirstName.ToLower().Trim().Split(" ")[0]; 
+
+                if (country == "BRA")
+                    nombreCompleto += " " + (apellidos.Length > 0 ? apellidos[apellidos.Length - 1] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompleto += " " + (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
+            }
+
+            if (item.Leader0 != null)
+            {
+                var apellidosLeader = (item.Leader0.LastName.ToLower().Trim()).Split(" ");
+                nombreCompletoLider = item.Leader0.FirstName.ToLower().Trim().Split(" ")[0];
+
+                if (country == "BRA")
+                    nombreCompletoLider += " " + (apellidosLeader.Length > 0 ? apellidosLeader[apellidosLeader.Length - 1] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompletoLider += " " + (apellidosLeader.Length != 0 ? apellidosLeader[0] : " ").ToLower();
+            }
+
+            if (item.LeaderM3 != null)
+            {
+                var apellidosLeaderM3 = (item.LeaderM3.LastName.ToLower().Trim()).Split(" ");
+                nombreCompletoLiderM3 = item.LeaderM3.FirstName.ToLower().Trim().Split(" ")[0];
+
+                if (country == "BRA")
+                    nombreCompletoLiderM3 += " " + (apellidosLeaderM3.Length > 0 ? apellidosLeaderM3[apellidosLeaderM3.Length - 1] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompletoLiderM3 += " " + (apellidosLeaderM3.Length != 0 ? apellidosLeaderM3[0] : " ").ToLower();
+            }
+
+            if (item.Sponsor != null)
+            {
+                var apellidosSponsor = (item.Sponsor.LastName.ToLower().Trim()).Split(" ");
+                nombreCompletoSponsor = item.Sponsor.FirstName.ToLower().Trim().Split(" ")[0];
+
+                if (country == "BRA")
+                    nombreCompletoSponsor += " " + (apellidosSponsor.Length > 0 ? apellidosSponsor[apellidosSponsor.Length - 1] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompletoSponsor += " " + (apellidosSponsor.Length != 0 ? apellidosSponsor[0] : " ").ToLower();
+            }
 
             var result = new ReportAccount_DTO()
             {
                 AccountID = item.AccountID,
-                AccountName = item.AccountName.ToLower(),
+                AccountName = nombreCompleto,
                 AccountNumber = item.AccountNumber,
                 Activity = item.Activity,
                 CareerTitleDes = item.CareerTitle_Des,
@@ -118,7 +167,7 @@ namespace Belcorp.Encore.Application.Extension
                 PQV = item.PQV,
                 SponsorEmailAddress = item.Sponsor != null ? item.Sponsor.EmailAddress : "",
                 SponsorID = item.SponsorID,
-                SponsorName = item.SponsorName.ToLower(),
+                SponsorName = nombreCompletoSponsor,
                 SponsorPhones = item.Sponsor != null ? String.Join(" - ", item.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
                 ActiveDownline = item.ActiveDownline != null ? item.ActiveDownline : 0,
                 ConsultActive = item.ConsultActive != null ? item.ConsultActive : 0,
@@ -129,12 +178,12 @@ namespace Belcorp.Encore.Application.Extension
                 AdditionalTitularBirthday = item.Account.AccountAdditionalTitulars.Count > 0 ? item.Account.AccountAdditionalTitulars[0].Brithday.Value.ToString("dd/MM/yyyy") : "",
 
                 UplineLeader0ID = item.Leader0 != null ? item.Leader0.AccountID : 0,
-                UplineLeader0Name = item.Leader0 != null ? item.Leader0.FirstName + " " + item.Leader0.LastName : "",
+                UplineLeader0Name = nombreCompletoLider,
                 UplineLeader0EmailAddress = item.Leader0 != null ? item.Leader0.EmailAddress : "",
                 UplineLeader0Phones = item.Leader0 != null ? String.Join(" - ", item.Leader0.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
                 UplineLeaderM3ID = item.LeaderM3 != null ? item.LeaderM3.AccountID : 0,
-                UplineLeaderM3Name = item.LeaderM3 != null ? item.LeaderM3.FirstName.ToLower() + " " + item.LeaderM3.LastName.ToLower() : "",
+                UplineLeaderM3Name = nombreCompletoLiderM3,
                 UplineLeaderM3EmailAddress = item.LeaderM3 != null ? item.LeaderM3.EmailAddress : "",
                 UplineLeaderM3Phones = item.LeaderM3 != null ? String.Join(" - ", item.LeaderM3.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
 
@@ -175,49 +224,30 @@ namespace Belcorp.Encore.Application.Extension
                 PQV = ai.PQV,
                 SponsorID = ai.SponsorID,
                 SponsorName = ai.SponsorName.ToLower(),
-                FirstName = ai.Account.FirstName != null ? ai.Account.FirstName: "",
-                LastName1 = ai.Account.LastName != null ? ai.Account.LastName: "",
+                FirstName = ai.Account.FirstName != null ? ai.Account.FirstName : "",
+                LastName1 = ai.Account.LastName != null ? ai.Account.LastName : "",
                 country = country,
             }).ToList();
 
             result.ForEach(a =>
             {
-                if(a.FirstName != null && a.LastName1 != null)
+                if (a.FirstName != null && a.LastName1 != null)
                 {
                     string[] nombres = (a.FirstName.ToLower().Trim()).Split(" ");
                     string[] apellidos = (a.LastName1.ToLower().Trim()).Split(" ");
 
                     a.FirstName = (nombres.Length != 0 ? nombres[0] : " ").ToLower();
                     a.FirstName2 = (nombres.Length > 1 ? nombres[1] : " ").ToLower();
-                    if (apellidos.Length == 2 && a.country == "BRA")
+
+                    if (a.country == "BRA")
                     {
-                        a.LastName1 = (apellidos.Length > 1 ? apellidos[1] : " ").ToLower();
+                        a.LastName1 = (apellidos.Length > 0 ? apellidos[apellidos.Length - 1] : " ").ToLower();
                     }
                     else if (a.country == "USA")
                     {
                         a.LastName1 = (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
                     }
-                    else if (apellidos.Length == 3 && a.country == "BRA")
-                    {
-                        a.LastName1 = (apellidos.Length > 1 ? apellidos[1] + " " + (apellidos.Length > 2 ? apellidos[2] : " ") : " ").ToLower();
-                    }
-                    else if (apellidos.Length == 3 && a.country == "USA")
-                    {
-                        a.LastName1 = (apellidos.Length != 0? apellidos[0] + " " + (apellidos.Length > 1 ? apellidos[1] : " ") : " ").ToLower();
-                    }
-                    else if (apellidos.Length == 4 && a.country == "BRA")
-                    {
-                        a.LastName1 = (apellidos.Length > 2 ? apellidos[2] + " " + (apellidos.Length > 3 ? apellidos[3] : " ") : " ").ToLower();
-                    }
-                    else if (apellidos.Length == 4 && a.country == "USA")
-                    {
-                        a.LastName1 = (apellidos.Length != 0 ? apellidos[0] + " " + (apellidos.Length > 1 ? apellidos[1] : " ") : " ").ToLower();
-                    }
-                    else if(a.country == "BRA")
-                    {
-                        a.LastName1 = (apellidos.Length > 2 ? apellidos[2] + " " + (apellidos.Length > 3 ? apellidos[3] : " ") + " " + (apellidos.Length > 4 ? apellidos[4] : " ") : " ").ToLower();
-                    }
-                }     
+                }
             });
             return result;
         }
@@ -258,13 +288,28 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
-        public static ReportAccountPerformance_DTO ToReportAccountPerformance_DTO(this AccountsInformation_Mongo item)
+        public static ReportAccountPerformance_DTO ToReportAccountPerformance_DTO(this AccountsInformationPerformance_Mongo item, string country)
         {
+            var nombreCompleto = string.Empty;
+         
+
+
+            if (item.Account != null)
+            {
+                var apellidos = (item.Account.LastName.ToLower().Trim()).Split(" ");
+                nombreCompleto = item.Account.FirstName.ToLower().Trim().Split(" ")[0];
+
+                if (country == "BRA")
+                    nombreCompleto += " " + (apellidos.Length > 0 ? apellidos[apellidos.Length - 1] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompleto += " " + (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
+            }
+
             var result = new ReportAccountPerformance_DTO()
             {
                 AccountID = item.AccountID,
                 AccountNumber = item.AccountNumber,
-                AccountName = item.AccountName.ToLower(),
+                AccountName = nombreCompleto,
                 CareerTitle = item.CareerTitle,
                 CareerTitleDes = item.CareerTitle_Des,
                 PaidAsCurrentMonth = item.PaidAsCurrentMonth,
@@ -294,6 +339,19 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
+        public static List<ExportBirthDayAccount_DTO> ToExportBirthday(this List<BirthDayAccount_DTO> list)
+        {
+            var result = list.Select(ai => new ExportBirthDayAccount_DTO()
+            {
+                AccountID = ai.AccountID,
+                AccountName = ai.AccountName.ToLower(),
+                CareerTitleDes = ai.CareerTitle_Des,
+                EmailAddress = ai.EmailAddress,
+                Birthday = ai.HB,
+            }).ToList();
+
+            return result;
+        }
 
     }
 }

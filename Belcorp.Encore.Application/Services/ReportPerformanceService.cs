@@ -5,6 +5,7 @@ using Belcorp.Encore.Data.Contexts;
 using Belcorp.Encore.Entities.Entities.Commissions;
 using Belcorp.Encore.Entities.Entities.DTO;
 using Belcorp.Encore.Entities.Entities.Mongo;
+using Belcorp.Encore.Entities.Entities.Mongo.Extension;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -30,13 +31,32 @@ namespace Belcorp.Encore.Application.Services
         }
 
 
-        public async Task<AccountsInformation_Mongo> GetPerformanceByAccount(int accountId, int periodId, string country)
+        public async Task<AccountsInformationPerformance_Mongo> GetPerformanceByAccount(int accountId, int periodId, string country)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
+            var filterDefinition = Builders<AccountsInformation_Mongo>.Filter.Empty;
 
             periodId = periodId == 0 ? homeService.GetCurrentPeriod(country).PeriodID : periodId;
 
-            var result = await accountInformationCollection.Find(p => p.AccountID == accountId && p.PeriodID == periodId).FirstOrDefaultAsync();
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.PeriodID, periodId);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.AccountID, accountId);
+
+
+
+            var result = await accountInformationCollection
+                .Aggregate()
+                .Match(filterDefinition)
+                .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformationPerformance_Mongo>(
+                    accountsCollection,
+                    ai => ai.AccountID,
+                    a => a.AccountID,
+                    r => r.Account
+                )
+                .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformationPerformance_Mongo> { PreserveNullAndEmptyArrays = true }).FirstOrDefaultAsync();
+
+
+            //var result = await accountInformationCollection.Find(p => p.AccountID == accountId && p.PeriodID == periodId).FirstOrDefaultAsync();
 
             return result;
         }
