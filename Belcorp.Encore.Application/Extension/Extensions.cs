@@ -288,13 +288,28 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
-        public static ReportAccountPerformance_DTO ToReportAccountPerformance_DTO(this AccountsInformation_Mongo item)
+        public static ReportAccountPerformance_DTO ToReportAccountPerformance_DTO(this AccountsInformationPerformance_Mongo item, string country)
         {
+            var nombreCompleto = string.Empty;
+         
+
+
+            if (item.Account != null)
+            {
+                var apellidos = (item.Account.LastName.ToLower().Trim()).Split(" ");
+                nombreCompleto = item.Account.FirstName.ToLower().Trim().Split(" ")[0];
+
+                if (country == "BRA")
+                    nombreCompleto += " " + (apellidos.Length > 0 ? apellidos[apellidos.Length - 1] : " ").ToLower();
+                else if (country == "USA")
+                    nombreCompleto += " " + (apellidos.Length != 0 ? apellidos[0] : " ").ToLower();
+            }
+
             var result = new ReportAccountPerformance_DTO()
             {
                 AccountID = item.AccountID,
                 AccountNumber = item.AccountNumber,
-                AccountName = item.AccountName.ToLower(),
+                AccountName = nombreCompleto,
                 CareerTitle = item.CareerTitle,
                 CareerTitleDes = item.CareerTitle_Des,
                 PaidAsCurrentMonth = item.PaidAsCurrentMonth,

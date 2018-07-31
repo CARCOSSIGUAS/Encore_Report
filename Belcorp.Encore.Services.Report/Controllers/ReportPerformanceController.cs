@@ -28,7 +28,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
         public async Task<IActionResult> GetStatesByPeriods(int accountID, int periodID, string country = null)
         {
             var result = await reportPerformanceService.GetPerformanceByAccount(accountID, periodID, country);
-            var item = result.ToReportAccountPerformance_DTO();
+            var item = result.ToReportAccountPerformance_DTO(country);
             var retorno = await reportPerformanceService.GetRequirements(item, country);
 
             if (result == null)
