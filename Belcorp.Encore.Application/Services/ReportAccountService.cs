@@ -199,89 +199,94 @@ namespace Belcorp.Encore.Application
             List<BirthDayAccount_DTO> list = new List<BirthDayAccount_DTO>();
             foreach (var item in result)
             {
-                if (item.Account.AccountAdditionalTitulars != null && item.Account.AccountAdditionalTitulars.Count > 0)
+                if (item.Account != null)
                 {
-                    foreach (var titular in item.Account.AccountAdditionalTitulars)
+                    if (item.Account.AccountAdditionalTitulars != null && item.Account.AccountAdditionalTitulars.Count > 0)
                     {
-                        if (titular.Brithday.Value.Month == Month && titular.Brithday.Value.Day >= Day && titular.Brithday.Value.Day <= LastDay)
+                        foreach (var titular in item.Account.AccountAdditionalTitulars)
+                        {
+                            if (titular.Brithday.Value.Month == Month && titular.Brithday.Value.Day >= Day && titular.Brithday.Value.Day <= LastDay)
+                            {
+                                list.Add(new BirthDayAccount_DTO()
+                                {
+                                    AccountID = item.AccountID,
+                                    AccountName = titular.FirstName + " " + titular.LastName,
+                                    BirthdayUTC = titular.Brithday,
+                                    Generation = -1,
+                                    LEVEL = -1,
+                                    HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
+                                    Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0,
+                                    Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                                });
+                            }
+                        }
+                    }
+                    if (item.BirthdayUTC != null)
+                    {
+                        if (item.BirthdayUTC.Value.Month == Month && item.BirthdayUTC.Value.Day >= Day && item.BirthdayUTC.Value.Day <= LastDay)
                         {
                             list.Add(new BirthDayAccount_DTO()
                             {
                                 AccountID = item.AccountID,
-                                AccountName = titular.FirstName + " " + titular.LastName,
-                                BirthdayUTC = titular.Brithday,
-                                Generation = -1,
-                                LEVEL = -1,
-                                HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
-                                Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0
-
+                                AccountName = item.AccountName.ToLower(),
+                                HB = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
+                                AccountNumber = item.AccountNumber,
+                                AccountsInformationID = item.AccountsInformationID,
+                                ActiveDownline = item.ActiveDownline,
+                                Activity = item.Activity,
+                                Address = item.Address,
+                                CareerTitle = item.CareerTitle,
+                                CareerTitle_Des = item.CareerTitle_Des,
+                                City = item.City,
+                                ConsultActive = item.ConsultActive,
+                                country = country,
+                                CQL = item.CQL,
+                                CreditAvailable = item.CreditAvailable,
+                                DCV = item.DCV,
+                                DebtsToExpire = item.DebtsToExpire,
+                                DQV = item.DQV,
+                                DQVT = item.DQVT,
+                                EmailAddress = item.EmailAddress,
+                                ExpiredDebts = item.ExpiredDebts,
+                                GCV = item.GCV,
+                                Generation = item.Generation,
+                                GenerationM3 = item.GenerationM3,
+                                GQV = item.GQV,
+                                IsCommissionQualified = item.IsCommissionQualified,
+                                JoinDate = item.JoinDate,
+                                //LastName1 = item.LastName1,
+                                //LastName2 = item.LastName2,
+                                LastOrderDate = item.LastOrderDate,
+                                LeftBower = item.LeftBower,
+                                LEVEL = item.LEVEL,
+                                //Name1 = item.Name1,
+                                //Name2 = item.Name2,
+                                PaidAsCurrentMonth = item.PaidAsCurrentMonth,
+                                PaidAsCurrentMonth_Des = item.PaidAsCurrentMonth_Des,
+                                NewStatus = item.NewStatus,
+                                PaidAsLastMonth = item.PaidAsLastMonth,
+                                PCV = item.PCV,
+                                PeriodID = item.PeriodID,
+                                PQV = item.PQV,
+                                PostalCode = item.PostalCode,
+                                Region = item.Region,
+                                RightBower = item.RightBower,
+                                SortPath = item.SortPath,
+                                //SPLastName = item.SPLastName,
+                                //SPName = item.SPName,
+                                SponsorID = item.SponsorID,
+                                SponsorName = item.SponsorName,
+                                STATE = item.STATE,
+                                TotalDownline = item.TotalDownline,
+                                VolumeForCareerTitle = item.VolumeForCareerTitle,
+                                Anios = item.BirthdayUTC.HasValue ? (zeroTime + (DateTime.Now - item.BirthdayUTC.Value)).Year - 1 : 0,
+                                Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
                             });
+
                         }
                     }
                 }
-                if (item.BirthdayUTC != null)
-                {
-                    if (item.BirthdayUTC.Value.Month == Month && item.BirthdayUTC.Value.Day >= Day && item.BirthdayUTC.Value.Day <= LastDay)
-                    {
-                        list.Add(new BirthDayAccount_DTO()
-                        {
-                            AccountID = item.AccountID,
-                            AccountName = item.AccountName.ToLower(),
-                            HB = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
-                            AccountNumber = item.AccountNumber,
-                            AccountsInformationID = item.AccountsInformationID,
-                            ActiveDownline = item.ActiveDownline,
-                            Activity = item.Activity,
-                            Address = item.Address,
-                            CareerTitle = item.CareerTitle,
-                            CareerTitle_Des = item.CareerTitle_Des,
-                            City = item.City,
-                            ConsultActive = item.ConsultActive,
-                            country = country,
-                            CQL = item.CQL,
-                            CreditAvailable = item.CreditAvailable,
-                            DCV = item.DCV,
-                            DebtsToExpire = item.DebtsToExpire,
-                            DQV = item.DQV,
-                            DQVT = item.DQVT,
-                            EmailAddress = item.EmailAddress,
-                            ExpiredDebts = item.ExpiredDebts,
-                            GCV = item.GCV,
-                            Generation = item.Generation,
-                            GenerationM3 = item.GenerationM3,
-                            GQV = item.GQV,
-                            IsCommissionQualified = item.IsCommissionQualified,
-                            JoinDate = item.JoinDate,
-                            //LastName1 = item.LastName1,
-                            //LastName2 = item.LastName2,
-                            LastOrderDate = item.LastOrderDate,
-                            LeftBower = item.LeftBower,
-                            LEVEL = item.LEVEL,
-                            //Name1 = item.Name1,
-                            //Name2 = item.Name2,
-                            PaidAsCurrentMonth = item.PaidAsCurrentMonth,
-                            PaidAsCurrentMonth_Des = item.PaidAsCurrentMonth_Des,
-                            NewStatus = item.NewStatus,
-                            PaidAsLastMonth = item.PaidAsLastMonth,
-                            PCV = item.PCV,
-                            PeriodID = item.PeriodID,
-                            PQV = item.PQV,
-                            PostalCode = item.PostalCode,
-                            Region = item.Region,
-                            RightBower = item.RightBower,
-                            SortPath = item.SortPath,
-                            //SPLastName = item.SPLastName,
-                            //SPName = item.SPName,
-                            SponsorID = item.SponsorID,
-                            SponsorName = item.SponsorName,
-                            STATE = item.STATE,
-                            TotalDownline = item.TotalDownline,
-                            VolumeForCareerTitle = item.VolumeForCareerTitle,
-                            Anios = item.BirthdayUTC.HasValue ? (zeroTime + (DateTime.Now - item.BirthdayUTC.Value)).Year - 1 : 0
-                        });
 
-                    }
-                }
 
             }
 
@@ -606,11 +611,12 @@ namespace Belcorp.Encore.Application
             }
 
             result.LEVEL = result.LEVEL - accountRoot.LEVEL;
+            result.Generation = accountRoot.Generation - result.Generation;
 
             if (result.SponsorID == 10)
             {
                 var accountConsultedRoot = accountsCollection.Find(a => a.AccountID == 1, null).FirstOrDefault();
-                result.Sponsor =  accountConsultedRoot;
+                result.Sponsor = accountConsultedRoot;
             }
 
             return result;

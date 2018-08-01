@@ -57,6 +57,9 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public string AdditionalTitularName { get; set; }
         public string AdditionalTitularBirthday { get; set; }
 
+        public Int16? GerderID { get; set; }
+        public DateTime? Brithday { get; set; }
+
         public int UplineLeader0ID { get; set; }
         public string UplineLeader0Name { get; set; }
         public string UplineLeader0EmailAddress { get; set; }

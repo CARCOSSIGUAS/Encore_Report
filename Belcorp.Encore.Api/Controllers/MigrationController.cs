@@ -93,5 +93,15 @@ namespace Belcorp.Encore.Api.Controllers
             BackgroundJob.Enqueue(() => migrateService.RequirementLegs(country));
             return Json(new { Status = "Processing Background" });
         }
+
+        [HttpGet("performance/{periodId}")]
+        [AutomaticRetry(Attempts = 0)]
+        public ActionResult Performance(int? periodId = null, string country = null)
+        {
+            BackgroundJob.Enqueue(() => migrateService.Performance(country, periodId));
+            return Json(new { Status = "Processing Background" });
+        }
+
+
     }
 }

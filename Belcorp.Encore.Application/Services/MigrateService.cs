@@ -15,6 +15,7 @@ using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using Belcorp.Encore.Repositories.Interfaces;
 using Belcorp.Encore.Entities.Constants;
+using Belcorp.Encore.Application.Utilities;
 
 namespace Belcorp.Encore.Application.Services
 {
@@ -92,7 +93,7 @@ namespace Belcorp.Encore.Application.Services
                 {
                     UplineLeader0 = sponsor.UplineLeader0 ?? 0;
                     UplineLeaderM3 = sponsor.UplineLeaderM3 ?? 0;
-                    LeftRighBower =  sponsor.LeftBower;
+                    LeftRighBower = sponsor.LeftBower;
                 }
             }
 
@@ -132,7 +133,7 @@ namespace Belcorp.Encore.Application.Services
                              Generation = accountsInfo.Generation,
                              LEVEL = accountsInfo.LEVEL,
                              SortPath = accountsInfo.SortPath,
-                             LeftBower =  (AccountID.HasValue && AccountID == accountsInfo.AccountID && LeftRighBower.HasValue) ? LeftRighBower : accountsInfo.LeftBower,
+                             LeftBower = (AccountID.HasValue && AccountID == accountsInfo.AccountID && LeftRighBower.HasValue) ? LeftRighBower : accountsInfo.LeftBower,
                              RightBower = (AccountID.HasValue && AccountID == accountsInfo.AccountID && LeftRighBower.HasValue) ? LeftRighBower : accountsInfo.RightBower,
                              RequirementNewGeneration = accountsInfo.RequirementNewGeneration,
                              TimeLimitForNewGeneration = accountsInfo.TimeLimitForNewGeneration,
@@ -452,7 +453,7 @@ namespace Belcorp.Encore.Application.Services
             IRepository<RequirementTitleCalculations> requirementTitleCalculationsRepository = unitOfWork_Comm.GetRepository<RequirementTitleCalculations>();
             IMongoCollection<RequirementTitleCalculations_Mongo> RequirementTitleCalculations_MongoCollection = encoreMongo_Context.RequirementTitleCalculationsProvider(country);
 
-          
+
             var total = requirementTitleCalculationsRepository.GetPagedList(null, null, null, 0, 10000, true);
             int ii = total.TotalPages;
 
@@ -484,7 +485,7 @@ namespace Belcorp.Encore.Application.Services
             IRepository<RequirementLegs> requirementLegsRepository = unitOfWork_Comm.GetRepository<RequirementLegs>();
             IMongoCollection<RequirementLegs_Mongo> RequirementLegs_MongoCollection = encoreMongo_Context.RequirementLegsProvider(country);
 
-            var total = requirementLegsRepository.GetPagedList(null, null, aa=>aa.Include(p=>p.Titles), 0, 10000, true);
+            var total = requirementLegsRepository.GetPagedList(null, null, aa => aa.Include(p => p.Titles), 0, 10000, true);
 
             int ii = total.TotalPages;
 
@@ -511,5 +512,84 @@ namespace Belcorp.Encore.Application.Services
                        TitleDescription = item.Titles.ClientName
                    };
         }
+
+        public void Performance(string country, int? periodId)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+
+            if (periodId == null)
+            {
+                periodId = GetCurrentPeriod();
+            }
+
+            var total = accountInformationRepository.GetPagedList(a => a.PeriodID == periodId, null, null, 0, 10000, true);
+            int ii = total.TotalPages;
+
+            IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
+            var titles = titlesRepository.GetAll().ToList();
+
+            for (int i = 0; i < ii; i++)
+            {
+                var accountsInformation = accountInformationRepository.GetPagedList(a => a.PeriodID == periodId, a => a.OrderBy(o => o.AccountsInformationID), null, i, 10000, true).Items;
+                UpdateIngresosDiarios(country, accountsInformation.Select(x => x.AccountID));
+            }
+        }
+
+        public void UpdateIngresosDiarios(string country, IEnumerable<int> accountID)
+        {
+            IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
+            IMongoCollection<PerformanceIndicatorDay_Mongo> performanceIndicatorDayCollection = encoreMongo_Context.PerformanceIndicatorDayProvider(country);
+            IMongoCollection<EnrrollmentAccountsByDayTemp_Mongo> enrrolmentAccountByDayTemp = encoreMongo_Context.EnrrollmentAccountsByDayTempProvider(country);
+
+            var period = GetCurrentPeriod();
+            var date = DateTime.Now.Date;
+
+            var lista = accountInformationCollection.Find(a => a.PeriodID == period && (a.JoinDate >= date && a.JoinDate <= DateTime.Now), null).ToList();
+            var filterDefinition = Builders<EnrrollmentAccountsByDayTemp_Mongo>.Filter.In(ai => ai.AccountID, lista.Select(x => x.AccountID));
+
+            var listaTemp = enrrolmentAccountByDayTemp.
+                Aggregate()
+                .Match(filterDefinition).ToList();
+
+            List<EnrrollmentAccountsByDayTemp_Mongo> listaNuevos = new List<EnrrollmentAccountsByDayTemp_Mongo>();
+
+            foreach (var item in lista)
+            {
+                if (!listaTemp.Any(q => q.AccountID == item.AccountID))
+                {
+                    listaNuevos.Add(new EnrrollmentAccountsByDayTemp_Mongo
+                    {
+                        AccountID = item.AccountID,
+                        DayOfMonth = DateTime.Now.Day,
+                        PeriodID = period ?? 0
+                    });
+                }
+            }
+
+            foreach (var item in listaNuevos)
+            {
+                var accountRoot = AccountsUtils.RecursivoWithoutSponsor(accountInformationCollection, item.AccountID, period ?? 0);
+                foreach (var account in accountRoot)
+                {
+                    var record = performanceIndicatorDayCollection.Find(ai => ai.AccountID == account.AccountID && ai.PeriodID == period).FirstOrDefault();
+                    performanceIndicatorDayCollection.ReplaceOne(ai => ai.AccountID == account.AccountID && ai.PeriodID == period, new PerformanceIndicatorDay_Mongo
+                    {
+                        AccountID = account.AccountID,
+                        DayOfMonth = DateTime.Now.Day,
+                        Ingresos = record != null ? record.Ingresos + 1 : 1,
+                        PeriodID = period ?? 0
+                    }, new UpdateOptions { IsUpsert = true });
+                }
+
+                enrrolmentAccountByDayTemp.ReplaceOne(ai => ai.AccountID == item.AccountID && ai.DayOfMonth == DateTime.Now.Day, new EnrrollmentAccountsByDayTemp_Mongo
+                {
+                    AccountID = item.AccountID,
+                    DayOfMonth = DateTime.Now.Day,
+                    PeriodID = period ?? 0
+                }, new UpdateOptions { IsUpsert = true });
+            }
+        }
+
+
     }
 }

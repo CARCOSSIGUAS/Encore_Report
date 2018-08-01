@@ -531,8 +531,12 @@ namespace Belcorp.Encore.Application.Services
             IRepository<Titles> titlesRepository = unitOfWork_Comm.GetRepository<Titles>();
             var titles = titlesRepository.GetAll().ToList();
 
+            
             var accountsIds = GetAccounts_UpLine(Statistics.Order.AccountID).Select(a => a.AccountID).ToList();
+            accountsIds.Add(Statistics.Order.AccountID);
             var accountsInformations = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(Statistics.PeriodID, accountsIds).ToList();
+            var account =  accountInformationCollection.Find(x => x.PeriodID == Statistics.PeriodID && x.AccountID == Statistics.Order.AccountID);
+
 
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
             var activityCurrent = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses).Include(aa => aa.AccountConsistencyStatuses), true);
