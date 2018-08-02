@@ -493,7 +493,7 @@ namespace Belcorp.Encore.Application.Services
 
 
             for (int i = 0; i < ii; i++)
-            {
+            {                                                                                               
                 var RequirementLegs = requirementLegsRepository.GetPagedList(null, a => a.OrderBy(o => o.TitleID), aa => aa.Include(p => p.Titles), i, 10000, true).Items;
                 IEnumerable<RequirementLegs_Mongo> result = GetRequirementLegs(RequirementLegs);
                 RequirementLegs_MongoCollection.InsertMany(result);

@@ -181,7 +181,8 @@ namespace Belcorp.Encore.Application
 
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
-            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.DayBirthday, Day);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Gte(ai => ai.DayBirthday, Day);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.DayBirthday, LastDay);
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.MonthBirthday, Month);
 
             var result = new List<AccountsInformation_MongoWithAccountAndSponsor>();
