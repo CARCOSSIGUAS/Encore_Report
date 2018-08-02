@@ -183,7 +183,9 @@ namespace Belcorp.Encore.Application.Services
                              UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name,
 
                              IsQualified = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activityCurrent != null) ? activityCurrent.IsQualified : accountsInfo.IsQualified,
-                             HasContinuity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activityCurrent != null) ? activityCurrent.HasContinuity : accountsInfo.HasContinuity
+                             HasContinuity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activityCurrent != null) ? activityCurrent.HasContinuity : accountsInfo.HasContinuity,
+                             MonthBirthday = accountsInfo.BirthdayUTC.HasValue ? accountsInfo.BirthdayUTC.Value.Month : 0,
+                             DayBirthday = accountsInfo.BirthdayUTC.HasValue ? accountsInfo.BirthdayUTC.Value.Day : 0,
                          };
 
             return result;
