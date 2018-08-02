@@ -216,7 +216,7 @@ namespace Belcorp.Encore.Application
                                     LEVEL = -1,
                                     HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
                                     Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0,
-                                    Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                                    Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",                                                                     
                                 });
                             }
                         }
@@ -230,6 +230,7 @@ namespace Belcorp.Encore.Application
                                 AccountID = item.AccountID,
                                 AccountName = item.AccountName.ToLower(),
                                 HB = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
+                                BirthdayUTC = item.BirthdayUTC,
                                 AccountNumber = item.AccountNumber,
                                 AccountsInformationID = item.AccountsInformationID,
                                 ActiveDownline = item.ActiveDownline,

@@ -353,5 +353,65 @@ namespace Belcorp.Encore.Application.Extension
             return result;
         }
 
+        public static List<BirthDayAccount_DTO> Birthday(this List<BirthDayAccount_DTO> list)
+        {
+            DateTime dateTime = DateTime.Now;
+
+            var result = list.Select(item => new BirthDayAccount_DTO()
+            {
+                isBirthDay = item.BirthdayUTC.HasValue && item.BirthdayUTC.Value.Month == dateTime.Month && item.BirthdayUTC.Value.Day == dateTime.Day ? true : false,
+                BirthdayUTC = item.BirthdayUTC,
+                AccountID = item.AccountID,
+                AccountName = item.AccountName,
+                HB = item.HB,
+                AccountNumber = item.AccountNumber,
+                AccountsInformationID = item.AccountsInformationID,
+                ActiveDownline = item.ActiveDownline,
+                Activity = item.Activity,
+                Address = item.Address,
+                CareerTitle = item.CareerTitle,
+                CareerTitle_Des = item.CareerTitle_Des,
+                City = item.City,
+                ConsultActive = item.ConsultActive,
+                CQL = item.CQL,
+                CreditAvailable = item.CreditAvailable,
+                DCV = item.DCV,
+                DebtsToExpire = item.DebtsToExpire,
+                DQV = item.DQV,
+                DQVT = item.DQVT,
+                EmailAddress = item.EmailAddress,
+                ExpiredDebts = item.ExpiredDebts,
+                GCV = item.GCV,
+                Generation = item.Generation,
+                GenerationM3 = item.GenerationM3,
+                GQV = item.GQV,
+                IsCommissionQualified = item.IsCommissionQualified,
+                JoinDate = item.JoinDate,
+                LastOrderDate = item.LastOrderDate,
+                LeftBower = item.LeftBower,
+                LEVEL = item.LEVEL,
+                PaidAsCurrentMonth = item.PaidAsCurrentMonth,
+                PaidAsCurrentMonth_Des = item.PaidAsCurrentMonth_Des,
+                NewStatus = item.NewStatus,
+                PaidAsLastMonth = item.PaidAsLastMonth,
+                PCV = item.PCV,
+                PeriodID = item.PeriodID,
+                PQV = item.PQV,
+                PostalCode = item.PostalCode,
+                Region = item.Region,
+                RightBower = item.RightBower,
+                SortPath = item.SortPath,
+                SponsorID = item.SponsorID,
+                SponsorName = item.SponsorName,
+                STATE = item.STATE,
+                TotalDownline = item.TotalDownline,
+                VolumeForCareerTitle = item.VolumeForCareerTitle,
+                Anios = item.Anios,
+                Phones = item.Phones
+            }).ToList();
+
+            return result;
+        }
+
     }
 }

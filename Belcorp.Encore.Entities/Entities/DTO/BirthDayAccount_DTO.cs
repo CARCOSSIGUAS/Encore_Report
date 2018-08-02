@@ -112,6 +112,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public decimal? CQLRequirementNext { get; set; }
         public double Anios { get; set; }
         public string Phones { get; set; }
+        public bool isBirthDay { get; set; }
         
     }
 }
