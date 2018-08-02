@@ -181,6 +181,8 @@ namespace Belcorp.Encore.Application
 
             List<string> accountStatusExcluded = new List<string>() { "Terminated", "Cessada" };
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Nin(ai => ai.Activity, accountStatusExcluded);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.DayBirthday, Day);
+            filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.MonthBirthday, Month);
 
             var result = new List<AccountsInformation_MongoWithAccountAndSponsor>();
 
@@ -205,85 +207,80 @@ namespace Belcorp.Encore.Application
                     {
                         foreach (var titular in item.Account.AccountAdditionalTitulars)
                         {
-                            if (titular.Brithday.Value.Month == Month && titular.Brithday.Value.Day >= Day && titular.Brithday.Value.Day <= LastDay)
+
+                            list.Add(new BirthDayAccount_DTO()
                             {
-                                list.Add(new BirthDayAccount_DTO()
-                                {
-                                    AccountID = item.AccountID,
-                                    AccountName = titular.FirstName + " " + titular.LastName,
-                                    BirthdayUTC = titular.Brithday,
-                                    Generation = -1,
-                                    LEVEL = -1,
-                                    HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
-                                    Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0,
-                                    Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
-                                });
-                            }
+                                AccountID = item.AccountID,
+                                AccountName = titular.FirstName + " " + titular.LastName,
+                                BirthdayUTC = titular.Brithday,
+                                Generation = -1,
+                                LEVEL = -1,
+                                HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
+                                Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0,
+                                Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                            });
                         }
                     }
                     if (item.BirthdayUTC != null)
                     {
-                        if (item.BirthdayUTC.Value.Month == Month && item.BirthdayUTC.Value.Day >= Day && item.BirthdayUTC.Value.Day <= LastDay)
+                        list.Add(new BirthDayAccount_DTO()
                         {
-                            list.Add(new BirthDayAccount_DTO()
-                            {
-                                AccountID = item.AccountID,
-                                AccountName = item.AccountName.ToLower(),
-                                HB = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
-                                AccountNumber = item.AccountNumber,
-                                AccountsInformationID = item.AccountsInformationID,
-                                ActiveDownline = item.ActiveDownline,
-                                Activity = item.Activity,
-                                Address = item.Address,
-                                CareerTitle = item.CareerTitle,
-                                CareerTitle_Des = item.CareerTitle_Des,
-                                City = item.City,
-                                ConsultActive = item.ConsultActive,
-                                country = country,
-                                CQL = item.CQL,
-                                CreditAvailable = item.CreditAvailable,
-                                DCV = item.DCV,
-                                DebtsToExpire = item.DebtsToExpire,
-                                DQV = item.DQV,
-                                DQVT = item.DQVT,
-                                EmailAddress = item.EmailAddress,
-                                ExpiredDebts = item.ExpiredDebts,
-                                GCV = item.GCV,
-                                Generation = item.Generation,
-                                GenerationM3 = item.GenerationM3,
-                                GQV = item.GQV,
-                                IsCommissionQualified = item.IsCommissionQualified,
-                                JoinDate = item.JoinDate,
-                                //LastName1 = item.LastName1,
-                                //LastName2 = item.LastName2,
-                                LastOrderDate = item.LastOrderDate,
-                                LeftBower = item.LeftBower,
-                                LEVEL = item.LEVEL,
-                                //Name1 = item.Name1,
-                                //Name2 = item.Name2,
-                                PaidAsCurrentMonth = item.PaidAsCurrentMonth,
-                                PaidAsCurrentMonth_Des = item.PaidAsCurrentMonth_Des,
-                                NewStatus = item.NewStatus,
-                                PaidAsLastMonth = item.PaidAsLastMonth,
-                                PCV = item.PCV,
-                                PeriodID = item.PeriodID,
-                                PQV = item.PQV,
-                                PostalCode = item.PostalCode,
-                                Region = item.Region,
-                                RightBower = item.RightBower,
-                                SortPath = item.SortPath,
-                                //SPLastName = item.SPLastName,
-                                //SPName = item.SPName,
-                                SponsorID = item.SponsorID,
-                                SponsorName = item.SponsorName,
-                                STATE = item.STATE,
-                                TotalDownline = item.TotalDownline,
-                                VolumeForCareerTitle = item.VolumeForCareerTitle,
-                                Anios = item.BirthdayUTC.HasValue ? (zeroTime + (DateTime.Now - item.BirthdayUTC.Value)).Year - 1 : 0,
-                                Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
-                            });
+                            AccountID = item.AccountID,
+                            AccountName = item.AccountName.ToLower(),
+                            HB = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
+                            AccountNumber = item.AccountNumber,
+                            AccountsInformationID = item.AccountsInformationID,
+                            ActiveDownline = item.ActiveDownline,
+                            Activity = item.Activity,
+                            Address = item.Address,
+                            CareerTitle = item.CareerTitle,
+                            CareerTitle_Des = item.CareerTitle_Des,
+                            City = item.City,
+                            ConsultActive = item.ConsultActive,
+                            country = country,
+                            CQL = item.CQL,
+                            CreditAvailable = item.CreditAvailable,
+                            DCV = item.DCV,
+                            DebtsToExpire = item.DebtsToExpire,
+                            DQV = item.DQV,
+                            DQVT = item.DQVT,
+                            EmailAddress = item.EmailAddress,
+                            ExpiredDebts = item.ExpiredDebts,
+                            GCV = item.GCV,
+                            Generation = item.Generation,
+                            GenerationM3 = item.GenerationM3,
+                            GQV = item.GQV,
+                            IsCommissionQualified = item.IsCommissionQualified,
+                            JoinDate = item.JoinDate,
+                            //LastName1 = item.LastName1,
+                            //LastName2 = item.LastName2,
+                            LastOrderDate = item.LastOrderDate,
+                            LeftBower = item.LeftBower,
+                            LEVEL = item.LEVEL,
+                            //Name1 = item.Name1,
+                            //Name2 = item.Name2,
+                            PaidAsCurrentMonth = item.PaidAsCurrentMonth,
+                            PaidAsCurrentMonth_Des = item.PaidAsCurrentMonth_Des,
+                            NewStatus = item.NewStatus,
+                            PaidAsLastMonth = item.PaidAsLastMonth,
+                            PCV = item.PCV,
+                            PeriodID = item.PeriodID,
+                            PQV = item.PQV,
+                            PostalCode = item.PostalCode,
+                            Region = item.Region,
+                            RightBower = item.RightBower,
+                            SortPath = item.SortPath,
+                            //SPLastName = item.SPLastName,
+                            //SPName = item.SPName,
+                            SponsorID = item.SponsorID,
+                            SponsorName = item.SponsorName,
+                            STATE = item.STATE,
+                            TotalDownline = item.TotalDownline,
+                            VolumeForCareerTitle = item.VolumeForCareerTitle,
+                            Anios = item.BirthdayUTC.HasValue ? (zeroTime + (DateTime.Now - item.BirthdayUTC.Value)).Year - 1 : 0,
+                            Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                        });
 
-                        }
                     }
                 }
 

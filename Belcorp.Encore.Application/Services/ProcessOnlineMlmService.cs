@@ -135,8 +135,8 @@ namespace Belcorp.Encore.Application.Services
                 UpdateTransactionDate(1, country);
                 PersonalIndicatorLog = personalIndicatorLogService.Update(PersonalIndicatorLog);
 
-                UpdateIngresosDiarios(country, Statistics.Order.AccountID);
-                UpdateVODiarios(country, Statistics.Order.AccountID);
+                //UpdateIngresosDiarios(country, Statistics.Order.AccountID);
+                //UpdateVODiarios(country, Statistics.Order.AccountID);
             }
         }
 
