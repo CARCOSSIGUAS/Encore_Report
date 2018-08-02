@@ -207,18 +207,24 @@ namespace Belcorp.Encore.Application
                     {
                         foreach (var titular in item.Account.AccountAdditionalTitulars)
                         {
-
-                            list.Add(new BirthDayAccount_DTO()
+                            if (titular.Brithday.HasValue)
                             {
-                                AccountID = item.AccountID,
-                                AccountName = titular.FirstName + " " + titular.LastName,
-                                BirthdayUTC = titular.Brithday,
-                                Generation = -1,
-                                LEVEL = -1,
-                                HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
-                                Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0,
-                                Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
-                            });
+                                if (titular.Brithday.Value.Month == Month && titular.Brithday.Value.Day >= Day && titular.Brithday.Value.Day <= LastDay)
+                                {
+                                    list.Add(new BirthDayAccount_DTO()
+                                    {
+                                        AccountID = item.AccountID,
+                                        AccountName = titular.FirstName + " " + titular.LastName,
+                                        BirthdayUTC = titular.Brithday,
+                                        Generation = -1,
+                                        LEVEL = -1,
+                                        HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
+                                        Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0,
+                                        Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                                    });
+                                }
+                            }
+
                         }
                     }
                     if (item.BirthdayUTC != null)
