@@ -234,6 +234,7 @@ namespace Belcorp.Encore.Application
                             AccountID = item.AccountID,
                             AccountName = item.AccountName.ToLower(),
                             HB = item.BirthdayUTC.HasValue ? item.BirthdayUTC.Value.ToString("dd/MM/yyyy") : "",
+                            BirthdayUTC = item.BirthdayUTC,
                             AccountNumber = item.AccountNumber,
                             AccountsInformationID = item.AccountsInformationID,
                             ActiveDownline = item.ActiveDownline,

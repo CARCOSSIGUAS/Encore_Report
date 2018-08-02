@@ -67,14 +67,15 @@ namespace Belcorp.Encore.Application.Services
             IMongoCollection<RequirementLegs_Mongo> requirementLegsCollection = encoreMongo_Context.RequirementLegsProvider(country);
             IMongoCollection<RequirementTitleCalculations_Mongo> requirementTitleCalculationsCollection = encoreMongo_Context.RequirementTitleCalculationsProvider(country);
             List<RequirementLegs_DTO> items = new List<RequirementLegs_DTO>();
+            List<RequirementLegs_DTO> itemsRN = new List<RequirementLegs_DTO>();
 
 
-           var title = int.Parse(string.IsNullOrEmpty(item.CareerTitle) ? "0" : item.CareerTitle);
+            var title = int.Parse(string.IsNullOrEmpty(item.CareerTitle) ? "0" : item.CareerTitle);
             var requirementTitleCalculations = await requirementTitleCalculationsCollection.Find(p => p.TitleID == title).ToListAsync();
             var requirementTitleCalculationsNext = await requirementTitleCalculationsCollection.Find(p => p.TitleID == title + 1).ToListAsync();
            
             var requirementLegs = await requirementLegsCollection.Find(p => p.TitleID == title).ToListAsync();
-
+            var requirementLegsNext = await requirementLegsCollection.Find(p => p.TitleID == title + 1).ToListAsync();
 
             item.PQVRequirement = ValidateNullValueRequirementTitleCalculations(requirementTitleCalculations.FirstOrDefault(x => x.CalculationtypeID == 1));
             item.DQVRequirement = ValidateNullValueRequirementTitleCalculations(requirementTitleCalculations.FirstOrDefault(x => x.CalculationtypeID == 6));
@@ -88,7 +89,12 @@ namespace Belcorp.Encore.Application.Services
                 items.Add(GetRequirementLegs(x, item ));
             });
 
+            requirementLegsNext.ForEach(x => {
+                itemsRN.Add(GetRequirementLegs(x, item));
+            });
+
             item.RequirementLegs = items;
+            item.RequirementLegsNext = itemsRN;
 
             return item;
         }
@@ -100,7 +106,7 @@ namespace Belcorp.Encore.Application.Services
 
             switch (item.TitleRequired)
             {
-                case 1: titleQtyDiff = item.TitleQty -  (decimal)reportAccountPerformance.Title1Legs;break;
+                case 1: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title1Legs;break;
                 case 2: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title2Legs; break;
                 case 3: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title3Legs; break;
                 case 4: titleQtyDiff = item.TitleQty - (decimal)reportAccountPerformance.Title4Legs; break;

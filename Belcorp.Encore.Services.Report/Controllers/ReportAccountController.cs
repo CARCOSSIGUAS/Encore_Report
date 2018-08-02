@@ -228,7 +228,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return NotFound();
             }
 
-            return Ok(result);
+            return Ok(result.Birthday());
         }
 
         [HttpGet("exportbirthday", Name = "GetExportBirthday")]
