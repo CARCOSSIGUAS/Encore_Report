@@ -8,11 +8,11 @@ namespace Belcorp.Encore.Entities.Entities.Commissions
 {
     public class RequirementLegs
     {
-        [Key, Column(Order = 0)]
+        [Key, Column(Order = 2)]
         public int TitleID { get; set; }
         [Key, Column(Order = 1)]
         public int PlanID { get; set; }
-        [Key, Column(Order = 2)]
+        [ForeignKey("Titles"), Column(Order = 0)]
         public int TitleRequired { get; set; }
         public int Generation { get; set; }
         public int Level { get; set; }
