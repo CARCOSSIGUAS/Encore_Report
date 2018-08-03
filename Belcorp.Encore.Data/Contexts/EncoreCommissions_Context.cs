@@ -24,7 +24,7 @@ namespace Belcorp.Encore.Data.Contexts
                 .HasKey(c => new { c.TitleID});
 
             builder.Entity<RequirementLegs>()
-               .HasKey(c => new { c.TitleRequired });
+               .HasKey(c => new { c.TitleID, c.PlanID, c.TitleRequired });
 
             builder.Entity<RuleTypes>()
                 .HasOne(c => c.RequirementRules);
