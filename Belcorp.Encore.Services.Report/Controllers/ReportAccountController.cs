@@ -197,7 +197,7 @@ namespace Belcorp.Encore.Services.Report.Controllers
                 return BadRequest();
             }
 
-            var result = reportAccountService.GetConsultantDetails(periodId, accountId, accountIdCurrent,  country);
+            var result = reportAccountService.GetConsultantDetails(periodId, accountId, accountIdCurrent, country);
 
             if (result == null)
             {
@@ -220,9 +220,9 @@ namespace Belcorp.Encore.Services.Report.Controllers
         }
 
         [HttpGet("birthday", Name = "GetDataBirthday")]
-        public IActionResult GetDataBirthday(int accountID, int periodID, string country)
+        public IActionResult GetDataBirthday(int accountID, int periodID, string country, string order)
         {
-            var result = reportAccountService.GetDataBirthday(accountID, periodID, country);
+            var result = reportAccountService.GetDataBirthday(accountID, periodID, country, order);
             if (result == null)
             {
                 return NotFound();
