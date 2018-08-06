@@ -156,7 +156,7 @@ namespace Belcorp.Encore.Application.Extension
                 DQVT = item.DQVT,
                 CQL = item.CQL,
                 EmailAddress = item.EmailAddress,
-                Generation = item.Generation,
+                Generation = Math.Abs((decimal)item.Generation),
                 JoinDate = item.JoinDate.HasValue ? item.JoinDate.Value.ToString("dd/MM/yyyy") : "",
                 LEVEL = item.LEVEL,
                 MainAddress = item.Account != null ? item.Account.Addresses

@@ -196,6 +196,7 @@ namespace Belcorp.Encore.Application
                     a => a.AccountID,
                     r => r.Account
                 )
+                .Limit(100)
                 .Unwind(a => a.Account, new AggregateUnwindOptions<AccountsInformation_MongoWithAccountAndSponsor> { PreserveNullAndEmptyArrays = true })
                 .ToList();
 
