@@ -80,10 +80,10 @@ namespace Belcorp.Encore.Services.Report.Controllers
 
             var result = reportAccountService.GetReportAccountsSponsoredsThree(filter, country);
 
-            if (result == null)
-            {
-                return NotFound();
-            }
+            //if (result == null)
+            //{
+            //    return result;
+            //}
 
             return Ok(result.ToReportAccount_DTO());
         }

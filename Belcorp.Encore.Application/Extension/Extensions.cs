@@ -11,33 +11,36 @@ namespace Belcorp.Encore.Application.Extension
     {
         public static List<ReportAccount_DTO> ToReportAccount_DTO(this List<AccountsInformation_MongoWithAccountAndSponsor> list)
         {
-            var result = list.Select(ai => new ReportAccount_DTO()
+            var result = new List<ReportAccount_DTO>();
+            if(list != null)
             {
-                AccountID = ai.AccountID,
-                AccountName = ai.AccountName.ToLower(),
-                AccountNumber = ai.AccountNumber,
-                Activity = ai.Activity,
-                CareerTitleDes = ai.CareerTitle_Des,
-                CareerTitle = ai.CareerTitle,
-                DQV = ai.DQV,
-                DQVT = ai.DQVT,
-                EmailAddress = ai.EmailAddress,
-                Generation = ai.Generation,
-                JoinDate = ai.JoinDate.HasValue ? ai.JoinDate.Value.ToString("dd/MM/yyyy") : "",
-                LEVEL = ai.LEVEL,
-                MainAddress = ai.Account != null ? ai.Account.Addresses.Where(a => a.AddressTypeID == 1).Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() : "",
-                PaidAsCurrentMonthDesc = ai.Account != null ? ai.PaidAsCurrentMonth_Des : "",
-                PaidAsCurrentMonth = ai.Account != null ? ai.PaidAsCurrentMonth : "",
-                PCV = ai.PCV,
-                Phones = ai.Account != null ? String.Join(" - ", ai.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
-                PQV = ai.PQV,
-                SponsorEmailAddress = ai.Sponsor != null ? ai.Sponsor.EmailAddress : "",
-                SponsorID = ai.SponsorID,
-                SponsorName = ai.SponsorName.ToLower(),
-                SponsorPhones = ai.Sponsor != null ? String.Join(" - ", ai.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
-                LeftBower = ai.LeftBower
-            }).ToList();
-
+                result = list.Select(ai => new ReportAccount_DTO()
+                {
+                    AccountID = ai.AccountID,
+                    AccountName = ai.AccountName.ToLower(),
+                    AccountNumber = ai.AccountNumber,
+                    Activity = ai.Activity,
+                    CareerTitleDes = ai.CareerTitle_Des,
+                    CareerTitle = ai.CareerTitle,
+                    DQV = ai.DQV,
+                    DQVT = ai.DQVT,
+                    EmailAddress = ai.EmailAddress,
+                    Generation = ai.Generation,
+                    JoinDate = ai.JoinDate.HasValue ? ai.JoinDate.Value.ToString("dd/MM/yyyy") : "",
+                    LEVEL = ai.LEVEL,
+                    MainAddress = ai.Account != null ? ai.Account.Addresses.Where(a => a.AddressTypeID == 1).Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault() : "",
+                    PaidAsCurrentMonthDesc = ai.Account != null ? ai.PaidAsCurrentMonth_Des : "",
+                    PaidAsCurrentMonth = ai.Account != null ? ai.PaidAsCurrentMonth : "",
+                    PCV = ai.PCV,
+                    Phones = ai.Account != null ? String.Join(" - ", ai.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                    PQV = ai.PQV,
+                    SponsorEmailAddress = ai.Sponsor != null ? ai.Sponsor.EmailAddress : "",
+                    SponsorID = ai.SponsorID,
+                    SponsorName = ai.SponsorName.ToLower(),
+                    SponsorPhones = ai.Sponsor != null ? String.Join(" - ", ai.Sponsor.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                    LeftBower = ai.LeftBower
+                }).ToList();
+            }
             return result;
         }
 
