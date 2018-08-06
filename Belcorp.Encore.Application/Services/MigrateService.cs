@@ -76,26 +76,6 @@ namespace Belcorp.Encore.Application.Services
 
         public IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activityPrevious = null, Activities activityCurrent = null, int? AccountID = null)
         {
-            var UplineLeader0 = 0;
-            var UplineLeaderM3 = 0;
-
-            int? LeftRighBower = null;
-            if (AccountID.HasValue && activityPrevious != null &&
-                    (
-                        activityPrevious.AccountConsistencyStatuses.AccountConsistencyStatusID == (short)Constants.AccountConsistencyStatuses.BegunEnrollment
-                    )
-              )
-            {
-                var account = accountsInformation.Where(a => a.AccountID == AccountID).FirstOrDefault();
-                var sponsor = accountsInformation.Where(a => a.AccountID == account.SponsorID).FirstOrDefault();
-
-                if (sponsor != null)
-                {
-                    UplineLeader0 = sponsor.UplineLeader0 ?? 0;
-                    UplineLeaderM3 = sponsor.UplineLeaderM3 ?? 0;
-                    LeftRighBower = sponsor.LeftBower;
-                }
-            }
 
             var result = from accountsInfo in accountsInformation
                          join titlesInfo_Career in titles on Int32.Parse(string.IsNullOrEmpty(accountsInfo.CareerTitle) ? "0" : accountsInfo.CareerTitle) equals titlesInfo_Career.TitleID
@@ -133,8 +113,8 @@ namespace Belcorp.Encore.Application.Services
                              Generation = accountsInfo.Generation,
                              LEVEL = accountsInfo.LEVEL,
                              SortPath = accountsInfo.SortPath,
-                             LeftBower = (AccountID.HasValue && AccountID == accountsInfo.AccountID && LeftRighBower.HasValue) ? LeftRighBower : accountsInfo.LeftBower,
-                             RightBower = (AccountID.HasValue && AccountID == accountsInfo.AccountID && LeftRighBower.HasValue) ? LeftRighBower : accountsInfo.RightBower,
+                             LeftBower = accountsInfo.LeftBower,
+                             RightBower = accountsInfo.RightBower,
                              RequirementNewGeneration = accountsInfo.RequirementNewGeneration,
                              TimeLimitForNewGeneration = accountsInfo.TimeLimitForNewGeneration,
                              Title1Legs = accountsInfo.Title1Legs,
@@ -178,8 +158,8 @@ namespace Belcorp.Encore.Application.Services
 
                              Activity = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activityCurrent != null) ? activityCurrent.ActivityStatuses.ExternalName : accountsInfo.Activity,
                              NCWP = accountsInfo.NCWP,
-                             UplineLeader0 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeader0 : accountsInfo.UplineLeader0,
-                             UplineLeaderM3 = (AccountID.HasValue && AccountID == accountsInfo.AccountID) ? UplineLeaderM3 : accountsInfo.UplineLeaderM3,
+                             UplineLeader0 = accountsInfo.UplineLeader0,
+                             UplineLeaderM3 = accountsInfo.UplineLeaderM3,
                              UplineLeaderM3Name = accountsInfo.UplineLeaderM3Name,
 
                              IsQualified = (AccountID.HasValue && AccountID == accountsInfo.AccountID && activityCurrent != null) ? activityCurrent.IsQualified : accountsInfo.IsQualified,

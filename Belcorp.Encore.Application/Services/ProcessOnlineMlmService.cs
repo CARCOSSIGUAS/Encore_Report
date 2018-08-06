@@ -34,6 +34,7 @@ namespace Belcorp.Encore.Application.Services
         private readonly IProcessOnlineRepository processOnlineRepository;
         private readonly IAccountKPIsRepository accountKPIsRepository;
         private readonly IAccountInformationRepository accountsInformationRepository;
+        private readonly IAccountsRepository accountsRepository;
         private readonly IHomeService homeService;
 
         public OnlineMLM_Statistics Statistics { get; set; }
@@ -55,7 +56,8 @@ namespace Belcorp.Encore.Application.Services
             IAccountKPIsRepository _accountKPIsRepository,
             IAccountInformationRepository _accountsInformationRepository,
             IConfiguration configuration,
-            IHomeService _homeService
+            IHomeService _homeService,
+            IAccountsRepository _accountsRepository
         )
         {
             unitOfWork_Core = _unitOfWork_Core;
@@ -72,6 +74,7 @@ namespace Belcorp.Encore.Application.Services
             processOnlineRepository = _processOnlineRepository;
             accountKPIsRepository = _accountKPIsRepository;
             accountsInformationRepository = _accountsInformationRepository;
+            accountsRepository = _accountsRepository;
         }
 
         public void ProcessMLMOrder(int _orderId, string country)
@@ -534,12 +537,51 @@ namespace Belcorp.Encore.Application.Services
             
             var accountsIds = GetAccounts_UpLine(Statistics.Order.AccountID).Select(a => a.AccountID).ToList();
             accountsIds.Add(Statistics.Order.AccountID);
+
+            var UplineLeader0 = 0;
+            var UplineLeaderM3 = 0;
+
+            int? LeftRighBower = null;
+
+            if (activityPrevious != null &&
+                    (
+                        activityPrevious.AccountConsistencyStatuses.AccountConsistencyStatusID == (short)Constants.AccountConsistencyStatuses.BegunEnrollment
+                    )
+              )
+            {
+
+                var accountInformationOrder = accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID && a.PeriodID == Statistics.PeriodID, null, null, false);
+
+                var accountCommRepository = unitOfWork_Comm.GetRepository<Entities.Entities.Commissions.Accounts>();
+                var accounts = accountCommRepository.GetFirstOrDefault(a => a.AccountID == Statistics.Order.AccountID, null, null, false);
+                var sponsor = accountsInformationRepository.GetFirstOrDefault(a => a.AccountID == accountInformationOrder.SponsorID && a.PeriodID == Statistics.PeriodID, null, null, false);
+
+                if (sponsor != null)
+                {
+                    UplineLeader0 = sponsor.UplineLeader0 ?? 0;
+                    UplineLeaderM3 = sponsor.UplineLeaderM3 ?? 0;
+                    LeftRighBower = sponsor.LeftBower;
+                }
+
+                accountInformationOrder.LeftBower = LeftRighBower ?? 0;
+                accountInformationOrder.RightBower = LeftRighBower ?? 0;
+                accountInformationOrder.UplineLeader0 = UplineLeader0;
+                accountInformationOrder.UplineLeaderM3 = UplineLeaderM3;
+                accountInformationOrder.BirthdayUTC = accounts.BirthdayUTC;
+
+                accountsInformationRepository.Update(accountInformationOrder);
+                unitOfWork_Comm.SaveChanges();
+
+            }
+
             var accountsInformations = accountsInformationRepository.GetListAccountInformationByPeriodIdAndAccountId(Statistics.PeriodID, accountsIds).ToList();
             var account =  accountInformationCollection.Find(x => x.PeriodID == Statistics.PeriodID && x.AccountID == Statistics.Order.AccountID);
 
 
             IRepository<Activities> activitiesRepository = unitOfWork_Core.GetRepository<Activities>();
             var activityCurrent = activitiesRepository.GetFirstOrDefault(a => a.PeriodID == Statistics.PeriodID && a.AccountID == Statistics.Order.AccountID, null, a => a.Include(aa => aa.ActivityStatuses).Include(aa => aa.AccountConsistencyStatuses), true);
+
+           
 
             IEnumerable<AccountsInformation_Mongo> result = migrateService.GetAccountInformations(titles, accountsInformations, activityPrevious, activityCurrent, Statistics.Order.AccountID);
             try

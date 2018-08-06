@@ -17,7 +17,7 @@ namespace Belcorp.Encore.Entities.Entities.DTO
 
         public string EmailAddress { get; set; }
 
-        public int? Generation { get; set; }
+        public decimal? Generation { get; set; }
         public int? LEVEL { get; set; }
         public string Activity { get; set; }
 
