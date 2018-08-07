@@ -29,6 +29,11 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public string PaidAsCurrentMonth { get; set; }
 
         public string MainAddress { get; set; }
+        public string Street { get; set; }
+        public string Address1 { get; set; }
+        public string County { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
 
         public string AccountPhone_1 { get; set; }
         public string AccountPhone_2 { get; set; }

@@ -138,24 +138,32 @@ namespace Belcorp.Encore.Services.Report.Controllers
                     worksheet.Cells["M1"].Value = termTranslationsService.GetLanguageTerm(language, "PaidAsTitle", country);
                     worksheet.Cells["N1"].Value = termTranslationsService.GetLanguageTerm(language, "Address", country);
 
-                    worksheet.Cells["O1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 1";
-                    worksheet.Cells["P1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 2";
-                    worksheet.Cells["Q1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 3";
-                    worksheet.Cells["R1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 4";
-                    worksheet.Cells["S1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 5";
-                    worksheet.Cells["T1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 6";
-                    worksheet.Cells["U1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 7";
+                    worksheet.Cells["O1"].Value = termTranslationsService.GetLanguageTerm(language, "Street", country);
+                    worksheet.Cells["P1"].Value = termTranslationsService.GetLanguageTerm(language, "Address1", country);
+                    worksheet.Cells["Q1"].Value = termTranslationsService.GetLanguageTerm(language, "County", country);
+                    worksheet.Cells["R1"].Value = termTranslationsService.GetLanguageTerm(language, "City", country);
+                    worksheet.Cells["S1"].Value = termTranslationsService.GetLanguageTerm(language, "State", country);
 
-                    worksheet.Cells["V1"].Value = termTranslationsService.GetLanguageTerm(language, "SponsorCode", country);
-                    worksheet.Cells["W1"].Value = termTranslationsService.GetLanguageTerm(language, "SponsorName", country);
-                    worksheet.Cells["X1"].Value = termTranslationsService.GetLanguageTerm(language, "Email", country);
-                    worksheet.Cells["Y1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 1";
-                    worksheet.Cells["Z1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 2";
-                    worksheet.Cells["AA1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 3";
-                    worksheet.Cells["AB1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 4";
-                    worksheet.Cells["AC1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 5";
-                    worksheet.Cells["AD1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 6";
-                    worksheet.Cells["AE1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 7";
+
+                    worksheet.Cells["T1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 1";
+                    worksheet.Cells["U1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 2";
+                    worksheet.Cells["V1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 3";
+                    worksheet.Cells["W1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 4";
+                    worksheet.Cells["X1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 5";
+                    worksheet.Cells["Y1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 6";
+                    worksheet.Cells["Z1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 7";
+
+                    worksheet.Cells["AA1"].Value = termTranslationsService.GetLanguageTerm(language, "SponsorCode", country);
+                    worksheet.Cells["AB1"].Value = termTranslationsService.GetLanguageTerm(language, "SponsorName", country);
+                    worksheet.Cells["AC1"].Value = termTranslationsService.GetLanguageTerm(language, "Email", country);
+                    worksheet.Cells["AD1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 1";
+                    worksheet.Cells["AE1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 2";
+                    worksheet.Cells["AF1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 3";
+                    worksheet.Cells["AG1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 4";
+                    worksheet.Cells["AH1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 5";
+                    worksheet.Cells["AI1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 6";
+                    worksheet.Cells["AJ1"].Value = $"{termTranslationsService.GetLanguageTerm(language, "Phone", country)} 7";
+
 
                     worksheet.Cells["A2"].LoadFromCollection(excel);
                     int noOfProperties = excel.GetType().GetGenericArguments()[0].GetProperties().Length;

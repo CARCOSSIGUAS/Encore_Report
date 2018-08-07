@@ -62,6 +62,35 @@ namespace Belcorp.Encore.Application.Extension
                                                          .Where(a => a.AddressTypeID == 1)
                                                          .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault()
                                                  : "",
+
+
+                Street = ai.Account != null ? ai.Account.Addresses
+                                                         .Where(a => a.AddressTypeID == 1)
+                                                         .Select(a => a.Street).FirstOrDefault()
+                                                 : "",
+
+                Address1 = ai.Account != null ? ai.Account.Addresses
+                                                         .Where(a => a.AddressTypeID == 1)
+                                                         .Select(a => a.Address1).FirstOrDefault()
+                                                 : "",
+
+
+                County = ai.Account != null ? ai.Account.Addresses
+                                                         .Where(a => a.AddressTypeID == 1)
+                                                         .Select(a =>  a.County ).FirstOrDefault()
+                                                 : "",
+
+
+                City = ai.Account != null ? ai.Account.Addresses
+                                                         .Where(a => a.AddressTypeID == 1)
+                                                         .Select(a =>  a.City).FirstOrDefault()
+                                                 : "",
+
+                State = ai.Account != null ? ai.Account.Addresses
+                                                         .Where(a => a.AddressTypeID == 1)
+                                                         .Select(a => a.State).FirstOrDefault()
+                                                 : "",
+
                 PostalCode = ai.PostalCode != null && ai.PostalCode.Length == 5 ? ai.PostalCode.Substring(0, 5) + "-" + ai.PostalCode.Substring(5) : "",
                 PaidAsCurrentMonth = ai.PaidAsCurrentMonth_Des,
                 PCV = ai.PCV,
