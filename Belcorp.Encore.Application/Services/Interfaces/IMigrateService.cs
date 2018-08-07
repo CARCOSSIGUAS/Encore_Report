@@ -18,6 +18,7 @@ namespace Belcorp.Encore.Application.Services.Interfaces
         void RequirementTitleCalculations(string country);
         void RequirementLegs(string country);
         void Performance(string country, int? periodId);
+        void PerformanceByPeriod(int? periodId, string country);
 
         IEnumerable<AccountsInformation_Mongo> GetAccountInformations(List<Titles> titles, IList<AccountsInformation> accountsInformation, Activities activityPrevious = null, Activities activityCurrent = null, int? AccountID = null);
     }

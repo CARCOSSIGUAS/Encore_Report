@@ -102,6 +102,12 @@ namespace Belcorp.Encore.Api.Controllers
             return Json(new { Status = "Processing Background" });
         }
 
-
+        [HttpGet("performance/{periodId}")]
+        [AutomaticRetry(Attempts = 0)]
+        public ActionResult PerformanceByPeriod(int periodId, string country = null)
+        {
+            BackgroundJob.Enqueue(() => migrateService.MigrateAccountInformationByPeriod(periodId, country));
+            return Json(new { Status = "Processing Background" });
+        }
     }
 }

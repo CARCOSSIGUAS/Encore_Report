@@ -12,9 +12,10 @@ namespace Belcorp.Encore.Entities.Entities.Mongo
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         [BsonIgnoreIfDefault]
-        public ObjectId PerformanceIndicatorDayID { get; set; }
+        public ObjectId IDMongoPerformanceIndicatorDay { get; set; }
+        public int PerformanceIndicatorDayID { get; set; }
         public int AccountID { get; set; }
-        public int DayOfMonth { get; set; }
+        public int DayOfMonthIndicator { get; set; }
         public int Ingresos { get; set; }
         public int PeriodID { get; set; }
         public decimal? VO { get; set; }

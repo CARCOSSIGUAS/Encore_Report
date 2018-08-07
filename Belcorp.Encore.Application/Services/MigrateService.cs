@@ -557,7 +557,7 @@ namespace Belcorp.Encore.Application.Services
                     performanceIndicatorDayCollection.ReplaceOne(ai => ai.AccountID == account.AccountID && ai.PeriodID == period, new PerformanceIndicatorDay_Mongo
                     {
                         AccountID = account.AccountID,
-                        DayOfMonth = DateTime.Now.Day,
+                        DayOfMonthIndicator = DateTime.Now.Day,
                         Ingresos = record != null ? record.Ingresos + 1 : 1,
                         PeriodID = period ?? 0
                     }, new UpdateOptions { IsUpsert = true });
@@ -572,6 +572,9 @@ namespace Belcorp.Encore.Application.Services
             }
         }
 
-
+        public void PerformanceByPeriod(int? periodId, string country)
+        {
+            
+        }
     }
 }
