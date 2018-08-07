@@ -140,7 +140,7 @@ namespace Belcorp.Encore.Application
             return list;
         }
 
-        public List<BirthDayAccount_DTO> GetDataBirthday(int accountID, int? periodID, string country)
+        public List<BirthDayAccount_DTO> GetDataBirthday(int accountID, int? periodID, string country, string order = null)
         {
             IMongoCollection<AccountsInformation_Mongo> accountInformationCollection = encoreMongo_Context.AccountsInformationProvider(country);
             IMongoCollection<Accounts_Mongo> accountsCollection = encoreMongo_Context.AccountsProvider(country);
@@ -185,11 +185,27 @@ namespace Belcorp.Encore.Application
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Lte(ai => ai.DayBirthday, LastDay);
             filterDefinition &= Builders<AccountsInformation_Mongo>.Filter.Eq(ai => ai.MonthBirthday, Month);
 
+            var orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.CareerTitle);
+
+            if (!String.IsNullOrEmpty(order))
+            {
+                switch (order)
+                {
+                    case "1":
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.CareerTitle);
+                        break;
+                    case "2":
+                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.CareerTitle);
+                        break;                   
+                };
+            }
+
             var result = new List<AccountsInformation_MongoWithAccountAndSponsor>();
 
             result = accountInformationCollection
                 .Aggregate()
                 .Match(filterDefinition)
+                .Sort(orderDefinition)
                 .Lookup<AccountsInformation_Mongo, Accounts_Mongo, AccountsInformation_MongoWithAccountAndSponsor>(
                     accountsCollection,
                     ai => ai.AccountID,
@@ -223,6 +239,9 @@ namespace Belcorp.Encore.Application
                                         HB = titular.Brithday.HasValue ? titular.Brithday.Value.ToString("dd/MM/yyyy") : "",
                                         Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0,
                                         Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
+                                        CareerTitle = item.CareerTitle,
+                                        CareerTitle_Des = item.CareerTitle_Des,
+                                        isTitular = true
                                     });
                                 }
                             }
@@ -289,14 +308,26 @@ namespace Belcorp.Encore.Application
                             Anios = item.BirthdayUTC.HasValue ? (zeroTime + (DateTime.Now - item.BirthdayUTC.Value)).Year - 1 : 0,
                             Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
                         });
-
                     }
                 }
-
-
             }
 
-            list = list.OrderBy(x => x.HB).ToList();
+            if (!String.IsNullOrEmpty(order))
+            {
+                switch (order)
+                {
+                    case "3":
+                        list = list.OrderByDescending(x => x.HB).ToList();
+                        break;
+                    case "4":
+                        list = list.OrderBy(x => x.HB).ToList();
+                        break;
+                }
+            }
+
+            if (order == null)
+                list = list.OrderBy(x => x.HB).ToList();
+
             return list;
         }
 
