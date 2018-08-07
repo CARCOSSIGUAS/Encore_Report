@@ -153,9 +153,6 @@ namespace Belcorp.Encore.Application
                 return null;
             }
 
-            if (order == null)
-                order = "4";
-
             var Hoy = DateTime.Now;
             int Day = Hoy.Day;
             int Month = Hoy.Month;
@@ -199,13 +196,7 @@ namespace Belcorp.Encore.Application
                         break;
                     case "2":
                         orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.CareerTitle);
-                        break;
-                    case "3":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Descending(ai => ai.BirthdayUTC);
-                        break;
-                    case "4":
-                        orderDefinition = Builders<AccountsInformation_Mongo>.Sort.Ascending(ai => ai.BirthdayUTC);
-                        break;
+                        break;                   
                 };
             }
 
@@ -249,7 +240,8 @@ namespace Belcorp.Encore.Application
                                         Anios = titular.Brithday.HasValue ? (zeroTime + (DateTime.Now - titular.Brithday.Value)).Year - 1 : 0,
                                         Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
                                         CareerTitle = item.CareerTitle,
-                                        CareerTitle_Des = item.CareerTitle_Des
+                                        CareerTitle_Des = item.CareerTitle_Des,
+                                        isTitular = true
                                     });
                                 }
                             }
@@ -316,11 +308,26 @@ namespace Belcorp.Encore.Application
                             Anios = item.BirthdayUTC.HasValue ? (zeroTime + (DateTime.Now - item.BirthdayUTC.Value)).Year - 1 : 0,
                             Phones = item.Account != null ? String.Join(" - ", item.Account.AccountPhones.Select(p => p.PhoneNumber).ToList()) : "",
                         });
-
                     }
                 }
             }
-            //list = list.OrderBy(x => x.HB).ToList();
+
+            if (!String.IsNullOrEmpty(order))
+            {
+                switch (order)
+                {
+                    case "3":
+                        list = list.OrderByDescending(x => x.HB).ToList();
+                        break;
+                    case "4":
+                        list = list.OrderBy(x => x.HB).ToList();
+                        break;
+                }
+            }
+
+            if (order == null)
+                list = list.OrderBy(x => x.HB).ToList();
+
             return list;
         }
 

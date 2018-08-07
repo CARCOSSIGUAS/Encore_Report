@@ -113,6 +113,6 @@ namespace Belcorp.Encore.Entities.Entities.DTO
         public double Anios { get; set; }
         public string Phones { get; set; }
         public bool isBirthDay { get; set; }
-        
+        public bool isTitular { get; set; }
     }
 }
