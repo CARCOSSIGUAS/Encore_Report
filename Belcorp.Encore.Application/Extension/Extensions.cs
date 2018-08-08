@@ -58,10 +58,10 @@ namespace Belcorp.Encore.Application.Extension
                 Generation = ai.Generation,
                 JoinDate = ai.JoinDate.HasValue ? ai.JoinDate.Value.ToString("dd/MM/yyyy") : "",
                 LEVEL = ai.LEVEL,
-                MainAddress = ai.Account != null ? ai.Account.Addresses
-                                                         .Where(a => a.AddressTypeID == 1)
-                                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault()
-                                                 : "",
+                //MainAddress = ai.Account != null ? ai.Account.Addresses
+                //                                         .Where(a => a.AddressTypeID == 1)
+                //                                         .Select(a => a.Street + " - " + a.Address1 + " - " + a.County + " - " + a.City + " - " + a.State).FirstOrDefault()
+                //                                 : "",
 
 
                 Street = ai.Account != null ? ai.Account.Addresses
@@ -93,7 +93,7 @@ namespace Belcorp.Encore.Application.Extension
 
                 PostalCode = ai.PostalCode != null && ai.PostalCode.Length == 5 ? ai.PostalCode.Substring(0, 5) + "-" + ai.PostalCode.Substring(5) : "",
                 PaidAsCurrentMonth = ai.PaidAsCurrentMonth_Des,
-                PCV = ai.PCV,
+                //PCV = ai.PCV,
                 AccountPhone_1 = ai.Account != null ? ai.Account.AccountPhones.Where(p => p.PhoneTypeID == 1).Select(p => p.PhoneNumber).FirstOrDefault() : "",
                 AccountPhone_2 = ai.Account != null ? ai.Account.AccountPhones.Where(p => p.PhoneTypeID == 2).Select(p => p.PhoneNumber).FirstOrDefault() : "",
                 AccountPhone_3 = ai.Account != null ? ai.Account.AccountPhones.Where(p => p.PhoneTypeID == 3).Select(p => p.PhoneNumber).FirstOrDefault() : "",
